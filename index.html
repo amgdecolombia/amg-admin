@@ -185,7 +185,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--gray-50);min-height:100vh
 </div>
 
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbx9HfzlpUC-BgE3JNVWurl4QRZOLyPZLVQ4HRk7rfrTeNzvf-AFStIFv9dEfBSTMnAt/exec';
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbycTzn_QVqhJgiWuptcnDQ6XGLQNfZAaC_waB3dV12lXl7ieLUSZLTylU0oMrJ2gP0I/exec';
 let currentUser=null;
 
 async function doLogin(){
@@ -337,14 +337,19 @@ async function decidir(idx,action,rowIndex){
   apBtn.disabled=true;rjBtn.disabled=true;
   apBtn.textContent='Procesando...';
   try{
-    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',body:JSON.stringify({
-      action,rowIndex:parseInt(rowIndex),observaciones:obs,directorEmail:currentUser.email,directorName:currentUser.name
-    })});
+    // Use GET with params — works reliably with Apps Script no-cors
+    const url=SCRIPT_URL
+      +'?action='+(action==='approve'?'approveRow':'rejectRow')
+      +'&rowIndex='+encodeURIComponent(rowIndex)
+      +'&observaciones='+encodeURIComponent(obs)
+      +'&directorEmail='+encodeURIComponent(currentUser.email)
+      +'&directorName='+encodeURIComponent(currentUser.name);
+    await fetch(url,{mode:'no-cors'});
     document.getElementById('card-'+idx).style.opacity='0.5';
     document.getElementById('card-'+idx).style.pointerEvents='none';
     apBtn.textContent=action==='approve'?'Aprobado':'Rechazado';
-    setTimeout(()=>loadPending(),1500);
-    setTimeout(()=>loadHistory(),1500);
+    setTimeout(()=>loadPending(),2000);
+    setTimeout(()=>loadHistory(),2000);
   }catch(e){
     apBtn.disabled=false;rjBtn.disabled=false;
     apBtn.textContent='Aprobar';
