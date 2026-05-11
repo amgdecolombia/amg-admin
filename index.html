@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AMG — Panel de Directores</title>
+<title>AMG — Panel de Administracion</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap');
 :root{
@@ -11,20 +12,19 @@
   --green:#D1FAE5;--green-dark:#065F46;--green-border:#6EE7B7;
   --red:#FEF2F2;--red-dark:#991B1B;--red-border:#FECACA;
   --amber:#FFFBEB;--amber-dark:#92400E;--amber-border:#FCD34D;
-  --blue:#EFF6FF;--blue-dark:#1E40AF;
+  --blue:#EFF6FF;--blue-dark:#1E40AF;--blue-border:#BFDBFE;
+  --purple:#F5F3FF;--purple-dark:#4C1D95;
   --gray-50:#F8FAFC;--gray-100:#F1F5F9;--gray-200:#E2E8F0;
   --gray-400:#94A3B8;--gray-500:#64748B;--gray-700:#334155;--gray-800:#1E293B;--gray-900:#0F172A;
   --white:#FFFFFF;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'DM Sans',sans-serif;background:var(--gray-50);min-height:100vh;}
-
-/* LOGIN */
 .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem;}
 .login-card{background:white;border-radius:24px;box-shadow:0 8px 40px rgba(0,0,0,0.12);width:100%;max-width:400px;overflow:hidden;}
-.login-header{background:linear-gradient(145deg,#0A3D47,#1D9E9E);padding:2rem;text-align:center;}
-.login-header h1{color:white;font-size:20px;font-weight:700;margin-bottom:4px;}
-.login-header p{color:rgba(255,255,255,0.65);font-size:12px;}
+.login-hdr{background:linear-gradient(145deg,#0A3D47,#1D9E9E);padding:2rem;text-align:center;}
+.login-hdr h1{color:white;font-size:20px;font-weight:700;margin-bottom:4px;}
+.login-hdr p{color:rgba(255,255,255,0.6);font-size:12px;}
 .login-body{padding:1.75rem;}
 .fg{margin-bottom:14px;}
 .fg label{font-size:11px;font-weight:600;color:var(--gray-500);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.4px;}
@@ -32,73 +32,87 @@ body{font-family:'DM Sans',sans-serif;background:var(--gray-50);min-height:100vh
 .fg input:focus{border-color:var(--teal-mid);}
 .login-btn{width:100%;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,#0A3D47,#1D9E9E);color:white;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;margin-top:4px;}
 .login-btn:hover{opacity:0.88;}
-.forgot-link{text-align:center;margin-top:12px;font-size:12px;color:var(--gray-400);cursor:pointer;text-decoration:underline;}
-.forgot-link:hover{color:var(--teal);}
+.forgot-lnk{text-align:center;margin-top:12px;font-size:12px;color:var(--gray-400);cursor:pointer;text-decoration:underline;}
 .login-err{background:var(--red);border:1px solid var(--red-border);border-radius:9px;padding:9px 12px;font-size:13px;color:var(--red-dark);margin-bottom:12px;display:none;}
-
-/* DASHBOARD */
 .dashboard{display:none;}
-.topbar{background:linear-gradient(145deg,#0A3D47,#156B6B);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;}
+.topbar{background:linear-gradient(145deg,#0A3D47,#156B6B);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
 .topbar-left h2{color:white;font-size:16px;font-weight:600;}
 .topbar-left p{color:rgba(255,255,255,0.6);font-size:11px;margin-top:2px;font-family:'DM Mono',monospace;}
+.master-badge{background:rgba(255,215,0,0.25);color:#FDE68A;border-radius:99px;padding:2px 10px;font-size:11px;font-weight:700;border:1px solid rgba(255,215,0,0.4);margin-left:8px;}
 .topbar-right{display:flex;gap:8px;align-items:center;}
-.badge-count{background:rgba(255,255,255,0.15);color:white;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:600;}
+.pending-badge{background:rgba(255,255,255,0.15);color:white;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:600;}
 .logout-btn{padding:6px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.3);background:transparent;color:rgba(255,255,255,0.8);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;}
-
-.main{max-width:900px;margin:0 auto;padding:1.5rem;}
-.tabs{display:flex;gap:8px;margin-bottom:1.5rem;}
-.tab{padding:8px 18px;border-radius:10px;border:1.5px solid var(--gray-200);background:white;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;color:var(--gray-500);transition:all 0.15s;}
+.main{max-width:1000px;margin:0 auto;padding:1.5rem;}
+.tabs{display:flex;gap:8px;margin-bottom:1.5rem;flex-wrap:wrap;}
+.tab{padding:8px 16px;border-radius:10px;border:1.5px solid var(--gray-200);background:white;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;color:var(--gray-500);transition:all 0.15s;}
 .tab.active{background:var(--teal-dark);color:white;border-color:var(--teal-dark);}
-
 .panel{display:none;}.panel.active{display:block;}
-
-.empty-state{text-align:center;padding:3rem 1rem;color:var(--gray-400);}
-.empty-state p{font-size:14px;margin-top:8px;}
-
-/* REQUEST CARDS */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem;}
+@media(max-width:600px){.stats-grid{grid-template-columns:repeat(2,1fr);}}
+.stat-card{background:white;border-radius:14px;border:1.5px solid var(--gray-200);padding:1rem;text-align:center;}
+.stat-val{font-size:26px;font-weight:700;color:var(--teal-dark);}
+.stat-lbl{font-size:11px;color:var(--gray-500);margin-top:3px;}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:1.5rem;}
+@media(max-width:640px){.charts-grid{grid-template-columns:1fr;}}
+.chart-card{background:white;border-radius:14px;border:1.5px solid var(--gray-200);padding:1.25rem;}
+.chart-title{font-size:13px;font-weight:600;color:var(--gray-800);margin-bottom:12px;}
+.chart-wrap{position:relative;height:200px;}
+.filter-bar{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;align-items:center;}
+.filter-select{padding:7px 12px;border:1.5px solid var(--gray-200);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--gray-700);background:white;outline:none;cursor:pointer;}
+.filter-label{font-size:12px;color:var(--gray-500);font-weight:500;}
 .req-card{background:white;border-radius:16px;border:1.5px solid var(--gray-200);padding:1.25rem;margin-bottom:12px;transition:box-shadow 0.15s;}
 .req-card:hover{box-shadow:0 4px 16px rgba(0,0,0,0.08);}
 .req-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px;}
 .req-name{font-size:15px;font-weight:600;color:var(--gray-900);}
-.req-type{font-size:11px;color:var(--gray-500);margin-top:2px;}
+.req-sub{font-size:11px;color:var(--gray-500);margin-top:2px;}
 .badge{display:inline-block;font-size:11px;font-weight:500;padding:3px 10px;border-radius:99px;}
 .badge-ot{background:var(--amber);color:var(--amber-dark);}
-.badge-comp{background:#F5F3FF;color:#4C1D95;}
-.badge-pk{background:var(--blue);color:var(--blue-dark);}
+.badge-fest{background:var(--purple);color:var(--purple-dark);}
+.badge-comp{background:var(--blue);color:var(--blue-dark);}
+.badge-pk{background:var(--teal-light);color:var(--teal-dark);}
 .badge-pending{background:var(--amber);color:var(--amber-dark);}
 .badge-approved{background:var(--green);color:var(--green-dark);}
 .badge-rejected{background:var(--red);color:var(--red-dark);}
-
+.badge-master{background:#FEF9C3;color:#854D0E;}
+.badge-alert{background:#FEE2E2;color:#991B1B;}
 .req-details{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:12px;}
 .req-detail{background:var(--gray-50);border-radius:8px;padding:7px 10px;}
-.req-detail-label{font-size:10px;color:var(--gray-400);font-weight:600;text-transform:uppercase;letter-spacing:0.3px;}
-.req-detail-val{font-size:13px;color:var(--gray-800);font-weight:500;margin-top:2px;}
-
+.rd-lbl{font-size:10px;color:var(--gray-400);font-weight:600;text-transform:uppercase;letter-spacing:0.3px;}
+.rd-val{font-size:13px;color:var(--gray-800);font-weight:500;margin-top:2px;}
 .req-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.obs-input{width:100%;padding:8px 10px;border:1.5px solid var(--gray-200);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--gray-800);outline:none;margin-bottom:8px;resize:none;height:56px;}
+.obs-input{width:100%;padding:8px 10px;border:1.5px solid var(--gray-200);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--gray-800);outline:none;margin-bottom:8px;resize:none;height:52px;}
 .obs-input:focus{border-color:var(--teal-mid);}
 .btn-approve{padding:10px;border-radius:10px;border:none;background:#065F46;color:white;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;}
 .btn-reject{padding:10px;border-radius:10px;border:1.5px solid var(--red-border);background:var(--red);color:var(--red-dark);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;}
-.btn-approve:hover{opacity:0.85;}
-.btn-reject:hover{opacity:0.85;}
+.btn-approve:hover,.btn-reject:hover{opacity:0.85;}
 .btn-approve:disabled,.btn-reject:disabled{opacity:0.5;cursor:not-allowed;}
-
-/* HISTORY */
-.hist-card{background:white;border-radius:14px;border:1.5px solid var(--gray-200);padding:1rem 1.25rem;margin-bottom:10px;display:flex;align-items:center;gap:12px;}
-.hist-left{flex:1;}
+.hist-card{background:white;border-radius:14px;border:1.5px solid var(--gray-200);padding:1rem 1.25rem;margin-bottom:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.hist-left{flex:1;min-width:200px;}
 .hist-name{font-size:14px;font-weight:600;color:var(--gray-900);}
 .hist-sub{font-size:11px;color:var(--gray-500);margin-top:2px;}
 .hist-right{text-align:right;}
-.hist-date{font-size:11px;color:var(--gray-400);font-family:'DM Mono',monospace;}
-
-.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1.5rem;}
-.stat-card{background:white;border-radius:14px;border:1.5px solid var(--gray-200);padding:1rem;text-align:center;}
-.stat-val{font-size:28px;font-weight:700;color:var(--teal-dark);}
-.stat-lbl{font-size:11px;color:var(--gray-500);margin-top:3px;}
-
+.hist-date{font-size:11px;color:var(--gray-400);font-family:'DM Mono',monospace;margin-top:4px;}
+.empty-state{text-align:center;padding:3rem 1rem;color:var(--gray-400);}
+.empty-state p{font-size:14px;margin-top:8px;}
 .loading-msg{text-align:center;padding:2rem;color:var(--gray-400);font-size:13px;}
-
-/* FORGOT MODAL */
+/* EMPLOYEE STATS */
+.emp-section{margin-bottom:1.5rem;}
+.emp-section-title{font-size:13px;font-weight:600;color:var(--gray-800);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.emp-section-title span{background:var(--teal-light);color:var(--teal-dark);border-radius:99px;padding:2px 10px;font-size:11px;}
+.emp-table{width:100%;border-collapse:collapse;font-size:13px;}
+.emp-table th{text-align:left;font-size:10px;font-weight:600;color:var(--gray-400);text-transform:uppercase;letter-spacing:0.4px;padding:6px 10px;border-bottom:1.5px solid var(--gray-200);}
+.emp-table td{padding:10px;border-bottom:0.5px solid var(--gray-200);color:var(--gray-800);vertical-align:middle;}
+.emp-table tr:hover td{background:var(--gray-50);}
+.emp-name{font-weight:600;color:var(--gray-900);}
+.pill{display:inline-block;font-size:10px;font-weight:500;padding:2px 7px;border-radius:99px;margin:1px;}
+.pill-green{background:var(--green);color:var(--green-dark);}
+.pill-red{background:var(--red);color:var(--red-dark);}
+.pill-amber{background:var(--amber);color:var(--amber-dark);}
+.pill-purple{background:var(--purple);color:var(--purple-dark);}
+.pill-blue{background:var(--blue);color:var(--blue-dark);}
+.pill-gray{background:var(--gray-100);color:var(--gray-500);}
+.alert-row{background:#FFF7ED!important;}
+.last-seen{font-size:11px;color:var(--gray-400);font-family:"DM Mono",monospace;}
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;z-index:99;padding:1.5rem;}
 .modal-bg.on{display:flex;}
 .modal-card{background:white;border-radius:20px;padding:1.75rem;max-width:360px;width:100%;box-shadow:0 16px 50px rgba(0,0,0,0.2);}
@@ -112,72 +126,86 @@ body{font-family:'DM Sans',sans-serif;background:var(--gray-50);min-height:100vh
 </head>
 <body>
 
-<!-- LOGIN -->
 <div class="login-wrap" id="login-wrap">
   <div class="login-card">
-    <div class="login-header">
-      <h1>Panel de Directores</h1>
-      <p>AMG de Colombia SAS — Gestion de solicitudes</p>
-    </div>
+    <div class="login-hdr"><h1>Panel de Administracion</h1><p>AMG de Colombia SAS</p></div>
     <div class="login-body">
-      <div class="login-err" id="login-err">Credenciales incorrectas. Verifica tu correo y clave.</div>
-      <div class="fg">
-        <label>Correo corporativo</label>
-        <input type="email" id="l-email" placeholder="tu@amgdecolombia.com">
-      </div>
-      <div class="fg">
-        <label>Clave de acceso</label>
-        <input type="password" id="l-pass" placeholder="Clave" onkeydown="if(event.key==='Enter')doLogin()">
-      </div>
+      <div class="login-err" id="login-err">Credenciales incorrectas.</div>
+      <div class="fg"><label>Correo corporativo</label><input type="email" id="l-email" placeholder="tu@amgdecolombia.com"></div>
+      <div class="fg"><label>Clave de acceso</label><input type="password" id="l-pass" placeholder="Clave" onkeydown="if(event.key==='Enter')doLogin()"></div>
       <button class="login-btn" onclick="doLogin()">Ingresar</button>
-      <div class="forgot-link" onclick="openForgot()">Olvide mi clave</div>
+      <div class="forgot-lnk" onclick="openForgot()">Olvide mi clave</div>
     </div>
   </div>
 </div>
 
-<!-- DASHBOARD -->
 <div class="dashboard" id="dashboard">
   <div class="topbar">
     <div class="topbar-left">
-      <h2 id="topbar-name">Panel de Director</h2>
+      <h2 id="topbar-name">Panel <span class="master-badge" id="master-badge" style="display:none">MASTER ACCESS</span></h2>
       <p id="topbar-email"></p>
     </div>
     <div class="topbar-right">
-      <span class="badge-count" id="pending-count">0 pendientes</span>
+      <span class="pending-badge" id="pending-badge">Cargando...</span>
       <button class="logout-btn" onclick="doLogout()">Cerrar sesion</button>
     </div>
   </div>
-
   <div class="main">
     <div class="stats-grid">
-      <div class="stat-card"><div class="stat-val" id="st-pending">0</div><div class="stat-lbl">Pendientes</div></div>
-      <div class="stat-card"><div class="stat-val" id="st-approved">0</div><div class="stat-lbl">Aprobadas</div></div>
-      <div class="stat-card"><div class="stat-val" id="st-rejected">0</div><div class="stat-lbl">Rechazadas</div></div>
+      <div class="stat-card"><div class="stat-val" id="st-pending">-</div><div class="stat-lbl">Pendientes</div></div>
+      <div class="stat-card"><div class="stat-val" id="st-approved">-</div><div class="stat-lbl">Aprobadas</div></div>
+      <div class="stat-card"><div class="stat-val" id="st-rejected">-</div><div class="stat-lbl">Rechazadas</div></div>
+      <div class="stat-card"><div class="stat-val" id="st-total">-</div><div class="stat-lbl">Total historico</div></div>
     </div>
-
     <div class="tabs">
       <button class="tab active" onclick="switchTab('pending')">Solicitudes pendientes</button>
-      <button class="tab" onclick="switchTab('history')">Historial de decisiones</button>
+      <button class="tab" onclick="switchTab('stats')">Dashboard</button>
+      <button class="tab" onclick="switchTab('history')">Historial</button>
+      <button class="tab" id="tab-employees" onclick="switchTab('employees')" style="display:none">Empleados</button>
     </div>
-
     <div class="panel active" id="panel-pending">
       <div class="loading-msg" id="loading-pending">Cargando solicitudes...</div>
       <div id="list-pending"></div>
     </div>
-
+    <div class="panel" id="panel-stats">
+      <div class="charts-grid">
+        <div class="chart-card"><div class="chart-title">Solicitudes por tipo</div><div class="chart-wrap"><canvas id="chart-type"></canvas></div></div>
+        <div class="chart-card"><div class="chart-title">Actividad por mes</div><div class="chart-wrap"><canvas id="chart-month"></canvas></div></div>
+        <div class="chart-card"><div class="chart-title">Top empleados</div><div class="chart-wrap"><canvas id="chart-emp"></canvas></div></div>
+        <div class="chart-card"><div class="chart-title">Aprobadas vs Rechazadas</div><div class="chart-wrap"><canvas id="chart-status"></canvas></div></div>
+      </div>
+    </div>
+    <div class="panel" id="panel-employees">
+      <div class="loading-msg" id="loading-employees">Cargando datos de empleados...</div>
+      <div id="emp-content"></div>
+    </div>
     <div class="panel" id="panel-history">
+      <div class="filter-bar">
+        <span class="filter-label">Filtrar:</span>
+        <select class="filter-select" id="fil-type" onchange="renderHistory()">
+          <option value="">Todos los tipos</option>
+          <option value="Tiempo Extra">Tiempo Extra</option>
+          <option value="Festivos Trabajados">Festivos</option>
+          <option value="Dias Compensatorios">Compensatorios</option>
+          <option value="Solicitudes de Recogida">Recogidas</option>
+        </select>
+        <select class="filter-select" id="fil-status" onchange="renderHistory()">
+          <option value="">Todos los estados</option>
+          <option value="Aprobado">Aprobados</option>
+          <option value="Rechazado">Rechazados</option>
+        </select>
+      </div>
       <div class="loading-msg" id="loading-history">Cargando historial...</div>
       <div id="list-history"></div>
     </div>
   </div>
 </div>
 
-<!-- FORGOT PASSWORD MODAL -->
 <div class="modal-bg" id="forgot-modal">
   <div class="modal-card">
     <h3>Recuperar acceso</h3>
-    <p>Ingresa tu correo corporativo y te enviaremos tu clave de acceso.</p>
-    <div class="modal-ok" id="forgot-ok">Correo enviado. Revisa tu bandeja de entrada.</div>
+    <p>Ingresa tu correo corporativo y te enviaremos tu clave.</p>
+    <div class="modal-ok" id="forgot-ok">Correo enviado. Revisa tu bandeja.</div>
     <input class="modal-input" type="email" id="forgot-email" placeholder="tu@amgdecolombia.com">
     <button class="modal-btn" onclick="sendForgot()">Enviar clave</button>
     <button class="modal-close" onclick="closeForgot()">Cancelar</button>
@@ -186,7 +214,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--gray-50);min-height:100vh
 
 <script>
 const SCRIPT_URL='https://script.google.com/macros/s/AKfycbycTzn_QVqhJgiWuptcnDQ6XGLQNfZAaC_waB3dV12lXl7ieLUSZLTylU0oMrJ2gP0I/exec';
-let currentUser=null;
+let currentUser=null,allPending=[],allHistory=[],charts={};
+
+function formatDate(raw){
+  if(!raw)return'';
+  try{
+    const s=String(raw);
+    if(s.match(/^\d{4}-\d{2}-\d{2}T/)||s.match(/GMT/)){
+      const d=new Date(raw);
+      if(!isNaN(d)){const p=n=>String(n).padStart(2,'0');return p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+d.getFullYear()+' '+p(d.getHours())+':'+p(d.getMinutes());}
+    }
+    return s;
+  }catch(e){return String(raw);}
+}
 
 async function doLogin(){
   const email=document.getElementById('l-email').value.trim();
@@ -196,18 +236,19 @@ async function doLogin(){
     const r=await fetch(SCRIPT_URL+'?action=login&email='+encodeURIComponent(email)+'&pass='+encodeURIComponent(pass));
     const d=await r.json();
     if(d.status==='ok'){
-      currentUser={email,name:d.name};
+      currentUser={email,name:d.name,role:d.role};
       document.getElementById('login-err').style.display='none';
-      document.getElementById('topbar-name').textContent=d.name;
+      document.getElementById('topbar-name').childNodes[0].textContent=d.name+' ';
       document.getElementById('topbar-email').textContent=email;
+      if(d.role==='master'){
+        document.getElementById('master-badge').style.display='inline';
+        document.getElementById('tab-employees').style.display='block';
+      }
       document.getElementById('login-wrap').style.display='none';
       document.getElementById('dashboard').style.display='block';
-      loadPending();
-      loadHistory();
-    }else{
-      document.getElementById('login-err').style.display='block';
-    }
-  }catch(e){alert('Error de conexion. Intenta de nuevo.');}
+      loadPending();loadHistory();loadStats();if(currentUser.role==="master")loadEmployees();
+    }else{document.getElementById('login-err').style.display='block';}
+  }catch(e){alert('Error de conexion.');}
 }
 
 function doLogout(){
@@ -215,20 +256,7 @@ function doLogout(){
   document.getElementById('dashboard').style.display='none';
   document.getElementById('login-wrap').style.display='flex';
   document.getElementById('l-pass').value='';
-}
-
-function switchTab(t){
-  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',['pending','history'][i]===t));
-  document.querySelectorAll('.panel').forEach((p,i)=>p.classList.toggle('active',['panel-pending','panel-history'][i]==='panel-'+t));
-}
-
-function typeBadge(tipo){
-  const m={
-    'Tiempo extra':'badge badge-ot',
-    'Dia compensatorio':'badge badge-comp',
-    'Solicitud de recogida':'badge badge-pk',
-  };
-  return m[tipo]||'badge badge-pending';
+  document.getElementById('master-badge').style.display='none';
 }
 
 async function loadPending(){
@@ -238,122 +266,211 @@ async function loadPending(){
     const r=await fetch(SCRIPT_URL+'?action=getPending&email='+encodeURIComponent(currentUser.email));
     const d=await r.json();
     document.getElementById('loading-pending').style.display='none';
-    const pending=d.rows||[];
-    document.getElementById('pending-count').textContent=pending.length+' pendiente'+(pending.length===1?'':'s');
-    document.getElementById('st-pending').textContent=pending.length;
-    if(!pending.length){
-      document.getElementById('list-pending').innerHTML='<div class="empty-state"><div style="font-size:40px">ok</div><p>No hay solicitudes pendientes por el momento.</p></div>';
-      return;
-    }
-    document.getElementById('list-pending').innerHTML=pending.map((row,i)=>buildReqCard(row,i,true)).join('');
-  }catch(e){
-    document.getElementById('loading-pending').textContent='Error cargando datos.';
-  }
+    allPending=d.rows||[];
+    document.getElementById('pending-badge').textContent=allPending.length+' pendiente'+(allPending.length===1?'':'s');
+    document.getElementById('st-pending').textContent=allPending.length;
+    if(!allPending.length){document.getElementById('list-pending').innerHTML='<div class="empty-state"><p>No hay solicitudes pendientes.</p></div>';return;}
+    document.getElementById('list-pending').innerHTML=allPending.map((row,i)=>buildReqCard(row,i)).join('');
+  }catch(e){document.getElementById('loading-pending').textContent='Error cargando datos.';}
 }
 
 async function loadHistory(){
   document.getElementById('loading-history').style.display='block';
-  document.getElementById('list-history').innerHTML='';
   try{
     const r=await fetch(SCRIPT_URL+'?action=getHistory&email='+encodeURIComponent(currentUser.email));
     const d=await r.json();
     document.getElementById('loading-history').style.display='none';
-    const hist=d.rows||[];
-    const approved=hist.filter(r=>r['Estado Director']==='Aprobado').length;
-    const rejected=hist.filter(r=>r['Estado Director']==='Rechazado').length;
+    allHistory=d.rows||[];
+    const approved=allHistory.filter(r=>r['Estado Director']==='Aprobado').length;
+    const rejected=allHistory.filter(r=>r['Estado Director']==='Rechazado').length;
     document.getElementById('st-approved').textContent=approved;
     document.getElementById('st-rejected').textContent=rejected;
-    if(!hist.length){
-      document.getElementById('list-history').innerHTML='<div class="empty-state"><div style="font-size:40px">*</div><p>No hay decisiones anteriores registradas.</p></div>';
-      return;
-    }
-    document.getElementById('list-history').innerHTML=hist.map((row,i)=>buildHistCard(row,i)).join('');
-  }catch(e){
-    document.getElementById('loading-history').textContent='Error cargando historial.';
-  }
+    document.getElementById('st-total').textContent=allPending.length+allHistory.length;
+    renderHistory();
+  }catch(e){document.getElementById('loading-history').textContent='Error.';}
 }
 
-function buildReqCard(row,idx,showActions){
-  const tipo=row['Tipo de registro']||'';
+async function loadStats(){
+  try{
+    const r=await fetch(SCRIPT_URL+'?action=getStats&email='+encodeURIComponent(currentUser.email));
+    const d=await r.json();
+    if(d.stats)renderCharts(d.stats);
+  }catch(e){}
+}
+
+function renderHistory(){
+  const ft=document.getElementById('fil-type').value;
+  const fs=document.getElementById('fil-status').value;
+  const filtered=allHistory.filter(r=>(!ft||r['_sheetName']===ft)&&(!fs||r['Estado Director']===fs));
+  if(!filtered.length){document.getElementById('list-history').innerHTML='<div class="empty-state"><p>Sin registros con estos filtros.</p></div>';return;}
+  document.getElementById('list-history').innerHTML=filtered.map(r=>buildHistCard(r)).join('');
+}
+
+function sheetBadge(sName){
+  const m={'Tiempo Extra':'badge badge-ot','Festivos Trabajados':'badge badge-fest','Dias Compensatorios':'badge badge-comp','Solicitudes de Recogida':'badge badge-pk'};
+  return m[sName]||'badge badge-pending';
+}
+
+function buildReqCard(row,idx){
+  const sName=row['_sheetName']||'';
+  const rowIdx=row['_rowIndex']||'';
   const nombre=row['Nombre del empleado']||'';
   const vehiculo=row['Vehiculo']||'';
-  const motivo=row['Motivo / Detalle']||'';
-  const ts=row['Marca de tiempo']||'';
-  const horaInicio=row['Hora Inicio Extra']||'';
-  const horaFin=row['Hora Fin Extra']||'';
+  const ts=formatDate(row['Marca de tiempo']);
+  const aprobador=row['Aprobador Director']||'';
+  const horaI=row['Hora Inicio Extra']||'';
+  const horaF=row['Hora Fin Extra']||'';
   const horas=row['Horas Solicitadas']||'';
-  const rowIdx=row['_rowIndex']||'';
+  const motivo=row['Motivo']||'';
+  const recogida=row['Punto de Recogida']||'';
   const mapsLink=row['Ver en Google Maps']||'';
   const gps=row['GPS Verificado']==='Si'?'Verificado':'Sin GPS';
+  const festAcum=row['Festivos en el mes']||'';
+  const alertaAcum=row['Alerta Acumulado']||'No';
+  const isMaster=currentUser.role==='master';
 
   return `<div class="req-card" id="card-${idx}">
     <div class="req-top">
       <div>
         <div class="req-name">${nombre}</div>
-        <div class="req-type">${vehiculo}</div>
+        <div class="req-sub">${vehiculo}${aprobador?' · Director: '+aprobador:''}</div>
       </div>
-      <span class="${typeBadge(tipo)}">${tipo}</span>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        <span class="${sheetBadge(sName)}">${sName}</span>
+        ${alertaAcum!=='No'?'<span class="badge badge-alert">Acumulado: '+festAcum+' festivos</span>':''}
+        ${isMaster?'<span class="badge badge-master">Vista master</span>':''}
+      </div>
     </div>
     <div class="req-details">
-      <div class="req-detail"><div class="req-detail-label">Fecha registro</div><div class="req-detail-val">${ts}</div></div>
-      ${horaInicio?`<div class="req-detail"><div class="req-detail-label">Horas extra</div><div class="req-detail-val">${horaInicio} a ${horaFin} (${horas})</div></div>`:''}
-      ${motivo?`<div class="req-detail"><div class="req-detail-label">Motivo</div><div class="req-detail-val">${motivo}</div></div>`:''}
-      <div class="req-detail"><div class="req-detail-label">Ubicacion</div><div class="req-detail-val">${mapsLink!=='No disponible'?`<a href="${mapsLink}" target="_blank" style="color:var(--teal);">Ver en mapa</a>`:'No disponible'}</div></div>
-      <div class="req-detail"><div class="req-detail-label">GPS</div><div class="req-detail-val">${gps}</div></div>
+      <div class="req-detail"><div class="rd-lbl">Fecha registro</div><div class="rd-val">${ts||'—'}</div></div>
+      ${horaI?'<div class="req-detail"><div class="rd-lbl">Horas extra</div><div class="rd-val">'+horaI+' a '+horaF+(horas?' ('+horas+')':'')+'</div></div>':''}
+      ${motivo?'<div class="req-detail"><div class="rd-lbl">Motivo</div><div class="rd-val">'+motivo+'</div></div>':''}
+      ${recogida?'<div class="req-detail"><div class="rd-lbl">Punto recogida</div><div class="rd-val">'+recogida+'</div></div>':''}
+      <div class="req-detail"><div class="rd-lbl">GPS</div><div class="rd-val">${gps}${mapsLink&&mapsLink!=='No disponible'?' <a href="'+mapsLink+'" target="_blank" style="color:var(--teal);font-size:11px">Ver mapa</a>':''}</div></div>
     </div>
-    ${showActions?`
-    <textarea class="obs-input" id="obs-${idx}" placeholder="Observaciones (opcional para aprobar, requerido para rechazar)..."></textarea>
+    <textarea class="obs-input" id="obs-${idx}" placeholder="Observaciones (requerido para rechazar)..."></textarea>
     <div class="req-actions">
-      <button class="btn-approve" id="btn-ap-${idx}" onclick="decidir(${idx},'approve','${rowIdx}')">Aprobar</button>
-      <button class="btn-reject" id="btn-rj-${idx}" onclick="decidir(${idx},'reject','${rowIdx}')">Rechazar</button>
-    </div>`:''}
+      <button class="btn-approve" id="btn-ap-${idx}" onclick="decidir(${idx},'approve','${rowIdx}','${sName}')">Aprobar</button>
+      <button class="btn-reject" id="btn-rj-${idx}" onclick="decidir(${idx},'reject','${rowIdx}','${sName}')">Rechazar</button>
+    </div>
   </div>`;
 }
 
-function buildHistCard(row,idx){
-  const tipo=row['Tipo de registro']||'';
+function buildHistCard(row){
+  const sName=row['_sheetName']||'';
   const nombre=row['Nombre del empleado']||'';
   const estado=row['Estado Director']||'';
-  const fecha=row['Fecha Aprobacion Director']||'';
+  const fecha=formatDate(row['Fecha Aprobacion Director']);
   const obs=row['Observaciones Director']||'';
-  const statClass=estado==='Aprobado'?'badge-approved':estado==='Rechazado'?'badge-rejected':'badge-pending';
+  const statCls=estado==='Aprobado'?'badge-approved':estado==='Rechazado'?'badge-rejected':'badge-pending';
   return `<div class="hist-card">
     <div class="hist-left">
       <div class="hist-name">${nombre}</div>
-      <div class="hist-sub">${tipo}${obs?' — '+obs:''}</div>
+      <div class="hist-sub">${sName}${obs?' — '+obs:''}</div>
     </div>
     <div class="hist-right">
-      <span class="badge ${statClass}">${estado}</span>
+      <span class="badge ${statCls}">${estado}</span>
       <div class="hist-date">${fecha}</div>
     </div>
   </div>`;
 }
 
-async function decidir(idx,action,rowIndex){
+async function decidir(idx,action,rowIndex,sheetName){
   const obs=document.getElementById('obs-'+idx).value.trim();
   if(action==='reject'&&!obs){alert('Para rechazar debes ingresar una observacion.');return;}
   const apBtn=document.getElementById('btn-ap-'+idx);
   const rjBtn=document.getElementById('btn-rj-'+idx);
-  apBtn.disabled=true;rjBtn.disabled=true;
-  apBtn.textContent='Procesando...';
+  apBtn.disabled=true;rjBtn.disabled=true;apBtn.textContent='Procesando...';
   try{
-    // Use GET with params — works reliably with Apps Script no-cors
     const url=SCRIPT_URL
       +'?action='+(action==='approve'?'approveRow':'rejectRow')
       +'&rowIndex='+encodeURIComponent(rowIndex)
+      +'&sheetName='+encodeURIComponent(sheetName)
       +'&observaciones='+encodeURIComponent(obs)
       +'&directorEmail='+encodeURIComponent(currentUser.email)
       +'&directorName='+encodeURIComponent(currentUser.name);
     await fetch(url,{mode:'no-cors'});
-    document.getElementById('card-'+idx).style.opacity='0.5';
-    document.getElementById('card-'+idx).style.pointerEvents='none';
+    const card=document.getElementById('card-'+idx);
+    card.style.opacity='0.4';card.style.pointerEvents='none';
     apBtn.textContent=action==='approve'?'Aprobado':'Rechazado';
-    setTimeout(()=>loadPending(),2000);
-    setTimeout(()=>loadHistory(),2000);
-  }catch(e){
-    apBtn.disabled=false;rjBtn.disabled=false;
-    apBtn.textContent='Aprobar';
-    alert('Error al procesar. Intenta de nuevo.');
+    setTimeout(()=>{loadPending();loadHistory();loadStats();if(currentUser.role==="master")loadEmployees();},2000);
+  }catch(e){apBtn.disabled=false;rjBtn.disabled=false;apBtn.textContent='Aprobar';alert('Error al procesar.');}
+}
+
+function renderCharts(stats){
+  const COLORS=['#0A3D47','#156B6B','#854F0B','#4C1D95','#1E40AF'];
+  if(charts.type)charts.type.destroy();
+  const tl=Object.keys(stats.byType);const td=Object.values(stats.byType);
+  charts.type=new Chart(document.getElementById('chart-type'),{type:'doughnut',data:{labels:tl,datasets:[{data:td,backgroundColor:COLORS.slice(0,tl.length),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'DM Sans',size:11},padding:8}}}}});
+
+  if(charts.month)charts.month.destroy();
+  const ml=Object.keys(stats.byMonth).slice(-6);const md=ml.map(k=>stats.byMonth[k]);
+  charts.month=new Chart(document.getElementById('chart-month'),{type:'bar',data:{labels:ml,datasets:[{label:'Solicitudes',data:md,backgroundColor:'#1D9E9E',borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true},x:{ticks:{font:{family:'DM Sans',size:10}}}}}});
+
+  if(charts.emp)charts.emp.destroy();
+  const ee=Object.entries(stats.byEmp).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  charts.emp=new Chart(document.getElementById('chart-emp'),{type:'bar',data:{labels:ee.map(e=>e[0].split(' ')[0]),datasets:[{label:'Solicitudes',data:ee.map(e=>e[1]),backgroundColor:'#156B6B',borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true},x:{ticks:{font:{family:'DM Sans',size:10}}}}}});
+
+  if(charts.status)charts.status.destroy();
+  charts.status=new Chart(document.getElementById('chart-status'),{type:'pie',data:{labels:['Aprobadas','Rechazadas','Pendientes'],datasets:[{data:[stats.approved,stats.rejected,stats.pending],backgroundColor:['#D1FAE5','#FEF2F2','#FFFBEB'],borderColor:['#6EE7B7','#FECACA','#FCD34D'],borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'DM Sans',size:11},padding:8}}}}});
+}
+
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',['pending','stats','history','employees'][i]===t));
+  document.querySelectorAll('.panel').forEach((p,i)=>p.classList.toggle('active',['panel-pending','panel-stats','panel-history','panel-employees'][i]==='panel-'+t));
+}
+
+
+async function loadEmployees(){
+  document.getElementById('loading-employees').style.display='block';
+  document.getElementById('emp-content').innerHTML='';
+  try{
+    const r=await fetch(SCRIPT_URL+'?action=getEmployeeStats&email='+encodeURIComponent(currentUser.email));
+    const d=await r.json();
+    document.getElementById('loading-employees').style.display='none';
+    if(!d.data||!d.data.length){
+      document.getElementById('emp-content').innerHTML='<div class="empty-state"><p>Sin datos de empleados aun.</p></div>';
+      return;
+    }
+    const alerts=d.data.filter(e=>e.nocturnas>0||e.festivos>=2||e.otPendientes>0);
+    let html='';
+    if(alerts.length){
+      html+='<div class="emp-section"><div class="emp-section-title">Alertas activas <span>'+alerts.length+'</span></div>';
+      html+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:1rem;">';
+      alerts.forEach(function(e){
+        var tags=[];
+        if(e.nocturnas>0) tags.push('<span class="pill pill-red">'+e.nocturnas+' nocturna'+(e.nocturnas>1?'s':'')+'</span>');
+        if(e.festivos>=2) tags.push('<span class="pill pill-purple">'+e.festivos+' festivos</span>');
+        if(e.otPendientes>0) tags.push('<span class="pill pill-amber">'+e.otPendientes+' OT pendiente'+(e.otPendientes>1?'s':'')+'</span>');
+        html+='<div style="background:white;border-radius:12px;border:1.5px solid #FED7AA;padding:12px;">';
+        html+='<div class="emp-name">'+e.nombre+'</div>';
+        html+='<div style="margin-top:6px;">'+tags.join('')+'</div></div>';
+      });
+      html+='</div></div>';
+    }
+    html+='<div class="emp-section"><div class="emp-section-title">Resumen por empleado <span>'+d.data.length+'</span></div>';
+    html+='<div style="background:white;border-radius:14px;border:1.5px solid var(--gray-200);overflow:auto;">';
+    html+='<table class="emp-table"><thead><tr>';
+    html+='<th>Empleado</th><th>Entradas</th><th>Salidas</th><th>Horas totales</th><th>Nocturnas</th><th>Festivos</th><th>Compensatorios</th><th>OT pendiente</th><th>Ultimo registro</th>';
+    html+='</tr></thead><tbody>';
+    d.data.forEach(function(e){
+      var hasAlert=e.nocturnas>0||e.festivos>=2||e.otPendientes>0;
+      html+='<tr'+(hasAlert?' class="alert-row"':'')+'>'; 
+      html+='<td><div class="emp-name">'+e.nombre+'</div></td>';
+      html+='<td><span class="pill pill-green">'+e.entradas+'</span></td>';
+      html+='<td><span class="pill pill-red">'+e.salidas+'</span></td>';
+      html+='<td><span class="pill pill-gray">'+(e.horasTotal||0)+' hrs</span></td>';
+      html+='<td>'+(e.nocturnas>0?'<span class="pill pill-red">'+e.nocturnas+'</span>':'<span class="pill pill-gray">0</span>')+'</td>';
+      html+='<td>'+(e.festivos>0?'<span class="pill '+(e.festivos>=2?'pill-purple':'pill-amber')+'">'+e.festivos+'</span>':'<span class="pill pill-gray">0</span>')+'</td>';
+      html+='<td>'+(e.compensatorios>0?'<span class="pill pill-blue">'+e.compensatorios+'</span>':'<span class="pill pill-gray">0</span>')+'</td>';
+      html+='<td>'+(e.otPendientes>0?'<span class="pill pill-amber">'+e.otPendientes+'</span>':'<span class="pill pill-green">Ok</span>')+'</td>';
+      html+='<td><span class="last-seen">'+(e.ultimoRegistro||'No registrado')+'</span></td>';
+      html+='</tr>';
+    });
+    html+='</tbody></table></div></div>';
+    document.getElementById('emp-content').innerHTML=html;
+  }catch(ex){
+    document.getElementById('loading-employees').textContent='Error cargando datos.';
   }
 }
 
