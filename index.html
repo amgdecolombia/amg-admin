@@ -2,816 +2,848 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AMG — Panel de Administracion</title>
+<link rel="icon" type="image/jpeg" href="data:image/jpeg;base64,/9j/4AAQSkZJRgABAgEAlgCWAAD/7QAsUGhvdG9zaG9wIDMuMAA4QklNA+0AAAAAABAAlgAAAAEAAQCWAAAAAQAB/+FTI2h0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8APD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQi">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AMG — Panel Admin</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 :root{
-  --teal-dark:#0A3D47;--teal:#156B6B;--teal-mid:#1D9E9E;--teal-light:#E0F4F4;
-  --green:#D1FAE5;--green-dark:#065F46;--green-border:#6EE7B7;
-  --red:#FEF2F2;--red-dark:#991B1B;--red-border:#FECACA;
-  --amber:#FFFBEB;--amber-dark:#92400E;--amber-border:#FCD34D;
-  --blue:#EFF6FF;--blue-dark:#1E40AF;--blue-border:#BFDBFE;
-  --purple:#F5F3FF;--purple-dark:#4C1D95;
-  --gray-50:#F8FAFC;--gray-100:#F1F5F9;--gray-200:#E2E8F0;
-  --gray-400:#94A3B8;--gray-500:#64748B;--gray-700:#334155;--gray-800:#1E293B;--gray-900:#0F172A;
-  --white:#FFFFFF;
+  --brand:#0A3D47;--brand2:#156B6B;--brand3:#1D9E9E;--brand-light:#E0F4F4;
+  --g-bg:#ECFDF5;--g:#059669;--gd:#065F46;--gb:#6EE7B7;
+  --r-bg:#FEF2F2;--r:#DC2626;--rd:#991B1B;--rb:#FECACA;
+  --a-bg:#FFFBEB;--ad:#92400E;--ab:#FCD34D;
+  --b-bg:#EFF6FF;--bd:#1E40AF;--bb:#BFDBFE;
+  --p-bg:#F5F3FF;--pd:#4C1D95;
+  --g50:#F9FAFB;--g100:#F3F4F6;--g200:#E5E7EB;
+  --g400:#9CA3AF;--g500:#6B7280;--g700:#374151;--g800:#1F2937;--g900:#111827;
+  --wh:#fff;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'DM Sans',sans-serif;background:var(--gray-50);min-height:100vh;}
-.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem;}
-.login-card{background:white;border-radius:24px;box-shadow:0 8px 40px rgba(0,0,0,0.12);width:100%;max-width:400px;overflow:hidden;}
-.login-hdr{background:linear-gradient(145deg,#0A3D47,#1D9E9E);padding:2rem;text-align:center;}
-.login-hdr h1{color:white;font-size:20px;font-weight:700;margin-bottom:4px;}
-.login-hdr p{color:rgba(255,255,255,0.6);font-size:12px;}
+body{font-family:'Inter',sans-serif;background:var(--g50);min-height:100vh;}
+
+/* LOGIN */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem;background:linear-gradient(145deg,var(--brand) 0%,var(--brand2) 100%);}
+.login-card{background:white;border-radius:24px;box-shadow:0 24px 60px rgba(0,0,0,.3);width:100%;max-width:400px;overflow:hidden;}
+.login-hdr{background:linear-gradient(135deg,var(--brand),var(--brand3));padding:2rem;text-align:center;}
+.login-hdr h1{color:white;font-size:22px;font-weight:800;margin-bottom:4px;}
+.login-hdr p{color:rgba(255,255,255,.6);font-size:12px;}
 .login-body{padding:1.75rem;}
 .fg{margin-bottom:14px;}
-.fg label{font-size:11px;font-weight:600;color:var(--gray-500);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.4px;}
-.fg input{width:100%;padding:11px 14px;border:1.5px solid var(--gray-200);border-radius:11px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--gray-800);outline:none;transition:border-color 0.2s;}
-.fg input:focus{border-color:var(--teal-mid);}
-.login-btn{width:100%;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,#0A3D47,#1D9E9E);color:white;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;margin-top:4px;}
-.login-btn:hover{opacity:0.88;}
-.forgot-lnk{text-align:center;margin-top:12px;font-size:12px;color:var(--gray-400);cursor:pointer;text-decoration:underline;}
-.login-err{background:var(--red);border:1px solid var(--red-border);border-radius:9px;padding:9px 12px;font-size:13px;color:var(--red-dark);margin-bottom:12px;display:none;}
+.lbl{font-size:11px;font-weight:600;color:var(--g500);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;}
+.fi{width:100%;padding:11px 14px;border:1.5px solid var(--g200);border-radius:12px;font-family:'Inter',sans-serif;font-size:14px;color:var(--g800);outline:none;transition:border-color .2s;}
+.fi:focus{border-color:var(--brand3);}
+.login-btn{width:100%;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--brand),var(--brand3));color:white;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;cursor:pointer;margin-top:4px;transition:opacity .2s;}
+.login-btn:hover{opacity:.88;}
+.forgot-lnk{text-align:center;margin-top:12px;font-size:12px;color:var(--g400);cursor:pointer;text-decoration:underline;}
+.login-err{background:var(--r-bg);border:1px solid var(--rb);border-radius:9px;padding:9px 12px;font-size:13px;color:var(--rd);margin-bottom:12px;display:none;font-weight:500;}
+
+/* DASHBOARD */
 .dashboard{display:none;}
-.topbar{background:linear-gradient(145deg,#0A3D47,#156B6B);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
-.topbar-left h2{color:white;font-size:16px;font-weight:600;}
-.topbar-left p{color:rgba(255,255,255,0.6);font-size:11px;margin-top:2px;font-family:'DM Mono',monospace;}
-.master-badge{background:rgba(255,215,0,0.25);color:#FDE68A;border-radius:99px;padding:2px 10px;font-size:11px;font-weight:700;border:1px solid rgba(255,215,0,0.4);margin-left:8px;}
+.topbar{background:linear-gradient(135deg,var(--brand),var(--brand2));padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.topbar-left h2{color:white;font-size:16px;font-weight:700;}
+.topbar-left p{color:rgba(255,255,255,.6);font-size:11px;margin-top:2px;font-family:monospace;}
+.master-badge{background:rgba(255,215,0,.25);color:#FDE68A;border-radius:99px;padding:3px 12px;font-size:11px;font-weight:700;border:1px solid rgba(255,215,0,.4);margin-left:8px;display:none;}
 .topbar-right{display:flex;gap:8px;align-items:center;}
-.pending-badge{background:rgba(255,255,255,0.15);color:white;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:600;}
-.logout-btn{padding:6px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.3);background:transparent;color:rgba(255,255,255,0.8);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;}
-.main{max-width:1000px;margin:0 auto;padding:1.5rem;}
-.tabs{display:flex;gap:8px;margin-bottom:1.5rem;flex-wrap:wrap;}
-.tab{padding:8px 16px;border-radius:10px;border:1.5px solid var(--gray-200);background:white;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;color:var(--gray-500);transition:all 0.15s;}
-.tab.active{background:var(--teal-dark);color:white;border-color:var(--teal-dark);}
-.panel{display:none;}.panel.active{display:block;}
+.pending-badge{background:rgba(255,255,255,.15);color:white;border-radius:99px;padding:3px 12px;font-size:12px;font-weight:600;}
+.logout-btn{padding:7px 16px;border-radius:9px;border:1px solid rgba(255,255,255,.3);background:transparent;color:rgba(255,255,255,.8);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;}
+
+/* MAIN */
+.main{max-width:1100px;margin:0 auto;padding:1.5rem;}
+
+/* STATS */
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem;}
 @media(max-width:600px){.stats-grid{grid-template-columns:repeat(2,1fr);}}
-.stat-card{background:white;border-radius:14px;border:1.5px solid var(--gray-200);padding:1rem;text-align:center;}
-.stat-val{font-size:26px;font-weight:700;color:var(--teal-dark);}
-.stat-lbl{font-size:11px;color:var(--gray-500);margin-top:3px;}
+.stat-card{background:white;border-radius:14px;border:1.5px solid var(--g200);padding:1.25rem;text-align:center;}
+.stat-val{font-size:28px;font-weight:800;color:var(--brand);}
+.stat-lbl{font-size:11px;color:var(--g500);margin-top:3px;font-weight:500;}
+
+/* TABS */
+.tabs{display:flex;gap:6px;margin-bottom:1.5rem;flex-wrap:wrap;}
+.tab{padding:8px 16px;border-radius:10px;border:1.5px solid var(--g200);background:white;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;cursor:pointer;color:var(--g500);transition:all .15s;}
+.tab.active{background:var(--brand);color:white;border-color:var(--brand);}
+.tab:hover:not(.active){border-color:var(--brand3);color:var(--brand);}
+.panel{display:none;}.panel.active{display:block;}
+
+/* CHARTS */
 .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:1.5rem;}
 @media(max-width:640px){.charts-grid{grid-template-columns:1fr;}}
-.chart-card{background:white;border-radius:14px;border:1.5px solid var(--gray-200);padding:1.25rem;}
-.chart-title{font-size:13px;font-weight:600;color:var(--gray-800);margin-bottom:12px;}
+.chart-card{background:white;border-radius:14px;border:1.5px solid var(--g200);padding:1.25rem;}
+.chart-title{font-size:13px;font-weight:600;color:var(--g800);margin-bottom:12px;}
 .chart-wrap{position:relative;height:200px;}
+
+/* FILTER */
 .filter-bar{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;align-items:center;}
-.filter-select{padding:7px 12px;border:1.5px solid var(--gray-200);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--gray-700);background:white;outline:none;cursor:pointer;}
-.filter-label{font-size:12px;color:var(--gray-500);font-weight:500;}
-.req-card{background:white;border-radius:16px;border:1.5px solid var(--gray-200);padding:1.25rem;margin-bottom:12px;transition:box-shadow 0.15s;}
-.req-card:hover{box-shadow:0 4px 16px rgba(0,0,0,0.08);}
+.filter-select{padding:7px 12px;border:1.5px solid var(--g200);border-radius:9px;font-family:'Inter',sans-serif;font-size:13px;color:var(--g700);background:white;outline:none;cursor:pointer;}
+
+/* CARDS */
+.req-card{background:white;border-radius:16px;border:1.5px solid var(--g200);padding:1.25rem;margin-bottom:12px;transition:box-shadow .15s;}
+.req-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.08);}
 .req-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px;}
-.req-name{font-size:15px;font-weight:600;color:var(--gray-900);}
-.req-sub{font-size:11px;color:var(--gray-500);margin-top:2px;}
-.badge{display:inline-block;font-size:11px;font-weight:500;padding:3px 10px;border-radius:99px;}
-.badge-ot{background:var(--amber);color:var(--amber-dark);}
-.badge-fest{background:var(--purple);color:var(--purple-dark);}
-.badge-comp{background:var(--blue);color:var(--blue-dark);}
-.badge-pk{background:var(--teal-light);color:var(--teal-dark);}
-.badge-pending{background:var(--amber);color:var(--amber-dark);}
-.badge-approved{background:var(--green);color:var(--green-dark);}
-.badge-rejected{background:var(--red);color:var(--red-dark);}
-.badge-master{background:#FEF9C3;color:#854D0E;}
-.badge-alert{background:#FEE2E2;color:#991B1B;}
+.req-name{font-size:15px;font-weight:700;color:var(--g900);}
+.req-sub{font-size:11px;color:var(--g500);margin-top:3px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
 .req-details{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:12px;}
-.req-detail{background:var(--gray-50);border-radius:8px;padding:7px 10px;}
-.rd-lbl{font-size:10px;color:var(--gray-400);font-weight:600;text-transform:uppercase;letter-spacing:0.3px;}
-.rd-val{font-size:13px;color:var(--gray-800);font-weight:500;margin-top:2px;}
+.req-detail{background:var(--g50);border-radius:8px;padding:7px 10px;}
+.rd-lbl{font-size:10px;color:var(--g400);font-weight:600;text-transform:uppercase;letter-spacing:.3px;}
+.rd-val{font-size:13px;color:var(--g800);font-weight:500;margin-top:2px;}
 .req-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.obs-input{width:100%;padding:8px 10px;border:1.5px solid var(--gray-200);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--gray-800);outline:none;margin-bottom:8px;resize:none;height:52px;}
-.obs-input:focus{border-color:var(--teal-mid);}
-.btn-approve{padding:10px;border-radius:10px;border:none;background:#065F46;color:white;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;}
-.btn-reject{padding:10px;border-radius:10px;border:1.5px solid var(--red-border);background:var(--red);color:var(--red-dark);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;}
-.btn-approve:hover,.btn-reject:hover{opacity:0.85;}
-.btn-approve:disabled,.btn-reject:disabled{opacity:0.5;cursor:not-allowed;}
-.hist-card{background:white;border-radius:14px;border:1.5px solid var(--gray-200);padding:1rem 1.25rem;margin-bottom:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
-.hist-left{flex:1;min-width:200px;}
-.hist-name{font-size:14px;font-weight:600;color:var(--gray-900);}
-.hist-sub{font-size:11px;color:var(--gray-500);margin-top:2px;}
+.obs-input{width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:9px;font-family:'Inter',sans-serif;font-size:13px;color:var(--g800);outline:none;margin-bottom:8px;resize:none;height:52px;}
+.obs-input:focus{border-color:var(--brand3);}
+.btn-approve{padding:11px;border-radius:10px;border:none;background:var(--gd);color:white;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
+.btn-reject{padding:11px;border-radius:10px;border:1.5px solid var(--rb);background:var(--r-bg);color:var(--rd);font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
+.btn-approve:hover,.btn-reject:hover{opacity:.85;}
+.btn-approve:disabled,.btn-reject:disabled{opacity:.5;cursor:not-allowed;}
+
+/* BADGES */
+.badge{display:inline-block;font-size:10px;font-weight:600;padding:3px 9px;border-radius:99px;}
+.badge-ot{background:var(--a-bg);color:var(--ad);}
+.badge-fest{background:var(--p-bg);color:var(--pd);}
+.badge-comp{background:var(--b-bg);color:var(--bd);}
+.badge-vac{background:var(--g-bg);color:var(--gd);}
+.badge-corr{background:var(--g100);color:var(--g700);}
+.badge-pending{background:var(--a-bg);color:var(--ad);}
+.badge-approved{background:var(--g-bg);color:var(--gd);}
+.badge-rejected{background:var(--r-bg);color:var(--rd);}
+.badge-master{background:#FEF9C3;color:#854D0E;}
+.badge-alert{background:var(--r-bg);color:var(--rd);}
+
+/* EMPRESA BADGES */
+.emp-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;letter-spacing:.3px;}
+.emp-amg{background:#0A3D47;color:white;}
+.emp-inmov{background:#1E40AF;color:white;}
+
+/* HIST */
+.hist-card{background:white;border-radius:14px;border:1.5px solid var(--g200);padding:1rem 1.25rem;margin-bottom:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.hist-left{flex:1;min-width:180px;}
+.hist-name{font-size:14px;font-weight:700;color:var(--g900);display:flex;align-items:center;gap:6px;}
+.hist-sub{font-size:11px;color:var(--g500);margin-top:2px;}
 .hist-right{text-align:right;}
-.hist-date{font-size:11px;color:var(--gray-400);font-family:'DM Mono',monospace;margin-top:4px;}
-.empty-state{text-align:center;padding:3rem 1rem;color:var(--gray-400);}
+.hist-date{font-size:11px;color:var(--g400);font-family:monospace;margin-top:4px;}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:3rem 1rem;color:var(--g400);}
 .empty-state p{font-size:14px;margin-top:8px;}
-.loading-msg{text-align:center;padding:2rem;color:var(--gray-400);font-size:13px;}
-/* EMPLOYEE STATS */
-.emp-section{margin-bottom:1.5rem;}
-.emp-section-title{font-size:13px;font-weight:600;color:var(--gray-800);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
-.emp-section-title span{background:var(--teal-light);color:var(--teal-dark);border-radius:99px;padding:2px 10px;font-size:11px;}
-.emp-table{width:100%;border-collapse:collapse;font-size:13px;}
-.emp-table th{text-align:left;font-size:10px;font-weight:600;color:var(--gray-400);text-transform:uppercase;letter-spacing:0.4px;padding:6px 10px;border-bottom:1.5px solid var(--gray-200);}
-.emp-table td{padding:10px;border-bottom:0.5px solid var(--gray-200);color:var(--gray-800);vertical-align:middle;}
-.emp-table tr:hover td{background:var(--gray-50);}
-.emp-name{font-weight:600;color:var(--gray-900);}
-.pill{display:inline-block;font-size:10px;font-weight:500;padding:2px 7px;border-radius:99px;margin:1px;}
-.pill-green{background:var(--green);color:var(--green-dark);}
-.pill-red{background:var(--red);color:var(--red-dark);}
-.pill-amber{background:var(--amber);color:var(--amber-dark);}
-.pill-purple{background:var(--purple);color:var(--purple-dark);}
-.pill-blue{background:var(--blue);color:var(--blue-dark);}
-.pill-gray{background:var(--gray-100);color:var(--gray-500);}
-.alert-row{background:#FFF7ED!important;}
-.last-seen{font-size:11px;color:var(--gray-400);font-family:"DM Mono",monospace;}
+.loading-msg{text-align:center;padding:2rem;color:var(--g400);font-size:13px;}
 
 /* CALENDAR */
 .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
-.cal-nav-title{font-size:16px;font-weight:700;color:var(--gray-900);}
-.cal-nav-btn{padding:6px 14px;border-radius:8px;border:1.5px solid var(--gray-200);background:white;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;color:var(--gray-700);}
-.cal-nav-btn:hover{background:var(--gray-100);}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:1rem;}
-.cal-header-day{text-align:center;font-size:10px;font-weight:700;color:var(--gray-400);text-transform:uppercase;padding:4px 0;}
-.cal-day{min-height:80px;background:white;border-radius:8px;border:1px solid var(--gray-200);padding:4px;cursor:default;}
-.cal-day.today{border-color:var(--teal-mid);border-width:2px;}
-.cal-day.other-month{background:var(--gray-50);opacity:0.5;}
-.cal-day-num{font-size:11px;font-weight:600;color:var(--gray-500);margin-bottom:3px;}
-.cal-day.today .cal-day-num{color:var(--teal-dark);}
-.cal-event{font-size:9px;font-weight:500;padding:1px 5px;border-radius:4px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:white;}
+.cal-title{font-size:16px;font-weight:700;color:var(--g900);}
+.cal-btn{padding:6px 14px;border-radius:8px;border:1.5px solid var(--g200);background:white;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;color:var(--g700);}
 .cal-legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:1rem;}
-.cal-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--gray-600);}
+.cal-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--g500);font-weight:500;}
 .cal-legend-dot{width:10px;height:10px;border-radius:50%;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;background:white;border-radius:14px;border:1.5px solid var(--g200);padding:8px;}
+.cal-hdr{font-size:9px;font-weight:700;color:var(--g400);text-align:center;padding:4px 0;text-transform:uppercase;}
+.cal-day{min-height:74px;border-radius:8px;padding:4px;background:var(--g50);}
+.cal-today{background:var(--brand-light);border:1.5px solid var(--brand3);}
+.cal-empty{background:transparent;}
+.cal-day-num{font-size:11px;font-weight:700;color:var(--g500);margin-bottom:3px;}
+.cal-today .cal-day-num{color:var(--brand);}
+.cal-evt{font-size:9px;font-weight:600;padding:2px 5px;border-radius:4px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:white;}
 
-/* NOVEDADES & CORRECTIONS */
-.nov-form{background:white;border-radius:16px;border:1.5px solid var(--gray-200);padding:1.5rem;margin-bottom:1rem;}
-.nov-form h3{font-size:14px;font-weight:600;color:var(--gray-800);margin-bottom:1rem;}
+/* NOVEDADES FORM */
+.nov-form{background:white;border-radius:16px;border:1.5px solid var(--g200);padding:1.5rem;margin-bottom:1rem;}
+.nov-form h3{font-size:14px;font-weight:700;color:var(--g800);margin-bottom:1rem;}
 .nov-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 @media(max-width:600px){.nov-grid{grid-template-columns:1fr;}}
-.nov-input{width:100%;padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--gray-800);outline:none;}
-.nov-input:focus{border-color:var(--teal-mid);}
-.nov-select{width:100%;padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--gray-800);outline:none;background:white;-webkit-appearance:none;appearance:none;}
-.nov-textarea{width:100%;padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--gray-800);outline:none;resize:none;height:60px;}
-.nov-label{font-size:11px;font-weight:600;color:var(--gray-500);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px;}
-.nov-submit{padding:11px 24px;border-radius:10px;border:none;background:var(--teal-dark);color:white;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-top:12px;}
-.nov-submit:hover{opacity:0.88;}
-.nov-history{background:white;border-radius:14px;border:1.5px solid var(--gray-200);overflow:hidden;}
-.nov-table{width:100%;border-collapse:collapse;font-size:12px;}
-.nov-table th{text-align:left;font-size:10px;font-weight:600;color:var(--gray-400);text-transform:uppercase;letter-spacing:0.3px;padding:8px 12px;border-bottom:1.5px solid var(--gray-200);background:var(--gray-50);}
-.nov-table td{padding:10px 12px;border-bottom:0.5px solid var(--gray-200);color:var(--gray-800);vertical-align:top;}
-.nov-table tr:hover td{background:var(--gray-50);}
-.gh-approve-btn{padding:5px 12px;border-radius:7px;border:none;background:#065F46;color:white;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;cursor:pointer;margin-right:4px;}
-.gh-reject-btn{padding:5px 12px;border-radius:7px;border:1.5px solid var(--red-border);background:var(--red);color:var(--red-dark);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;cursor:pointer;}
-.status-pill{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:99px;}
-.sp-pending{background:var(--amber);color:var(--amber-dark);}
-.sp-pre{background:var(--blue);color:var(--blue-dark);}
-.sp-approved{background:var(--green);color:var(--green-dark);}
-.sp-rejected{background:var(--red);color:var(--red-dark);}
-.corr-obs{width:100%;padding:4px 8px;border:1px solid var(--gray-200);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:11px;margin-bottom:4px;outline:none;}
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;z-index:99;padding:1.5rem;}
+.ni{width:100%;padding:9px 12px;border:1.5px solid var(--g200);border-radius:9px;font-family:'Inter',sans-serif;font-size:13px;color:var(--g800);outline:none;}
+.ni:focus{border-color:var(--brand3);}
+.nov-submit{padding:11px 24px;border-radius:10px;border:none;background:var(--brand);color:white;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-top:12px;}
+.nov-ok-msg{display:none;margin-top:10px;padding:8px 12px;background:var(--g-bg);border-radius:8px;font-size:13px;color:var(--gd);font-weight:500;}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);align-items:center;justify-content:center;z-index:99;padding:1.5rem;}
 .modal-bg.on{display:flex;}
-.modal-card{background:white;border-radius:20px;padding:1.75rem;max-width:360px;width:100%;box-shadow:0 16px 50px rgba(0,0,0,0.2);}
-.modal-card h3{font-size:16px;font-weight:600;color:var(--gray-900);margin-bottom:6px;}
-.modal-card p{font-size:13px;color:var(--gray-500);margin-bottom:14px;line-height:1.5;}
-.modal-input{width:100%;padding:10px 13px;border:1.5px solid var(--gray-200);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;margin-bottom:10px;}
-.modal-btn{width:100%;padding:11px;border-radius:10px;border:none;background:var(--teal-dark);color:white;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;}
-.modal-close{width:100%;padding:9px;border-radius:10px;border:1.5px solid var(--gray-200);background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;color:var(--gray-500);margin-top:6px;}
-.modal-ok{display:none;background:var(--green);border:1px solid var(--green-border);border-radius:9px;padding:9px 12px;font-size:13px;color:var(--green-dark);margin-bottom:10px;}
+.modal-card{background:white;border-radius:20px;padding:1.75rem;max-width:380px;width:100%;box-shadow:0 16px 50px rgba(0,0,0,.2);}
+.modal-card h3{font-size:16px;font-weight:700;color:var(--g900);margin-bottom:6px;}
+.modal-card p{font-size:13px;color:var(--g500);margin-bottom:14px;line-height:1.5;}
+.modal-fi{width:100%;padding:10px 13px;border:1.5px solid var(--g200);border-radius:10px;font-family:'Inter',sans-serif;font-size:14px;outline:none;margin-bottom:10px;}
+.modal-btn{width:100%;padding:11px;border-radius:10px;border:none;background:var(--brand);color:white;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;}
+.modal-close{width:100%;padding:9px;border-radius:10px;border:1.5px solid var(--g200);background:transparent;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;color:var(--g500);margin-top:6px;}
 </style>
 </head>
 <body>
 
-<div class="login-wrap" id="login-wrap">
+<!-- LOGIN -->
+<div class="login-wrap" id="loginWrap">
   <div class="login-card">
-    <div class="login-hdr"><h1>Panel de Administracion</h1><p>AMG de Colombia SAS</p></div>
+    <div class="login-hdr">
+      <h1>Panel de Administracion</h1>
+      <p>AMG de Colombia SAS &amp; Inmovimento SAS</p>
+    </div>
     <div class="login-body">
-      <div class="login-err" id="login-err">Credenciales incorrectas.</div>
-      <div class="fg"><label>Correo corporativo</label><input type="email" id="l-email" placeholder="tu@amgdecolombia.com"></div>
-      <div class="fg"><label>Clave de acceso</label><input type="password" id="l-pass" placeholder="Clave" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div class="login-err" id="loginErr">Credenciales incorrectas. Verifica tu correo y clave.</div>
+      <div class="fg"><label class="lbl">Correo corporativo</label><input class="fi" type="email" id="lEmail" placeholder="tu@amgdecolombia.com"></div>
+      <div class="fg"><label class="lbl">Clave de acceso</label><input class="fi" type="password" id="lPass" placeholder="Clave" onkeydown="if(event.key==='Enter')doLogin()"></div>
       <button class="login-btn" onclick="doLogin()">Ingresar</button>
       <div class="forgot-lnk" onclick="openForgot()">Olvide mi clave</div>
     </div>
   </div>
 </div>
 
+<!-- DASHBOARD -->
 <div class="dashboard" id="dashboard">
   <div class="topbar">
     <div class="topbar-left">
-      <h2 id="topbar-name">Panel <span class="master-badge" id="master-badge" style="display:none">MASTER ACCESS</span></h2>
-      <p id="topbar-email"></p>
+      <h2 id="topbarName">Panel<span class="master-badge" id="masterBadge">MASTER ACCESS</span></h2>
+      <p id="topbarEmail"></p>
     </div>
     <div class="topbar-right">
-      <span class="pending-badge" id="pending-badge">Cargando...</span>
+      <span class="pending-badge" id="pendingBadge">Cargando...</span>
       <button class="logout-btn" onclick="doLogout()">Cerrar sesion</button>
     </div>
   </div>
+
   <div class="main">
     <div class="stats-grid">
-      <div class="stat-card"><div class="stat-val" id="st-pending">-</div><div class="stat-lbl">Pendientes</div></div>
-      <div class="stat-card"><div class="stat-val" id="st-approved">-</div><div class="stat-lbl">Aprobadas</div></div>
-      <div class="stat-card"><div class="stat-val" id="st-rejected">-</div><div class="stat-lbl">Rechazadas</div></div>
-      <div class="stat-card"><div class="stat-val" id="st-total">-</div><div class="stat-lbl">Total historico</div></div>
+      <div class="stat-card"><div class="stat-val" id="stPending">-</div><div class="stat-lbl">Pendientes</div></div>
+      <div class="stat-card"><div class="stat-val" id="stApproved">-</div><div class="stat-lbl">Aprobadas</div></div>
+      <div class="stat-card"><div class="stat-val" id="stRejected">-</div><div class="stat-lbl">Rechazadas</div></div>
+      <div class="stat-card"><div class="stat-val" id="stTotal">-</div><div class="stat-lbl">Total historico</div></div>
     </div>
+
     <div class="tabs">
-      <button class="tab active" onclick="switchTab('pending')">Solicitudes pendientes</button>
-      <button class="tab" onclick="switchTab('stats')">Dashboard</button>
-      <button class="tab" onclick="switchTab('history')">Historial</button>
-      <button class="tab" onclick="switchTab('calendar')">Calendario</button>
-      <button class="tab master-only" id="tab-novedades" onclick="switchTab('novedades')" style="display:none">Novedades Empresa</button>
-      <button class="tab master-only" id="tab-correcciones" onclick="switchTab('correcciones')" style="display:none">Correcciones</button>
-      <button class="tab" id="tab-employees" onclick="switchTab('employees')" style="display:none">Empleados</button>
+      <button class="tab active" data-tab="pending" onclick="switchTab('pending')">Pendientes</button>
+      <button class="tab" data-tab="stats" onclick="switchTab('stats')">Dashboard</button>
+      <button class="tab" data-tab="history" onclick="switchTab('history')">Historial</button>
+      <button class="tab" data-tab="calendario" id="tabCalendario" onclick="switchTab('calendario')" style="display:none">Calendario</button>
+      <button class="tab" data-tab="novedades" id="tabNovedades" onclick="switchTab('novedades')" style="display:none">Novedades Empresa</button>
+      <button class="tab" data-tab="correcciones" id="tabCorrecciones" onclick="switchTab('correcciones')" style="display:none">Correcciones</button>
+      <button class="tab" data-tab="empleados" id="tabEmpleados" onclick="switchTab('empleados');loadEmpleados()" style="display:none">Empleados</button>
+      <button class="tab" data-tab="admins" id="tabAdmins" onclick="switchTab('admins');loadAdmins()" style="display:none">Administradores</button>
     </div>
+
+    <!-- PENDIENTES -->
     <div class="panel active" id="panel-pending">
-      <div class="loading-msg" id="loading-pending">Cargando solicitudes...</div>
-      <div id="list-pending"></div>
+      <div class="loading-msg" id="loadingPending">Cargando solicitudes...</div>
+      <div id="listPending"></div>
     </div>
+
+    <!-- STATS -->
     <div class="panel" id="panel-stats">
       <div class="charts-grid">
-        <div class="chart-card"><div class="chart-title">Solicitudes por tipo</div><div class="chart-wrap"><canvas id="chart-type"></canvas></div></div>
-        <div class="chart-card"><div class="chart-title">Actividad por mes</div><div class="chart-wrap"><canvas id="chart-month"></canvas></div></div>
-        <div class="chart-card"><div class="chart-title">Top empleados</div><div class="chart-wrap"><canvas id="chart-emp"></canvas></div></div>
-        <div class="chart-card"><div class="chart-title">Aprobadas vs Rechazadas</div><div class="chart-wrap"><canvas id="chart-status"></canvas></div></div>
-      </div>
-    </div>
-    <div class="panel" id="panel-calendar">
-      <div class="cal-legend">
-        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#854F0B"></div>Tiempo Extra</div>
-        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#1E40AF"></div>Compensatorio</div>
-        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#4C1D95"></div>Festivo</div>
-        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#065F46"></div>Vacaciones</div>
-        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#991B1B"></div>Rechazado</div>
-        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#92400E"></div>Pendiente</div>
-      </div>
-      <div class="cal-nav">
-        <button class="cal-nav-btn" onclick="calPrev()">&#8592; Anterior</button>
-        <div class="cal-nav-title" id="cal-title">Cargando...</div>
-        <button class="cal-nav-btn" onclick="calNext()">Siguiente &#8594;</button>
-      </div>
-      <div class="cal-grid" id="cal-grid"></div>
-    </div>
-    <div class="panel" id="panel-novedades">
-      <div class="nov-form">
-        <h3>Registrar novedad en nombre de un empleado</h3>
-        <div class="nov-grid">
-          <div>
-            <label class="nov-label">Correo del empleado</label>
-            <input class="nov-input" type="email" id="nov-email" placeholder="empleado@amgdecolombia.com">
-          </div>
-          <div>
-            <label class="nov-label">Nombre del empleado</label>
-            <input class="nov-input" type="text" id="nov-nombre" placeholder="Nombre completo">
-          </div>
-          <div style="grid-column:1/-1">
-            <label class="nov-label">Tipo de novedad</label>
-            <select class="nov-select" id="nov-tipo">
-              <option value="">Selecciona el tipo...</option>
-              <optgroup label="Ausencias y Permisos">
-                <option>Incapacidad por enfermedad general</option>
-                <option>Incapacidad por accidente de trabajo</option>
-                <option>Licencia de maternidad (18 semanas)</option>
-                <option>Licencia de paternidad (2 semanas)</option>
-                <option>Permiso remunerado - Calamidad domestica</option>
-                <option>Permiso remunerado - Luto</option>
-                <option>Permiso remunerado - Matrimonio</option>
-                <option>Permiso remunerado - Nacimiento hijo</option>
-                <option>Permiso no remunerado</option>
-                <option>Ausencia injustificada</option>
-                <option>Abandono del cargo</option>
-              </optgroup>
-              <optgroup label="Vacaciones">
-                <option>Vacaciones individuales</option>
-                <option>Vacaciones colectivas</option>
-                <option>Compensacion vacaciones en dinero</option>
-                <option>Interrupcion de vacaciones</option>
-              </optgroup>
-              <optgroup label="Tiempo y Horario">
-                <option>Horas extra diurnas</option>
-                <option>Horas extra nocturnas</option>
-                <option>Trabajo en dominical o festivo</option>
-                <option>Trabajo nocturno</option>
-                <option>Turno rotativo</option>
-              </optgroup>
-              <optgroup label="Novedades de Nomina">
-                <option>Suspension disciplinaria</option>
-                <option>Descuento por prestamo o libranza</option>
-                <option>Embargo judicial</option>
-                <option>Deduccion por danos o faltantes</option>
-                <option>Bonificacion no constitutiva de salario</option>
-                <option>Comision</option>
-                <option>Prima extraegal</option>
-              </optgroup>
-              <optgroup label="Terminacion y Cambios">
-                <option>Renuncia voluntaria</option>
-                <option>Despido con justa causa</option>
-                <option>Despido sin justa causa</option>
-                <option>Vencimiento de contrato</option>
-                <option>Muerte del trabajador</option>
-                <option>Invalidez</option>
-                <option>Traslado de cargo o area</option>
-              </optgroup>
-            </select>
-          </div>
-          <div>
-            <label class="nov-label">Fecha inicio</label>
-            <input class="nov-input" type="date" id="nov-inicio">
-          </div>
-          <div>
-            <label class="nov-label">Fecha fin</label>
-            <input class="nov-input" type="date" id="nov-fin">
-          </div>
-          <div>
-            <label class="nov-label">Horas (si aplica)</label>
-            <input class="nov-input" type="text" id="nov-horas" placeholder="Ej: 8 horas">
-          </div>
-          <div>
-            <label class="nov-label">No. documento soporte</label>
-            <input class="nov-input" type="text" id="nov-doc" placeholder="Ej: Incapacidad EPS No. 12345">
-          </div>
-          <div style="grid-column:1/-1">
-            <label class="nov-label">Observaciones</label>
-            <textarea class="nov-textarea" id="nov-obs" placeholder="Detalle adicional..."></textarea>
-          </div>
-        </div>
-        <button class="nov-submit" onclick="crearNovedad()">Registrar novedad y notificar empleado</button>
-        <div id="nov-ok" style="display:none;margin-top:10px;padding:8px 12px;background:var(--green);border-radius:8px;font-size:13px;color:var(--green-dark);">Novedad registrada y correo enviado al empleado.</div>
-      </div>
-      <div class="nov-history">
-        <div style="padding:12px 16px;border-bottom:1.5px solid var(--gray-200);font-size:13px;font-weight:600;color:var(--gray-800);">Historial de novedades registradas por la empresa</div>
-        <div id="nov-history-content" style="padding:12px;font-size:13px;color:var(--gray-400);">Cargando...</div>
+        <div class="chart-card"><div class="chart-title">Solicitudes por tipo</div><div class="chart-wrap"><canvas id="chartType"></canvas></div></div>
+        <div class="chart-card"><div class="chart-title">Actividad por mes</div><div class="chart-wrap"><canvas id="chartMonth"></canvas></div></div>
+        <div class="chart-card"><div class="chart-title">Top empleados por solicitudes</div><div class="chart-wrap"><canvas id="chartEmp"></canvas></div></div>
+        <div class="chart-card"><div class="chart-title">Aprobadas vs Rechazadas</div><div class="chart-wrap"><canvas id="chartStatus"></canvas></div></div>
       </div>
     </div>
 
-    <div class="panel" id="panel-correcciones">
-      <div style="background:var(--blue);border:1px solid var(--blue-border);border-radius:12px;padding:12px 16px;margin-bottom:1rem;font-size:13px;color:var(--blue-dark);">
-        Solo Gestion Humana puede aprobar o rechazar correcciones de marcaje. Los directores solo pueden pre-aprobar para auditoria.
-      </div>
-      <div class="loading-msg" id="loading-corr">Cargando correcciones...</div>
-      <div id="list-correcciones"></div>
-    </div>
-
-    <div class="panel" id="panel-employees">
-      <div class="loading-msg" id="loading-employees">Cargando datos de empleados...</div>
-      <div id="emp-content"></div>
-    </div>
+    <!-- HISTORIAL -->
     <div class="panel" id="panel-history">
       <div class="filter-bar">
-        <span class="filter-label">Filtrar:</span>
-        <select class="filter-select" id="fil-type" onchange="renderHistory()">
+        <select class="filter-select" id="filType" onchange="renderHistory()">
           <option value="">Todos los tipos</option>
           <option value="Tiempo Extra">Tiempo Extra</option>
           <option value="Festivos Trabajados">Festivos</option>
           <option value="Dias Compensatorios">Compensatorios</option>
-          <option value="Solicitudes de Recogida">Recogidas</option>
           <option value="Solicitudes de Vacaciones">Vacaciones</option>
+          <option value="Correcciones de Marcaje">Correcciones</option>
         </select>
-        <select class="filter-select" id="fil-status" onchange="renderHistory()">
+        <select class="filter-select" id="filStatus" onchange="renderHistory()">
           <option value="">Todos los estados</option>
           <option value="Aprobado">Aprobados</option>
           <option value="Rechazado">Rechazados</option>
         </select>
       </div>
-      <div class="loading-msg" id="loading-history">Cargando historial...</div>
-      <div id="list-history"></div>
+      <div class="loading-msg" id="loadingHistory">Cargando historial...</div>
+      <div id="listHistory"></div>
     </div>
+
+    <!-- CALENDARIO -->
+    <div class="panel" id="panel-calendario">
+      <div class="cal-legend">
+        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#854F0B"></div>Tiempo Extra</div>
+        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#4C1D95"></div>Festivo</div>
+        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#1E40AF"></div>Compensatorio</div>
+        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#065F46"></div>Vacaciones</div>
+        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#92400E"></div>Pendiente</div>
+        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#991B1B"></div>Rechazado</div>
+      </div>
+      <div class="cal-nav">
+        <button class="cal-btn" onclick="calPrev()">&#8592; Anterior</button>
+        <div class="cal-title" id="calTitle">Cargando...</div>
+        <button class="cal-btn" onclick="calNext()">Siguiente &#8594;</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+
+    <!-- NOVEDADES -->
+    <div class="panel" id="panel-novedades">
+      <div class="nov-form">
+        <h3>Registrar novedad en nombre de un empleado</h3>
+        <div class="nov-grid">
+          <div><label class="lbl">Correo del empleado</label><input class="ni" type="email" id="novEmail" placeholder="empleado@amgdecolombia.com"></div>
+          <div><label class="lbl">Nombre del empleado</label><input class="ni" type="text" id="novNombre" placeholder="Nombre completo"></div>
+          <div style="grid-column:1/-1">
+            <label class="lbl">Tipo de novedad</label>
+            <select class="ni" id="novTipo">
+              <option value="">Selecciona el tipo...</option>
+              <optgroup label="Ausencias y Permisos">
+                <option>Incapacidad por enfermedad general</option><option>Incapacidad por accidente de trabajo</option>
+                <option>Licencia de maternidad (18 semanas)</option><option>Licencia de paternidad (2 semanas)</option>
+                <option>Permiso remunerado - Calamidad domestica</option><option>Permiso remunerado - Luto</option>
+                <option>Permiso remunerado - Matrimonio</option><option>Permiso remunerado - Nacimiento hijo</option>
+                <option>Permiso no remunerado</option><option>Ausencia injustificada</option><option>Abandono del cargo</option>
+              </optgroup>
+              <optgroup label="Vacaciones">
+                <option>Vacaciones individuales</option><option>Vacaciones colectivas</option>
+                <option>Compensacion vacaciones en dinero</option><option>Interrupcion de vacaciones</option>
+              </optgroup>
+              <optgroup label="Tiempo y Horario">
+                <option>Horas extra diurnas</option><option>Horas extra nocturnas</option>
+                <option>Trabajo en dominical o festivo</option><option>Trabajo nocturno</option><option>Turno rotativo</option>
+              </optgroup>
+              <optgroup label="Novedades de Nomina">
+                <option>Suspension disciplinaria</option><option>Descuento por prestamo o libranza</option>
+                <option>Embargo judicial</option><option>Deduccion por danos o faltantes</option>
+                <option>Bonificacion no constitutiva de salario</option><option>Comision</option><option>Prima extraegal</option>
+              </optgroup>
+              <optgroup label="Terminacion y Cambios">
+                <option>Renuncia voluntaria</option><option>Despido con justa causa</option>
+                <option>Despido sin justa causa</option><option>Vencimiento de contrato</option>
+                <option>Muerte del trabajador</option><option>Invalidez</option><option>Traslado de cargo o area</option>
+              </optgroup>
+            </select>
+          </div>
+          <div><label class="lbl">Fecha inicio</label><input class="ni" type="date" id="novInicio"></div>
+          <div><label class="lbl">Fecha fin</label><input class="ni" type="date" id="novFin"></div>
+          <div><label class="lbl">Horas (si aplica)</label><input class="ni" type="text" id="novHoras" placeholder="Ej: 8 horas"></div>
+          <div><label class="lbl">No. documento soporte</label><input class="ni" type="text" id="novDoc" placeholder="Ej: Incapacidad EPS No. 12345"></div>
+          <div style="grid-column:1/-1"><label class="lbl">Observaciones</label><textarea class="ni" id="novObs" style="height:60px;resize:none" placeholder="Detalle adicional..."></textarea></div>
+        </div>
+        <button class="nov-submit" onclick="crearNovedad()">Registrar novedad y notificar al empleado</button>
+        <div class="nov-ok-msg" id="novOk">Novedad registrada. Correo enviado al empleado.</div>
+      </div>
+      <div style="background:white;border-radius:14px;border:1.5px solid var(--g200);overflow:hidden">
+        <div style="padding:12px 16px;border-bottom:1.5px solid var(--g200);font-size:13px;font-weight:700;color:var(--g800)">Historial de novedades registradas por la empresa</div>
+        <div id="novHistContent" style="padding:12px;font-size:13px;color:var(--g400);overflow:auto">Cargando...</div>
+      </div>
+    </div>
+
+    <!-- CORRECCIONES -->
+    <div class="panel" id="panel-correcciones">
+      <div style="background:var(--b-bg);border:1px solid var(--bb);border-radius:12px;padding:12px 16px;margin-bottom:1rem;font-size:13px;color:var(--bd);font-weight:500">
+        Solo Gestion Humana puede aprobar o rechazar correcciones de marcaje de forma final.
+      </div>
+      <div id="corrContent"><div class="loading-msg">Cargando correcciones...</div></div>
+    </div>
+
+    <!-- EMPLEADOS -->
+    <div class="panel" id="panel-empleados">
+      <div style="background:white;border-radius:14px;border:1.5px solid var(--g200);padding:1.25rem;margin-bottom:1rem">
+        <h3 style="font-size:14px;font-weight:700;color:var(--g800);margin-bottom:12px">Terminar empleado</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+          <div style="flex:1;min-width:200px"><label class="lbl">Correo del empleado</label><input class="ni" type="email" id="termEmail" placeholder="empleado@amgdecolombia.com" style="width:100%;padding:9px 12px;border:1.5px solid var(--g200);border-radius:9px;font-family:inherit;font-size:13px;outline:none"></div>
+          <button onclick="terminarEmpleadoAction()" style="padding:10px 20px;border-radius:9px;border:1.5px solid var(--rb);background:var(--r-bg);color:var(--rd);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">Terminar empleado</button>
+        </div>
+        <div id="termOk" style="display:none;margin-top:8px;padding:8px 12px;background:var(--g-bg);border-radius:8px;font-size:13px;color:var(--gd);font-weight:500">Empleado marcado como terminado.</div>
+      </div>
+      <div id="empContent"><div class="loading-msg">Cargando empleados...</div></div>
+    </div>
+
+    <!-- ADMINISTRADORES -->
+    <div class="panel" id="panel-admins">
+      <div class="nov-form">
+        <h3>Crear o actualizar administrador</h3>
+        <div class="nov-grid">
+          <div><label class="lbl">Correo corporativo</label><input class="ni" type="email" id="newAdminEmail" placeholder="director@amgdecolombia.com"></div>
+          <div><label class="lbl">Nombre completo</label><input class="ni" type="text" id="newAdminNombre" placeholder="Nombre y apellido"></div>
+          <div><label class="lbl">Clave de acceso</label><input class="ni" type="text" id="newAdminClave" placeholder="Clave segura (min 8 caracteres)"></div>
+          <div><label class="lbl">Rol</label><select class="ni" id="newAdminRol"><option value="director">Director</option><option value="master">Master (Gestion Humana)</option></select></div>
+        </div>
+        <button class="nov-submit" onclick="guardarAdmin()">Guardar administrador</button>
+        <div class="nov-ok-msg" id="adminOk">Administrador guardado correctamente.</div>
+      </div>
+      <div id="adminsContent"><div class="loading-msg">Cargando administradores...</div></div>
+    </div>
+
   </div>
 </div>
 
-<div class="modal-bg" id="forgot-modal">
+<!-- FORGOT MODAL -->
+<div class="modal-bg" id="forgotModal">
   <div class="modal-card">
     <h3>Recuperar acceso</h3>
-    <p>Ingresa tu correo corporativo y te enviaremos tu clave.</p>
-    <div class="modal-ok" id="forgot-ok">Correo enviado. Revisa tu bandeja.</div>
-    <input class="modal-input" type="email" id="forgot-email" placeholder="tu@amgdecolombia.com">
+    <p>Ingresa tu correo corporativo y te enviaremos tu clave de acceso.</p>
+    <div id="forgotOk" style="display:none;background:var(--g-bg);border-radius:9px;padding:9px 12px;font-size:13px;color:var(--gd);margin-bottom:10px;font-weight:500">Correo enviado. Revisa tu bandeja.</div>
+    <input class="modal-fi" type="email" id="forgotEmail" placeholder="tu@amgdecolombia.com">
     <button class="modal-btn" onclick="sendForgot()">Enviar clave</button>
     <button class="modal-close" onclick="closeForgot()">Cancelar</button>
   </div>
 </div>
 
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbxvL5AYkg9XDPvBYgo-h92CxF6kY14t-rnRV_Gqj0AeQxaDgGnyPch0Vt0ZNjaWyoDg/exec';
-let currentUser=null,allPending=[],allHistory=[],charts={};
 
-function formatDate(raw){
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwGLm-Vcm1i-FQnbOzYttTyaqqJmmnLEYZ3fYd4LnRnKnP1X2WHzft8WtHiQ8QupY3n/exec';
+var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
+var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
+
+function pad(n){return String(n).padStart(2,'0');}
+function fmtDate(raw){
   if(!raw)return'';
   try{
-    const s=String(raw);
-    if(s.match(/^\d{4}-\d{2}-\d{2}T/)||s.match(/GMT/)){
+    var s=String(raw);
+    if(s.match(/\d{4}-\d{2}-\d{2}T/)||s.match(/GMT/)){
       var d=new Date(raw);
-      if(!isNaN(d)){const p=n=>String(n).padStart(2,'0');return p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+d.getFullYear()+' '+p(d.getHours())+':'+p(d.getMinutes());}
+      if(!isNaN(d))return pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear()+' '+pad(d.getHours())+':'+pad(d.getMinutes());
     }
     return s;
   }catch(e){return String(raw);}
 }
 
 async function doLogin(){
-  const email=document.getElementById('l-email').value.trim();
-  const pass=document.getElementById('l-pass').value;
+  var email=document.getElementById('lEmail').value.trim().toLowerCase();
+  var pass=document.getElementById('lPass').value;
   if(!email||!pass){alert('Ingresa correo y clave.');return;}
   try{
     var r=await fetch(SCRIPT_URL+'?action=login&email='+encodeURIComponent(email)+'&pass='+encodeURIComponent(pass));
     var d=await r.json();
     if(d.status==='ok'){
-      currentUser={email,name:d.name,role:d.role};
-      document.getElementById('login-err').style.display='none';
-      document.getElementById('topbar-name').childNodes[0].textContent=d.name+' ';
-      document.getElementById('topbar-email').textContent=email;
-      if(d.role==='master'){
-        document.getElementById('master-badge').style.display='inline';
-        document.getElementById('tab-employees').style.display='block';
-        document.getElementById('tab-novedades').style.display='block';
-        document.getElementById('tab-correcciones').style.display='block';
-      }
-      document.getElementById('login-wrap').style.display='none';
+      currentUser={email:email,nombre:d.nombre,role:d.role};
+      document.getElementById('loginWrap').style.display='none';
       document.getElementById('dashboard').style.display='block';
-      loadPending();loadHistory();loadStats();if(currentUser.role==="master"){loadEmployees();loadNovedades();loadCorrecciones();}
-    }else{document.getElementById('login-err').style.display='block';}
-  }catch(e){alert('Error de conexion.');}
+      document.getElementById('loginErr').style.display='none';
+      document.getElementById('topbarName').textContent=d.nombre;
+      document.getElementById('topbarEmail').textContent=email;
+      if(d.role==='master'){
+        document.getElementById('masterBadge').style.display='inline-flex';
+        document.getElementById('tabNovedades').style.display='block';
+        document.getElementById('tabCorrecciones').style.display='block';
+        document.getElementById('tabEmpleados').style.display='block';
+        document.getElementById('tabAdmins').style.display='block';
+        document.getElementById('tabCalendario').style.display='block';
+      }
+      loadAll();
+    }else{
+      document.getElementById('loginErr').style.display='block';
+    }
+  }catch(e){alert('Error de conexion. Intenta de nuevo.');}
 }
 
 function doLogout(){
   currentUser=null;
   document.getElementById('dashboard').style.display='none';
-  document.getElementById('login-wrap').style.display='flex';
-  document.getElementById('l-pass').value='';
-  document.getElementById('master-badge').style.display='none';
+  document.getElementById('loginWrap').style.display='flex';
+  document.getElementById('lPass').value='';
+  document.getElementById('masterBadge').style.display='none';
+  ['tabNovedades','tabCorrecciones','tabEmpleados','tabAdmins','tabCalendario'].forEach(function(id){document.getElementById(id).style.display='none';});
+}
+
+function loadAll(){
+  loadPending();
+  loadHistory();
+  if(currentUser.role==='master'){
+    loadEmpleados();
+    loadCalendar();
+  }
+}
+
+var ALL_TABS=['pending','stats','history','calendario','novedades','correcciones','empleados','admins'];
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach(function(b){b.classList.remove('active');});
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
+  document.querySelector('.tab[data-tab="'+t+'"]').classList.add('active');
+  document.getElementById('panel-'+t).classList.add('active');
+  if(t==='calendario')loadCalendar();
+  if(t==='novedades')loadNovedades();
+  if(t==='correcciones')loadCorrecciones();
+  if(t==='stats')loadStats();
 }
 
 async function loadPending(){
-  document.getElementById('loading-pending').style.display='block';
-  document.getElementById('list-pending').innerHTML='';
+  document.getElementById('loadingPending').style.display='block';
+  document.getElementById('listPending').innerHTML='';
   try{
     var r=await fetch(SCRIPT_URL+'?action=getPending&email='+encodeURIComponent(currentUser.email));
     var d=await r.json();
-    document.getElementById('loading-pending').style.display='none';
+    document.getElementById('loadingPending').style.display='none';
     allPending=d.rows||[];
-    document.getElementById('pending-badge').textContent=allPending.length+' pendiente'+(allPending.length===1?'':'s');
-    document.getElementById('st-pending').textContent=allPending.length;
-    if(!allPending.length){document.getElementById('list-pending').innerHTML='<div class="empty-state"><p>No hay solicitudes pendientes.</p></div>';return;}
-    document.getElementById('list-pending').innerHTML=allPending.map((row,i)=>buildReqCard(row,i)).join('');
-  }catch(e){document.getElementById('loading-pending').textContent='Error cargando datos.';}
+    document.getElementById('pendingBadge').textContent=allPending.length+' pendiente'+(allPending.length===1?'':'s');
+    document.getElementById('stPending').textContent=allPending.length;
+    if(!allPending.length){document.getElementById('listPending').innerHTML=emptyState('Sin solicitudes pendientes.');return;}
+    document.getElementById('listPending').innerHTML=allPending.map(function(row,i){return buildReqCard(row,i);}).join('');
+  }catch(e){document.getElementById('loadingPending').textContent='Error cargando solicitudes.';}
 }
 
 async function loadHistory(){
-  document.getElementById('loading-history').style.display='block';
+  document.getElementById('loadingHistory').style.display='block';
+  document.getElementById('listHistory').innerHTML='';
   try{
     var r=await fetch(SCRIPT_URL+'?action=getHistory&email='+encodeURIComponent(currentUser.email));
     var d=await r.json();
-    document.getElementById('loading-history').style.display='none';
+    document.getElementById('loadingHistory').style.display='none';
     allHistory=d.rows||[];
-    const approved=allHistory.filter(r=>r['Estado Director']==='Aprobado').length;
-    const rejected=allHistory.filter(r=>r['Estado Director']==='Rechazado').length;
-    document.getElementById('st-approved').textContent=approved;
-    document.getElementById('st-rejected').textContent=rejected;
-    document.getElementById('st-total').textContent=allPending.length+allHistory.length;
+    var approved=allHistory.filter(function(r){return r['Estado Director']==='Aprobado';}).length;
+    var rejected=allHistory.filter(function(r){return r['Estado Director']==='Rechazado';}).length;
+    document.getElementById('stApproved').textContent=approved;
+    document.getElementById('stRejected').textContent=rejected;
+    document.getElementById('stTotal').textContent=allPending.length+allHistory.length;
     renderHistory();
-  }catch(e){document.getElementById('loading-history').textContent='Error.';}
+  }catch(e){document.getElementById('loadingHistory').textContent='Error cargando historial.';}
+}
+
+function renderHistory(){
+  var ft=document.getElementById('filType').value;
+  var fs=document.getElementById('filStatus').value;
+  var filtered=allHistory.filter(function(r){return(!ft||r['_tab']===ft)&&(!fs||r['Estado Director']===fs);});
+  if(!filtered.length){document.getElementById('listHistory').innerHTML=emptyState('Sin registros con estos filtros.');return;}
+  document.getElementById('listHistory').innerHTML=filtered.map(function(r){return buildHistCard(r);}).join('');
 }
 
 async function loadStats(){
   try{
     var r=await fetch(SCRIPT_URL+'?action=getStats&email='+encodeURIComponent(currentUser.email));
     var d=await r.json();
-    if(d.stats)renderCharts(d.stats);
+    if(d.status==='ok')renderCharts(d);
   }catch(e){}
 }
 
-function renderHistory(){
-  const ft=document.getElementById('fil-type').value;
-  const fs=document.getElementById('fil-status').value;
-  const filtered=allHistory.filter(r=>(!ft||r['_sheetName']===ft)&&(!fs||r['Estado Director']===fs));
-  if(!filtered.length){document.getElementById('list-history').innerHTML='<div class="empty-state"><p>Sin registros con estos filtros.</p></div>';return;}
-  document.getElementById('list-history').innerHTML=filtered.map(r=>buildHistCard(r)).join('');
+function tabBadge(tabName){
+  var m={'Tiempo Extra':'badge-ot','Festivos Trabajados':'badge-fest','Dias Compensatorios':'badge-comp','Solicitudes de Vacaciones':'badge-vac','Correcciones de Marcaje':'badge-corr'};
+  return 'badge '+(m[tabName]||'badge-pending');
 }
-
-function sheetBadge(sName){
-  const m={'Tiempo Extra':'badge badge-ot','Festivos Trabajados':'badge badge-fest','Dias Compensatorios':'badge badge-comp','Solicitudes de Recogida':'badge badge-pk','Solicitudes de Vacaciones':'badge badge-approved','Correcciones de Marcaje':'badge badge-pending'};
-  return m[sName]||'badge badge-pending';
+function empresaBadge(empresa){
+  if(!empresa)return'';
+  if(empresa.indexOf('INMOVIMENTO')>=0)return'<span class="emp-badge emp-inmov">INMOVIMENTO</span>';
+  return'<span class="emp-badge emp-amg">AMG</span>';
 }
 
 function buildReqCard(row,idx){
-  var sName=row['_sheetName']||'';
-  const rowIdx=row['_rowIndex']||'';
-  const empNombre=row['Nombre del empleado']||'';
-  const vehiculo=row['Vehiculo']||'';
-  const ts=formatDate(row['Marca de tiempo']);
-  const aprobador=row['Aprobador Director']||'';
-  const horaI=row['Hora Inicio Extra']||'';
-  const horaF=row['Hora Fin Extra']||'';
-  const horas=row['Horas Solicitadas']||'';
-  const motivo=row['Motivo']||'';
-  const recogida=row['Punto de Recogida']||'';
-  const mapsLink=row['Ver en Google Maps']||'';
-  const gps=row['GPS Verificado']==='Si'?'Verificado':'Sin GPS';
-  const festAcum=row['Festivos en el mes']||'';
-  const alertaAcum=row['Alerta Acumulado']||'No';
-  const isMaster=currentUser.role==='master';
-
-  return `<div class="req-card" id="card-${idx}">
-    <div class="req-top">
-      <div>
-        <div class="req-name">${empNombre}</div>
-        <div class="req-sub">${vehiculo}${aprobador?' · Director: '+aprobador:''}</div>
-      </div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
-        <span class="${sheetBadge(sName)}">${sName}</span>
-        ${alertaAcum!=='No'?'<span class="badge badge-alert">Acumulado: '+festAcum+' festivos</span>':''}
-        ${isMaster?'<span class="badge badge-master">Vista master</span>':''}
-      </div>
-    </div>
-    <div class="req-details">
-      <div class="req-detail"><div class="rd-lbl">Fecha registro</div><div class="rd-val">${ts||'—'}</div></div>
-      ${horaI?'<div class="req-detail"><div class="rd-lbl">Horas extra</div><div class="rd-val">'+horaI+' a '+horaF+(horas?' ('+horas+')':'')+'</div></div>':''}
-      ${motivo?'<div class="req-detail"><div class="rd-lbl">Motivo</div><div class="rd-val">'+motivo+'</div></div>':''}
-      ${recogida?'<div class="req-detail"><div class="rd-lbl">Punto recogida</div><div class="rd-val">'+recogida+'</div></div>':''}
-      <div class="req-detail"><div class="rd-lbl">GPS</div><div class="rd-val">${gps}${mapsLink&&mapsLink!=='No disponible'?' <a href="'+mapsLink+'" target="_blank" style="color:var(--teal);font-size:11px">Ver mapa</a>':''}</div></div>
-    </div>
-    ${currentUser.role==='master'?`<div style="display:flex;justify-content:flex-end;margin-bottom:6px;"><button onclick="deleteRow(${idx},'${rowIdx}','${sName}')" style="font-size:11px;padding:4px 10px;border-radius:7px;border:1px solid var(--red-border);background:var(--red);color:var(--red-dark);cursor:pointer;font-family:'DM Sans',sans-serif;">Borrar registro</button></div>`:''}
-    <textarea class="obs-input" id="obs-${idx}" placeholder="Observaciones (requerido para rechazar)..."></textarea>
-    <div class="req-actions">
-      <button class="btn-approve" id="btn-ap-${idx}" onclick="decidir(${idx},'approve','${rowIdx}','${sName}')">Aprobar</button>
-      <button class="btn-reject" id="btn-rj-${idx}" onclick="decidir(${idx},'reject','${rowIdx}','${sName}')">Rechazar</button>
-    </div>
-  </div>`;
+  var tab=row['_tab']||'';
+  var rowIdx=row['_rowIndex']||'';
+  var nombre=row['Nombre']||'';
+  var correo=row['Correo']||'';
+  var empresa=row['Empresa']||'';
+  var vehiculo=row['Vehiculo']||'';
+  var ts=fmtDate(row['Marca de tiempo']||'');
+  var aprobador=row['Aprobador']||'';
+  var horaI=row['Hora Inicio']||row['Hora Inicio Extra']||'';
+  var horaF=row['Hora Fin']||row['Hora Fin Extra']||'';
+  var horas=row['Horas Solicitadas']||'';
+  var motivo=row['Motivo']||'';
+  var mapsLink=row['Ver en Mapa']||'';
+  var gps=row['GPS OK']==='Si'?'Verificado':'Sin GPS';
+  var festAcum=row['Festivos Acum Mes']||'';
+  var isMaster=currentUser.role==='master';
+  var html='<div class="req-card" id="card-'+idx+'">';
+  html+='<div class="req-top"><div>';
+  html+='<div class="req-name">'+nombre+'</div>';
+  html+='<div class="req-sub">'+empresaBadge(empresa)+' '+vehiculo+(aprobador?' &middot; Dir: '+aprobador:'')+'</div>';
+  html+='</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">';
+  html+='<span class="'+tabBadge(tab)+'">'+tab+'</span>';
+  if(festAcum&&parseInt(festAcum)>=2)html+='<span class="badge badge-alert">'+festAcum+' festivos mes</span>';
+  if(isMaster)html+='<span class="badge badge-master">MASTER</span>';
+  html+='</div></div>';
+  html+='<div class="req-details">';
+  html+='<div class="req-detail"><div class="rd-lbl">Fecha registro</div><div class="rd-val">'+ts+'</div></div>';
+  if(horaI)html+='<div class="req-detail"><div class="rd-lbl">Horario</div><div class="rd-val">'+horaI+' a '+horaF+(horas?' ('+horas+')':'')+'</div></div>';
+  if(motivo)html+='<div class="req-detail"><div class="rd-lbl">Motivo</div><div class="rd-val">'+motivo+'</div></div>';
+  html+='<div class="req-detail"><div class="rd-lbl">GPS</div><div class="rd-val">'+gps+(mapsLink&&mapsLink!=='No disponible'?' <a href="'+mapsLink+'" target="_blank" style="color:#1D9E9E;font-size:11px">Ver mapa</a>':'')+'</div></div>';
+  html+='</div>';
+  if(isMaster)html+='<div style="display:flex;justify-content:flex-end;margin-bottom:6px"><button onclick="deleteRow('+idx+',\''+rowIdx+'\',\''+tab+'\')" style="font-size:11px;padding:4px 10px;border-radius:7px;border:1px solid #FECACA;background:#FEF2F2;color:#991B1B;cursor:pointer;font-family:inherit">Borrar registro</button></div>';
+  html+='<textarea class="obs-input" id="obs-'+idx+'" placeholder="Observaciones (requerido para rechazar)..."></textarea>';
+  html+='<div class="req-actions">';
+  html+='<button class="btn-approve" id="bap-'+idx+'" onclick="decidir('+idx+',\'approve\',\''+rowIdx+'\',\''+tab+'\')">Aprobar</button>';
+  html+='<button class="btn-reject" id="brj-'+idx+'" onclick="decidir('+idx+',\'reject\',\''+rowIdx+'\',\''+tab+'\')">Rechazar</button>';
+  html+='</div></div>';
+  return html;
 }
 
 function buildHistCard(row){
-  var sName=row['_sheetName']||'';
-  const histNombre=row['Nombre del empleado']||'';
-  const estado=row['Estado Director']||'';
-  const fecha=formatDate(row['Fecha Aprobacion Director']);
-  var obs=row['Observaciones Director']||'';
-  const statCls=estado==='Aprobado'?'badge-approved':estado==='Rechazado'?'badge-rejected':'badge-pending';
-  return `<div class="hist-card">
-    <div class="hist-left">
-      <div class="hist-name">${histNombre}</div>
-      <div class="hist-sub">${sName}${obs?' — '+obs:''}</div>
-    </div>
-    <div class="hist-right">
-      <span class="badge ${statCls}">${estado}</span>
-      <div class="hist-date">${fecha}</div>
-    </div>
-  </div>`;
+  var tab=row['_tab']||'';
+  var nombre=row['Nombre']||'';
+  var empresa=row['Empresa']||'';
+  var estado=row['Estado Director']||'';
+  var fecha=fmtDate(row['Fecha Decision Director']||'');
+  var obs=row['Obs Director']||'';
+  var statCls=estado==='Aprobado'?'badge-approved':estado==='Rechazado'?'badge-rejected':'badge-pending';
+  return '<div class="hist-card"><div class="hist-left"><div class="hist-name">'+nombre+' '+empresaBadge(empresa)+'</div><div class="hist-sub">'+tab+(obs?' &mdash; '+obs:'')+'</div></div><div class="hist-right"><span class="badge '+statCls+'">'+estado+'</span><div class="hist-date">'+fecha+'</div></div></div>';
+}
+
+function emptyState(msg){
+  return '<div class="empty-state"><p>'+msg+'</p></div>';
 }
 
 async function decidir(idx,action,rowIndex,sheetName){
   var obs=document.getElementById('obs-'+idx).value.trim();
   if(action==='reject'&&!obs){alert('Para rechazar debes ingresar una observacion.');return;}
-  const apBtn=document.getElementById('btn-ap-'+idx);
-  const rjBtn=document.getElementById('btn-rj-'+idx);
+  var apBtn=document.getElementById('bap-'+idx);
+  var rjBtn=document.getElementById('brj-'+idx);
   apBtn.disabled=true;rjBtn.disabled=true;apBtn.textContent='Procesando...';
   try{
-    var url=SCRIPT_URL
-      +'?action='+(action==='approve'?'approveRow':'rejectRow')
+    var url=SCRIPT_URL+'?action='+(action==='approve'?'approveRow':'rejectRow')
       +'&rowIndex='+encodeURIComponent(rowIndex)
       +'&sheetName='+encodeURIComponent(sheetName)
       +'&observaciones='+encodeURIComponent(obs)
       +'&directorEmail='+encodeURIComponent(currentUser.email)
-      +'&directorName='+encodeURIComponent(currentUser.name);
+      +'&directorName='+encodeURIComponent(currentUser.nombre);
     await fetch(url,{mode:'no-cors'});
     var card=document.getElementById('card-'+idx);
-    card.style.opacity='0.4';card.style.pointerEvents='none';
+    card.style.opacity='.3';card.style.pointerEvents='none';
     apBtn.textContent=action==='approve'?'Aprobado':'Rechazado';
-    setTimeout(()=>{loadPending();loadHistory();loadStats();if(currentUser.role==="master"){loadEmployees();loadNovedades();loadCorrecciones();}},2000);
+    setTimeout(function(){loadPending();loadHistory();},2000);
   }catch(e){apBtn.disabled=false;rjBtn.disabled=false;apBtn.textContent='Aprobar';alert('Error al procesar.');}
 }
 
-function renderCharts(stats){
-  const COLORS=['#0A3D47','#156B6B','#854F0B','#4C1D95','#1E40AF'];
+async function deleteRow(idx,rowIndex,sheetName){
+  if(!confirm('Borrar este registro permanentemente?'))return;
+  await fetch(SCRIPT_URL+'?action=deleteRow&email='+encodeURIComponent(currentUser.email)+'&rowIndex='+encodeURIComponent(rowIndex)+'&sheetName='+encodeURIComponent(sheetName),{mode:'no-cors'});
+  setTimeout(function(){loadPending();loadHistory();},1500);
+}
+
+function renderCharts(d){
+  var COLORS=['#0A3D47','#156B6B','#854F0B','#4C1D95','#1E40AF'];
   if(charts.type)charts.type.destroy();
-  const tl=Object.keys(stats.byType);const td=Object.values(stats.byType);
-  charts.type=new Chart(document.getElementById('chart-type'),{type:'doughnut',data:{labels:tl,datasets:[{data:td,backgroundColor:COLORS.slice(0,tl.length),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'DM Sans',size:11},padding:8}}}}});
-
+  var tl=Object.keys(d.byType||{}),td=Object.values(d.byType||{});
+  if(tl.length){charts.type=new Chart(document.getElementById('chartType'),{type:'doughnut',data:{labels:tl,datasets:[{data:td,backgroundColor:COLORS.slice(0,tl.length),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'Inter',size:10},padding:6}}}}});}
   if(charts.month)charts.month.destroy();
-  const ml=Object.keys(stats.byMonth).slice(-6);const md=ml.map(k=>stats.byMonth[k]);
-  charts.month=new Chart(document.getElementById('chart-month'),{type:'bar',data:{labels:ml,datasets:[{label:'Solicitudes',data:md,backgroundColor:'#1D9E9E',borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true},x:{ticks:{font:{family:'DM Sans',size:10}}}}}});
-
+  var ml=Object.keys(d.byMonth||{}).slice(-6),md=ml.map(function(k){return d.byMonth[k];});
+  if(ml.length){charts.month=new Chart(document.getElementById('chartMonth'),{type:'bar',data:{labels:ml,datasets:[{label:'Solicitudes',data:md,backgroundColor:'#1D9E9E',borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true},x:{ticks:{font:{size:10}}}}}});}
   if(charts.emp)charts.emp.destroy();
-  const ee=Object.entries(stats.byEmp).sort((a,b)=>b[1]-a[1]).slice(0,5);
-  charts.emp=new Chart(document.getElementById('chart-emp'),{type:'bar',data:{labels:ee.map(e=>e[0].split(' ')[0]),datasets:[{label:'Solicitudes',data:ee.map(e=>e[1]),backgroundColor:'#156B6B',borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true},x:{ticks:{font:{family:'DM Sans',size:10}}}}}});
-
+  var ee=Object.entries(d.byEmp||{}).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
+  if(ee.length){charts.emp=new Chart(document.getElementById('chartEmp'),{type:'bar',data:{labels:ee.map(function(e){return e[0].split(' ')[0];}),datasets:[{label:'Solicitudes',data:ee.map(function(e){return e[1];}),backgroundColor:'#156B6B',borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true},x:{ticks:{font:{size:10}}}}}});}
   if(charts.status)charts.status.destroy();
-  charts.status=new Chart(document.getElementById('chart-status'),{type:'pie',data:{labels:['Aprobadas','Rechazadas','Pendientes'],datasets:[{data:[stats.approved,stats.rejected,stats.pending],backgroundColor:['#D1FAE5','#FEF2F2','#FFFBEB'],borderColor:['#6EE7B7','#FECACA','#FCD34D'],borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'DM Sans',size:11},padding:8}}}}});
+  charts.status=new Chart(document.getElementById('chartStatus'),{type:'pie',data:{labels:['Aprobadas','Rechazadas','Pendientes'],datasets:[{data:[d.approved||0,d.rejected||0,d.pending||0],backgroundColor:['#D1FAE5','#FEF2F2','#FFFBEB'],borderColor:['#6EE7B7','#FECACA','#FCD34D'],borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10},padding:6}}}}});
 }
 
-var calEvents=[], calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
-
-function switchTab(t){
-  if(t==='calendar'){loadCalendar();}
-  if(t==='novedades'){loadNovedades();}
-  if(t==='correcciones'){loadCorrecciones();}
-  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',['pending','stats','history','calendar','novedades','correcciones','employees'][i]===t));
-  document.querySelectorAll('.panel').forEach((p,i)=>p.classList.toggle('active',['panel-pending','panel-stats','panel-history','panel-calendar','panel-novedades','panel-correcciones','panel-employees'][i]==='panel-'+t));
-}
-
-
-async function loadEmployees(){
-  document.getElementById('loading-employees').style.display='block';
-  document.getElementById('emp-content').innerHTML='';
-  try{
-    var r=await fetch(SCRIPT_URL+'?action=getEmployeeStats&email='+encodeURIComponent(currentUser.email));
-    var d=await r.json();
-    document.getElementById('loading-employees').style.display='none';
-    if(!d.data||!d.data.length){
-      document.getElementById('emp-content').innerHTML='<div class="empty-state"><p>Sin datos de empleados aun.</p></div>';
-      return;
-    }
-    const alerts=d.data.filter(e=>e.nocturnas>0||e.festivos>=2||e.otPendientes>0);
-    let html='';
-    if(alerts.length){
-      html+='<div class="emp-section"><div class="emp-section-title">Alertas activas <span>'+alerts.length+'</span></div>';
-      html+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:1rem;">';
-      alerts.forEach(function(e){
-        var tags=[];
-        if(e.nocturnas>0) tags.push('<span class="pill pill-red">'+e.nocturnas+' nocturna'+(e.nocturnas>1?'s':'')+'</span>');
-        if(e.festivos>=2) tags.push('<span class="pill pill-purple">'+e.festivos+' festivos</span>');
-        if(e.otPendientes>0) tags.push('<span class="pill pill-amber">'+e.otPendientes+' OT pendiente'+(e.otPendientes>1?'s':'')+'</span>');
-        html+='<div style="background:white;border-radius:12px;border:1.5px solid #FED7AA;padding:12px;">';
-        html+='<div class="emp-name">'+e.nombre+'</div>';
-        html+='<div style="margin-top:6px;">'+tags.join('')+'</div></div>';
-      });
-      html+='</div></div>';
-    }
-    html+='<div class="emp-section"><div class="emp-section-title">Resumen por empleado <span>'+d.data.length+'</span></div>';
-    html+='<div style="background:white;border-radius:14px;border:1.5px solid var(--gray-200);overflow:auto;">';
-    html+='<table class="emp-table"><thead><tr>';
-    html+='<th>Empleado</th><th>Entradas</th><th>Salidas</th><th>Horas totales</th><th>Nocturnas</th><th>Festivos</th><th>Compensatorios</th><th>OT pendiente</th><th>Ultimo registro</th>';
-    html+='</tr></thead><tbody>';
-    d.data.forEach(function(e){
-      var hasAlert=e.nocturnas>0||e.festivos>=2||e.otPendientes>0;
-      html+='<tr'+(hasAlert?' class="alert-row"':'')+'>'; 
-      html+='<td><div class="emp-name">'+e.nombre+'</div></td>';
-      html+='<td><span class="pill pill-green">'+e.entradas+'</span></td>';
-      html+='<td><span class="pill pill-red">'+e.salidas+'</span></td>';
-      html+='<td><span class="pill pill-gray">'+(e.horasTotal||0)+' hrs</span></td>';
-      html+='<td>'+(e.nocturnas>0?'<span class="pill pill-red">'+e.nocturnas+'</span>':'<span class="pill pill-gray">0</span>')+'</td>';
-      html+='<td>'+(e.festivos>0?'<span class="pill '+(e.festivos>=2?'pill-purple':'pill-amber')+'">'+e.festivos+'</span>':'<span class="pill pill-gray">0</span>')+'</td>';
-      html+='<td>'+(e.compensatorios>0?'<span class="pill pill-blue">'+e.compensatorios+'</span>':'<span class="pill pill-gray">0</span>')+'</td>';
-      html+='<td>'+(e.otPendientes>0?'<span class="pill pill-amber">'+e.otPendientes+'</span>':'<span class="pill pill-green">Ok</span>')+'</td>';
-      html+='<td><span class="last-seen">'+(e.ultimoRegistro||'No registrado')+'</span></td>';
-      html+='</tr>';
-    });
-    html+='</tbody></table></div></div>';
-    document.getElementById('emp-content').innerHTML=html;
-  }catch(ex){
-    document.getElementById('loading-employees').textContent='Error cargando datos.';
-  }
-}
-
-
+// CALENDARIO
 async function loadCalendar(){
   try{
     var r=await fetch(SCRIPT_URL+'?action=getCalendarData&email='+encodeURIComponent(currentUser.email));
     var d=await r.json();
     calEvents=d.events||[];
     renderCalendar();
-  }catch(e){console.log('Calendar error:',e);}
+  }catch(e){console.log('Cal error:',e);}
 }
-
 function renderCalendar(){
-  const months=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  document.getElementById('cal-title').textContent=months[calMonth]+' '+calYear;
-  const grid=document.getElementById('cal-grid');
-  const days=['Lun','Mar','Mie','Jue','Vie','Sab','Dom'];
-  let html=days.map(d=>'<div class="cal-header-day">'+d+'</div>').join('');
-  const firstDay=new Date(calYear,calMonth,1);
-  const lastDay=new Date(calYear,calMonth+1,0);
-  let startDow=firstDay.getDay();if(startDow===0)startDow=7;
-  // Pad start
-  for(let i=1;i<startDow;i++) html+='<div class="cal-day other-month"></div>';
-  const today=new Date();
-  for(let d=1;d<=lastDay.getDate();d++){
-    const isToday=d===today.getDate()&&calMonth===today.getMonth()&&calYear===today.getFullYear();
-    const dateStr2=calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-    const dayEvents=calEvents.filter(function(ev){return ev.inicio<=dateStr2&&ev.fin>=dateStr2;});
-    html+='<div class="cal-day'+(isToday?' today':'')+'"><div class="cal-day-num">'+d+'</div>';
-    dayEvents.slice(0,3).forEach(function(ev){
-      html+='<div class="cal-event" style="background:'+ev.color+'" title="'+ev.titulo+'">'+ev.titulo.split(' - ')[1]+'</div>';
-    });
-    if(dayEvents.length>3) html+='<div style="font-size:9px;color:var(--gray-400);">+'+( dayEvents.length-3)+' mas</div>';
+  var meses=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('calTitle').textContent=meses[calMonth]+' '+calYear;
+  var grid=document.getElementById('calGrid');
+  var html='<div class="cal-hdr">Lun</div><div class="cal-hdr">Mar</div><div class="cal-hdr">Mie</div><div class="cal-hdr">Jue</div><div class="cal-hdr">Vie</div><div class="cal-hdr">Sab</div><div class="cal-hdr">Dom</div>';
+  var first=new Date(calYear,calMonth,1);
+  var last=new Date(calYear,calMonth+1,0);
+  var today=new Date();
+  var startDow=first.getDay()||7;
+  for(var i=1;i<startDow;i++)html+='<div class="cal-day cal-empty"></div>';
+  for(var day=1;day<=last.getDate();day++){
+    var isToday=day===today.getDate()&&calMonth===today.getMonth()&&calYear===today.getFullYear();
+    var dateStr=calYear+'-'+pad(calMonth+1)+'-'+pad(day);
+    var dayEvts=calEvents.filter(function(ev){return ev.inicio<=dateStr&&ev.fin>=dateStr;});
+    html+='<div class="cal-day'+(isToday?' cal-today':'')+'"><div class="cal-day-num">'+day+'</div>';
+    dayEvts.slice(0,3).forEach(function(ev){html+='<div class="cal-evt" style="background:'+ev.color+'" title="'+ev.titulo+'">'+ev.titulo.split(' - ').slice(-1)[0]+'</div>';});
+    if(dayEvts.length>3)html+='<div style="font-size:9px;color:#9CA3AF">+'+( dayEvts.length-3)+' mas</div>';
     html+='</div>';
   }
-  // Pad end
-  const endDow=lastDay.getDay();const remaining=endDow===0?0:7-endDow;
-  for(let i=0;i<remaining;i++) html+='<div class="cal-day other-month"></div>';
+  var endDow=last.getDay();
+  var rem=endDow===0?0:7-endDow;
+  for(var i=0;i<rem;i++)html+='<div class="cal-day cal-empty"></div>';
   grid.innerHTML=html;
 }
-
 function calPrev(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}
 function calNext(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCalendar();}
 
-async function deleteRow(idx, rowIndex, sheetName){
-  if(!confirm('Borrar este registro permanentemente?')) return;
+// EMPLEADOS
+async function loadEmpleados(){
   try{
-    var url=SCRIPT_URL+'?action=deleteRow&email='+encodeURIComponent(currentUser.email)+'&rowIndex='+encodeURIComponent(rowIndex)+'&sheetName='+encodeURIComponent(sheetName);
-    await fetch(url,{mode:'no-cors'});
-    var card=document.getElementById('card-'+idx);
-    if(card){card.style.opacity='0.3';card.style.pointerEvents='none';}
-    setTimeout(function(){loadPending();loadHistory();},1500);
-  }catch(e){alert('Error al borrar.');}
+    var r=await fetch(SCRIPT_URL+'?action=getEmpleadosAdmin&email='+encodeURIComponent(currentUser.email));
+    var d=await r.json();
+    renderEmpleados(d.empleados||[]);
+  }catch(e){document.getElementById('empContent').innerHTML='<p style="color:#9CA3AF;padding:2rem;text-align:center">Error cargando empleados.</p>';}
+}
+function renderEmpleados(emps){
+  var amg=emps.filter(function(e){return(e.empresa||'').indexOf('AMG')>=0;});
+  var inm=emps.filter(function(e){return(e.empresa||'').indexOf('INMOVIMENTO')>=0;});
+  var html='';
+  html+=renderEmpGroup('AMG DE COLOMBIA SAS','#0A3D47',amg);
+  html+=renderEmpGroup('INMOVIMENTO SAS','#1E40AF',inm);
+  document.getElementById('empContent').innerHTML=html;
+}
+function renderEmpGroup(titulo,color,emps){
+  if(!emps.length)return'';
+  var html='<div style="margin-bottom:1.5rem"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><div style="width:4px;height:20px;background:'+color+';border-radius:2px"></div><h3 style="font-size:13px;font-weight:700;color:'+color+'">'+titulo+'</h3><span style="background:'+color+'20;color:'+color+';border-radius:99px;padding:2px 8px;font-size:11px;font-weight:600">'+emps.length+' empleados</span></div>';
+  html+='<div style="background:white;border-radius:14px;border:1.5px solid #E5E7EB;overflow:auto">';
+  html+='<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:#F9FAFB">';
+  ['Nombre','Correo','Area','Entradas','Salidas','Horas','Nocturnas','Festivos','OT Pend.','Ultimo Registro'].forEach(function(h){html+='<th style="text-align:left;font-size:10px;font-weight:600;color:#9CA3AF;text-transform:uppercase;padding:8px 10px;border-bottom:1px solid #E5E7EB;white-space:nowrap">'+h+'</th>';});
+  html+='</tr></thead><tbody>';
+  emps.forEach(function(e){
+    var hasAlert=e.nocturnas>0||e.festivos>=2||e.otPendientes>0;
+    html+='<tr style="'+(hasAlert?'background:#FFF7ED;':'')+'">';
+    html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;font-weight:600;color:#111827;white-space:nowrap">'+e.nombre+'</td>';
+    html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;color:#6B7280;font-size:11px">'+e.email+'</td>';
+    html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6"><span style="background:#E5E7EB;border-radius:99px;padding:2px 8px;font-size:10px;font-weight:600">'+e.area+'</span></td>';
+    html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6"><span style="background:#ECFDF5;color:#065F46;border-radius:99px;padding:2px 8px;font-size:11px;font-weight:600">'+e.entradas+'</span></td>';
+    html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6"><span style="background:#FEF2F2;color:#991B1B;border-radius:99px;padding:2px 8px;font-size:11px;font-weight:600">'+e.salidas+'</span></td>';
+    html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;color:#374151;font-size:11px;white-space:nowrap">'+(e.horasTotal||0)+' hrs</td>';
+    html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6">'+(e.nocturnas>0?'<span style="background:#FEF2F2;color:#991B1B;border-radius:99px;padding:2px 8px;font-size:11px;font-weight:600">'+e.nocturnas+'</span>':'<span style="color:#9CA3AF;font-size:11px">0</span>')+'</td>';
+    html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6">'+(e.festivos>0?'<span style="background:'+(e.festivos>=2?'#F5F3FF':'#FFFBEB')+';color:'+(e.festivos>=2?'#4C1D95':'#92400E')+';border-radius:99px;padding:2px 8px;font-size:11px;font-weight:600">'+e.festivos+'</span>':'<span style="color:#9CA3AF;font-size:11px">0</span>')+'</td>';
+    html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6">'+(e.otPendientes>0?'<span style="background:#FFFBEB;color:#92400E;border-radius:99px;padding:2px 8px;font-size:11px;font-weight:600">'+e.otPendientes+'</span>':'<span style="color:#059669;font-size:11px;font-weight:600">OK</span>')+'</td>';
+    html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;color:#9CA3AF;font-size:10px;font-family:monospace;white-space:nowrap">'+(e.ultimoRegistro||'Sin registro')+'</td>';
+    html+='</tr>';
+  });
+  html+='</tbody></table></div></div>';
+  return html;
 }
 
+// NOVEDADES
+async function loadNovedades(){
+  document.getElementById('novHistContent').textContent='Cargando...';
+  try{
+    var r=await fetch(SCRIPT_URL+'?action=getNovedades&email='+encodeURIComponent(currentUser.email));
+    var d=await r.json();
+    var rows=d.rows||[];
+    if(!rows.length){document.getElementById('novHistContent').innerHTML=emptyState('Sin novedades registradas.');return;}
+    var html='<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:#F9FAFB">';
+    ['Fecha','Empleado','Empresa','Tipo Novedad','Periodo','Documento','Registrado por'].forEach(function(h){html+='<th style="text-align:left;font-size:10px;font-weight:600;color:#9CA3AF;text-transform:uppercase;padding:8px 10px;border-bottom:1px solid #E5E7EB;white-space:nowrap">'+h+'</th>';});
+    html+='</tr></thead><tbody>';
+    rows.forEach(function(row){
+      html+='<tr>';
+      html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;font-size:11px;font-family:monospace;white-space:nowrap">'+fmtDate(row['Marca de tiempo'])+'</td>';
+      html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6"><strong>'+row['Nombre Empleado']+'</strong><br><span style="font-size:10px;color:#9CA3AF">'+row['Correo Empleado']+'</span></td>';
+      html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6">'+empresaBadge(row['Empresa'])+'</td>';
+      html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6"><span style="background:#EFF6FF;color:#1E40AF;border-radius:99px;padding:2px 8px;font-size:10px;font-weight:600">'+row['Tipo Novedad']+'</span></td>';
+      html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;font-size:11px">'+row['Fecha Inicio']+(row['Fecha Fin']?' al '+row['Fecha Fin']:'')+'</td>';
+      html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;font-size:11px">'+row['Doc Soporte']+'</td>';
+      html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;font-size:11px">'+row['Registrado por']+'</td>';
+      html+='</tr>';
+    });
+    html+='</tbody></table>';
+    document.getElementById('novHistContent').innerHTML=html;
+  }catch(e){document.getElementById('novHistContent').innerHTML='<p style="color:#991B1B;padding:1rem">Error cargando novedades.</p>';}
+}
 
 async function crearNovedad(){
-  const novEmail=document.getElementById('nov-email').value.trim();
-  const novNombre=document.getElementById('nov-nombre').value.trim();
-  const tipo=document.getElementById('nov-tipo').value;
-  const inicio=document.getElementById('nov-inicio').value;
-  if(!novEmail||!tipo||!inicio){alert('Correo, tipo de novedad y fecha inicio son obligatorios.');return;}
-  var url=SCRIPT_URL
-    +'?action=createNovedad&email='+encodeURIComponent(currentUser.email)
-    +'&empEmail='+encodeURIComponent(novEmail)
-    +'&empNombre='+encodeURIComponent(novNombre)
+  var empEmail=document.getElementById('novEmail').value.trim();
+  var empNombre=document.getElementById('novNombre').value.trim();
+  var tipo=document.getElementById('novTipo').value;
+  var inicio=document.getElementById('novInicio').value;
+  if(!empEmail||!tipo||!inicio){alert('Correo, tipo y fecha inicio son obligatorios.');return;}
+  var url=SCRIPT_URL+'?action=createNovedad&email='+encodeURIComponent(currentUser.email)
+    +'&empEmail='+encodeURIComponent(empEmail)
+    +'&empNombre='+encodeURIComponent(empNombre)
     +'&tipoNovedad='+encodeURIComponent(tipo)
     +'&fechaInicio='+encodeURIComponent(inicio)
-    +'&fechaFin='+encodeURIComponent(document.getElementById('nov-fin').value)
-    +'&horas='+encodeURIComponent(document.getElementById('nov-horas').value)
-    +'&docSoporte='+encodeURIComponent(document.getElementById('nov-doc').value)
-    +'&observaciones='+encodeURIComponent(document.getElementById('nov-obs').value);
+    +'&fechaFin='+encodeURIComponent(document.getElementById('novFin').value)
+    +'&horas='+encodeURIComponent(document.getElementById('novHoras').value)
+    +'&docSoporte='+encodeURIComponent(document.getElementById('novDoc').value)
+    +'&observaciones='+encodeURIComponent(document.getElementById('novObs').value);
   await fetch(url,{mode:'no-cors'});
-  document.getElementById('nov-ok').style.display='block';
-  setTimeout(function(){document.getElementById('nov-ok').style.display='none';},4000);
-  ['nov-email','nov-nombre','nov-inicio','nov-fin','nov-horas','nov-doc','nov-obs'].forEach(function(id){document.getElementById(id).value='';});
-  document.getElementById('nov-tipo').value='';
+  document.getElementById('novOk').style.display='block';
+  setTimeout(function(){document.getElementById('novOk').style.display='none';},4000);
+  ['novEmail','novNombre','novInicio','novFin','novHoras','novDoc','novObs'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('novTipo').value='';
   loadNovedades();
 }
 
-async function loadNovedades(){
-  document.getElementById('nov-history-content').textContent='Cargando...';
-  try{
-    var r=await fetch(SCRIPT_URL+'?action=getNovedadesEmpresa&email='+encodeURIComponent(currentUser.email));
-    var d=await r.json();
-    const rows=d.rows||[];
-    if(!rows.length){document.getElementById('nov-history-content').textContent='Sin novedades registradas aun.';return;}
-    var html='<table class="nov-table"><thead><tr><th>Fecha</th><th>Empleado</th><th>Tipo Novedad</th><th>Periodo</th><th>Doc Soporte</th><th>Observaciones</th><th>Registrado por</th></tr></thead><tbody>';
-    rows.forEach(function(r){
-      html+='<tr>';
-      html+='<td>'+formatDate(r['Marca de tiempo'])+'</td>';
-      html+='<td><strong>'+r['Nombre empleado']+'</strong><br><span style="font-size:10px;color:var(--gray-400);">'+r['Correo empleado']+'</span></td>';
-      html+='<td><span class="status-pill sp-pre">'+r['Tipo novedad']+'</span></td>';
-      html+='<td>'+r['Fecha Inicio']+(r['Fecha Fin']?' al '+r['Fecha Fin']:'')+(r['Horas']?'<br>'+r['Horas']:'')+'</td>';
-      html+='<td>'+r['Documento soporte']+'</td>';
-      html+='<td>'+r['Observaciones']+'</td>';
-      html+='<td>'+r['Registrado por']+'</td>';
-      html+='</tr>';
-    });
-    html+='</tbody></table>';
-    document.getElementById('nov-history-content').innerHTML=html;
-  }catch(e){document.getElementById('nov-history-content').textContent='Error cargando novedades.';}
-}
-
+// CORRECCIONES
 async function loadCorrecciones(){
-  document.getElementById('loading-corr').style.display='block';
-  document.getElementById('list-correcciones').innerHTML='';
+  document.getElementById('corrContent').innerHTML='<p style="text-align:center;color:#9CA3AF;padding:2rem">Cargando correcciones...</p>';
   try{
-    var r=await fetch(SCRIPT_URL+'?action=getPending&email='+encodeURIComponent(currentUser.email));
-    var d=await r.json();
-    const allRows=(d.rows||[]).filter(function(row){return row['_sheetName']==='Correcciones de Marcaje';});
-    const rHist=await fetch(SCRIPT_URL+'?action=getHistory&email='+encodeURIComponent(currentUser.email));
-    const dHist=await rHist.json();
-    const histRows=(dHist.rows||[]).filter(function(row){return row['_sheetName']==='Correcciones de Marcaje';});
-    const all=[...allRows,...histRows];
-    document.getElementById('loading-corr').style.display='none';
-    if(!all.length){document.getElementById('list-correcciones').innerHTML='<div class="empty-state"><p>Sin solicitudes de correccion de marcaje.</p></div>';return;}
-    var html='<table class="nov-table"><thead><tr><th>Empleado</th><th>Marcaje</th><th>Fecha</th><th>Hora Incorrecta</th><th>Hora Correcta</th><th>Motivo</th><th>Estado Director</th><th>Estado GH</th><th>Accion GH</th></tr></thead><tbody>';
+    var rP=await fetch(SCRIPT_URL+'?action=getPending&email='+encodeURIComponent(currentUser.email));
+    var dP=await rP.json();
+    var rH=await fetch(SCRIPT_URL+'?action=getHistory&email='+encodeURIComponent(currentUser.email));
+    var dH=await rH.json();
+    var all=[].concat((dP.rows||[]).filter(function(r){return r['_tab']==='Correcciones de Marcaje';}),(dH.rows||[]).filter(function(r){return r['_tab']==='Correcciones de Marcaje';}));
+    if(!all.length){document.getElementById('corrContent').innerHTML=emptyState('Sin solicitudes de correccion de marcaje.');return;}
+    var html='<div style="background:white;border-radius:14px;border:1.5px solid #E5E7EB;overflow:auto">';
+    html+='<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:#F9FAFB">';
+    ['Empleado','Empresa','Tipo Marcaje','Fecha','Hora Inc.','Hora Corr.','Motivo','Dir. Estado','GH Estado','Accion GH'].forEach(function(h){html+='<th style="text-align:left;font-size:10px;font-weight:600;color:#9CA3AF;text-transform:uppercase;padding:8px 10px;border-bottom:1px solid #E5E7EB;white-space:nowrap">'+h+'</th>';});
+    html+='</tr></thead><tbody>';
     all.forEach(function(row,idx){
-      const estadoDir=row['Estado Director']||'';
-      const estadoGH=row['Estado GH']||'';
-      const isPendingGH=estadoDir==='Aprobado'&&estadoGH==='Pendiente GH';
+      var estadoDir=row['Estado Director']||'';
+      var estadoGH=row['Estado GH']||'';
+      var isPendingGH=estadoDir==='Aprobado'&&estadoGH==='Pendiente GH';
+      var rowIdx=row['_rowIndex']||'';
       html+='<tr>';
-      html+='<td><strong>'+(row['Nombre del empleado']||row['Correo empleado'])+'</strong></td>';
-      html+='<td>'+(row['Tipo Marcaje']||'')+'</td>';
-      html+='<td>'+(row['Fecha Marcaje']||'')+'</td>';
-      html+='<td style="color:var(--red-dark)">'+(row['Hora Incorrecta']||'')+'</td>';
-      html+='<td style="color:var(--green-dark)">'+(row['Hora Correcta']||'')+'</td>';
-      html+='<td>'+(row['Motivo']||row['Motivo / Detalle']||'')+'</td>';
-      html+='<td><span class="status-pill '+(estadoDir==='Aprobado'?'sp-pre':estadoDir==='Rechazado'?'sp-rejected':'sp-pending')+'">'+estadoDir+'</span></td>';
-      html+='<td><span class="status-pill '+(estadoGH==='Aprobado GH'?'sp-approved':estadoGH==='Rechazado GH'?'sp-rejected':'sp-pending')+'">'+estadoGH+'</span></td>';
-      html+='<td>';
+      html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;font-weight:600;white-space:nowrap">'+row['Nombre']+'</td>';
+      html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6">'+empresaBadge(row['Empresa'])+'</td>';
+      html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;font-size:11px">'+row['Tipo Marcaje']+'</td>';
+      html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;font-size:11px;white-space:nowrap">'+row['Fecha Marcaje']+'</td>';
+      html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;color:#991B1B;font-size:11px;font-weight:600">'+row['Hora Incorrecta']+'</td>';
+      html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;color:#059669;font-size:11px;font-weight:600">'+row['Hora Correcta']+'</td>';
+      html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;font-size:11px;max-width:120px">'+row['Motivo']+'</td>';
+      html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6"><span style="background:'+(estadoDir==='Aprobado'?'#EFF6FF':estadoDir==='Rechazado'?'#FEF2F2':'#FFFBEB')+';color:'+(estadoDir==='Aprobado'?'#1E40AF':estadoDir==='Rechazado'?'#991B1B':'#92400E')+';border-radius:99px;padding:2px 8px;font-size:10px;font-weight:600;white-space:nowrap">'+estadoDir+'</span></td>';
+      html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6"><span style="background:'+(estadoGH==='Aprobado GH'?'#ECFDF5':estadoGH==='Rechazado GH'?'#FEF2F2':'#F3F4F6')+';color:'+(estadoGH==='Aprobado GH'?'#065F46':estadoGH==='Rechazado GH'?'#991B1B':'#374151')+';border-radius:99px;padding:2px 8px;font-size:10px;font-weight:600;white-space:nowrap">'+estadoGH+'</span></td>';
+      html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6">';
       if(isPendingGH&&currentUser.role==='master'){
-        html+='<input class="corr-obs" id="corr-obs-'+idx+'" placeholder="Observaciones..."><br>';
-        html+='<button class="gh-approve-btn" onclick="ghDecide(this)" data-row="'+row['_rowIndex']+'" data-action="approve" data-idx="'+idx+'">Aprobar</button>';
-        html+='<button class="gh-reject-btn" onclick="ghDecide(this)" data-row="'+row['_rowIndex']+'" data-action="reject" data-idx="'+idx+'">Rechazar</button>';
-      }else{
-        html+='—';
-      }
-      html+='</td>';
-      html+='</tr>';
+        html+='<input id="corrObs'+idx+'" placeholder="Obs..." style="width:100%;padding:4px 8px;border:1px solid #E5E7EB;border-radius:6px;font-size:11px;font-family:inherit;outline:none;margin-bottom:4px"><br>';
+        html+='<button onclick="ghDecide(\''+rowIdx+'\',\'approve\','+idx+')" style="padding:4px 10px;border-radius:6px;border:none;background:#065F46;color:white;font-size:11px;font-weight:600;cursor:pointer;margin-right:4px">Aprobar</button>';
+        html+='<button onclick="ghDecide(\''+rowIdx+'\',\'reject\','+idx+')" style="padding:4px 10px;border-radius:6px;border:1.5px solid #FECACA;background:#FEF2F2;color:#991B1B;font-size:11px;font-weight:600;cursor:pointer">Rechazar</button>';
+      }else{html+='&mdash;';}
+      html+='</td></tr>';
     });
-    html+='</tbody></table>';
-    document.getElementById('list-correcciones').innerHTML=html;
-  }catch(e){document.getElementById('loading-corr').textContent='Error cargando correcciones.';}
+    html+='</tbody></table></div>';
+    document.getElementById('corrContent').innerHTML=html;
+  }catch(e){document.getElementById('corrContent').innerHTML='<p style="color:#991B1B;padding:1rem">Error cargando correcciones: '+e.message+'</p>';}
 }
 
-async function ghDecide(rowIndex, decision, idx){
-  var obs=document.getElementById('corr-obs-'+idx)?document.getElementById('corr-obs-'+idx).value.trim():'';
+async function ghDecide(rowIndex,decision,idx){
+  var obsEl=document.getElementById('corrObs'+idx);
+  var obs=obsEl?obsEl.value.trim():'';
   if(decision==='reject'&&!obs){alert('Para rechazar debes ingresar una observacion.');return;}
-  var url=SCRIPT_URL
-    +'?action=approveGH&email='+encodeURIComponent(currentUser.email)
-    +'&rowIndex='+encodeURIComponent(rowIndex)
-    +'&sheetName=Correcciones+de+Marcaje'
-    +'&decision='+decision
-    +'&obs='+encodeURIComponent(obs);
+  var url=SCRIPT_URL+'?action=approveGH&email='+encodeURIComponent(currentUser.email)+'&rowIndex='+encodeURIComponent(rowIndex)+'&sheetName=Correcciones+de+Marcaje&decision='+decision+'&obs='+encodeURIComponent(obs);
   await fetch(url,{mode:'no-cors'});
   setTimeout(loadCorrecciones,1500);
 }
 
-function openForgot(){document.getElementById('forgot-modal').classList.add('on');}
-function closeForgot(){document.getElementById('forgot-modal').classList.remove('on');document.getElementById('forgot-ok').style.display='none';}
+// ADMINS
+async function loadAdmins(){
+  try{
+    var r=await fetch(SCRIPT_URL+'?action=getAdminsLista&email='+encodeURIComponent(currentUser.email));
+    var d=await r.json();
+    renderAdmins(d.admins||[]);
+  }catch(e){document.getElementById('adminsContent').innerHTML='<p style="color:#991B1B;padding:1rem">Error cargando administradores.</p>';}
+}
+function renderAdmins(admins){
+  var html='<div style="background:white;border-radius:14px;border:1.5px solid #E5E7EB;overflow:hidden;margin-bottom:1rem">';
+  html+='<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:#F9FAFB">';
+  ['Nombre','Email','Rol','Estado','Acciones'].forEach(function(h){html+='<th style="text-align:left;font-size:10px;font-weight:600;color:#9CA3AF;text-transform:uppercase;padding:8px 10px;border-bottom:1px solid #E5E7EB">'+h+'</th>';});
+  html+='</tr></thead><tbody>';
+  admins.forEach(function(a){
+    html+='<tr><td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;font-weight:600">'+a.nombre+'</td>';
+    html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;font-size:11px;color:#6B7280">'+a.email+'</td>';
+    html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6"><span style="background:'+(a.role==='master'?'#FEF9C3':'#EFF6FF')+';color:'+(a.role==='master'?'#854D0E':'#1E40AF')+';border-radius:99px;padding:2px 8px;font-size:10px;font-weight:700;text-transform:uppercase">'+a.role+'</span></td>';
+    html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6"><span style="color:#059669;font-size:11px;font-weight:600">Activo</span></td>';
+    html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6"><button onclick="terminarAdmin(\''+a.email+'\')" style="padding:3px 8px;border-radius:6px;border:1px solid #FECACA;background:#FEF2F2;color:#991B1B;font-size:10px;cursor:pointer">Desactivar</button></td>';
+    html+='</tr>';
+  });
+  html+='</tbody></table></div>';
+  document.getElementById('adminsContent').innerHTML=html;
+}
+async function guardarAdmin(){
+  var adminEmail=document.getElementById('newAdminEmail').value.trim().toLowerCase();
+  var nombre=document.getElementById('newAdminNombre').value.trim();
+  var clave=document.getElementById('newAdminClave').value.trim();
+  var rol=document.getElementById('newAdminRol').value;
+  if(!adminEmail||!nombre){alert('Correo y nombre son obligatorios.');return;}
+  var url=SCRIPT_URL+'?action=saveAdmin&email='+encodeURIComponent(currentUser.email)+'&adminEmail='+encodeURIComponent(adminEmail)+'&nombre='+encodeURIComponent(nombre)+'&clave='+encodeURIComponent(clave)+'&rol='+encodeURIComponent(rol)+'&activo=Si';
+  await fetch(url,{mode:'no-cors'});
+  document.getElementById('adminOk').style.display='block';
+  setTimeout(function(){document.getElementById('adminOk').style.display='none';},3000);
+  ['newAdminEmail','newAdminNombre','newAdminClave'].forEach(function(id){document.getElementById(id).value='';});
+  setTimeout(loadAdmins,1500);
+}
+async function terminarEmpleadoAction(){
+  var empEmail=document.getElementById('termEmail').value.trim().toLowerCase();
+  if(!empEmail){alert('Ingresa el correo del empleado.');return;}
+  if(!confirm('Marcar a '+empEmail+' como terminado? Dejara de recibir notificaciones.'))return;
+  await fetch(SCRIPT_URL+'?action=terminarEmpleado&email='+encodeURIComponent(currentUser.email)+'&empEmail='+encodeURIComponent(empEmail),{mode:'no-cors'});
+  document.getElementById('termOk').style.display='block';
+  setTimeout(function(){document.getElementById('termOk').style.display='none';document.getElementById('termEmail').value='';},3000);
+  setTimeout(loadEmpleados,2000);
+}
+
+// FORGOT
+function openForgot(){document.getElementById('forgotModal').classList.add('on');}
+function closeForgot(){document.getElementById('forgotModal').classList.remove('on');document.getElementById('forgotOk').style.display='none';}
 async function sendForgot(){
-  var forgotEmail=document.getElementById('forgot-email').value.trim();
-  if(!email){alert('Ingresa tu correo.');return;}
+  var forgotEmail=document.getElementById('forgotEmail').value.trim();
+  if(!forgotEmail){alert('Ingresa tu correo.');return;}
   await fetch(SCRIPT_URL+'?action=forgotPassword&email='+encodeURIComponent(forgotEmail));
-  document.getElementById('forgot-ok').style.display='block';
+  document.getElementById('forgotOk').style.display='block';
   setTimeout(closeForgot,3000);
 }
+
 </script>
 </body>
 </html>
