@@ -190,6 +190,7 @@ body{font-family:'Inter',sans-serif;background:var(--g50);min-height:100vh;}
     </div>
     <div class="topbar-right">
       <span class="pending-badge" id="pendingBadge">Cargando...</span>
+      <button id="resetBtn" onclick="confirmarReset()" style="display:none;padding:7px 14px;border-radius:9px;border:2px solid #991B1B;background:rgba(153,27,27,.15);color:#FECACA;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:.3px">RESET DATOS</button>
       <button class="logout-btn" onclick="doLogout()">Cerrar sesion</button>
     </div>
   </div>
@@ -381,7 +382,7 @@ body{font-family:'Inter',sans-serif;background:var(--g50);min-height:100vh;}
 
 <script>
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby0-tJ0YNX83PxzF1ZULKEItSOiVaixpVOWvrSnkF9GIqclMERkP3IeCbMo74gelonx/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzQ3e0je3QUC81VJtyuZrAkdmd4s7H5MiXIo3kBK1zBYrwtu3mWDecd5eg9TfUuZjbb/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -456,16 +457,17 @@ function doLogout(){
   document.getElementById('loginWrap').style.display='flex';
   document.getElementById('lPass').value='';
   document.getElementById('loginErr').style.display='none';
+  var rb=document.getElementById('resetBtn');if(rb)rb.style.display='none';
   ['tabNovedades','tabCorrecciones','tabEmpleados','tabAdmins','tabCalendario'].forEach(function(id){
     var el=document.getElementById(id);if(el)el.style.display='none';
   });
 }
 
-var pollTimer=null,lastPollCount=0;
+var pollTimer=null,lastPollCount=-1;
 function startPolling(){
   if(pollTimer)clearInterval(pollTimer);
   doPoll();
-  pollTimer=setInterval(doPoll,30000);
+  pollTimer=setInterval(doPoll,15000);
 }
 async function doPoll(){
   if(!currentUser)return;
@@ -477,9 +479,11 @@ async function doPoll(){
     if(badge)badge.textContent=count+' pendiente'+(count===1?'':'s');
     var stP=document.getElementById('stPending');
     if(stP)stP.textContent=count;
-    if(count>lastPollCount&&lastPollCount>=0){
-      var diff=count-lastPollCount;
-      showToast(diff+' nueva'+(diff===1?'':'s')+' solicitud'+(diff===1?'':'es')+' pendiente'+(diff===1?'':'s'));
+    if(count!==lastPollCount){
+      if(count>lastPollCount&&lastPollCount>=0){
+        var diff=count-lastPollCount;
+        showToast(diff+' nueva'+(diff===1?'':'s')+' solicitud'+(diff===1?'':'es'));
+      }
       loadPending();
       loadHistory();
     }
@@ -610,9 +614,12 @@ function buildReqCard(row,idx){
   if(festAcum&&parseInt(festAcum)>=2)html+='<span class="badge badge-alert">'+festAcum+' festivos mes</span>';
   if(isMaster)html+='<span class="badge badge-master">MASTER</span>';
   html+='</div></div>';
+  var fechaEv=row['Fecha Extra']||row['Fecha Festivo']||row['Fecha Compensatorio']||row['Fecha Marcaje']||row['Fecha Inicio']||'';
   html+='<div class="req-details">';
-  html+='<div class="req-detail"><div class="rd-lbl">Fecha registro</div><div class="rd-val">'+ts+'</div></div>';
-  if(horaI)html+='<div class="req-detail"><div class="rd-lbl">Horario</div><div class="rd-val">'+horaI+' a '+horaF+(horas?' ('+horas+')':'')+'</div></div>';
+  html+='<div class="req-detail"><div class="rd-lbl">Empleado</div><div class="rd-val" style="font-size:11px">'+correo+'</div></div>';
+  html+='<div class="req-detail"><div class="rd-lbl">Registrado</div><div class="rd-val">'+ts+'</div></div>';
+  if(fechaEv)html+='<div class="req-detail"><div class="rd-lbl">Fecha solicitud</div><div class="rd-val">'+fechaEv+'</div></div>';
+  if(horaI)html+='<div class="req-detail"><div class="rd-lbl">Horario</div><div class="rd-val">'+horaI+' — '+horaF+(horas?' ('+horas+')':'')+'</div></div>';
   if(motivo)html+='<div class="req-detail"><div class="rd-lbl">Motivo</div><div class="rd-val">'+motivo+'</div></div>';
   html+='<div class="req-detail"><div class="rd-lbl">GPS</div><div class="rd-val">'+gps+(mapsLink&&mapsLink!=='No disponible'?' <a href="'+mapsLink+'" target="_blank" style="color:#1D9E9E;font-size:11px">Ver mapa</a>':'')+'</div></div>';
   html+='</div>';
@@ -1002,6 +1009,36 @@ async function terminarEmpleadoAction(){
 }
 
 // FORGOT
+function confirmarReset(){
+  var msg = '⚠️ RESET DE DATOS\n\n' +
+    'Esta accion BORRARA todos los registros de prueba y cargara los datos reales de vacaciones del Excel.\n\n' +
+    'Esto NO se puede deshacer.\n\n' +
+    'Escribe CONFIRMAR para continuar:';
+  var input = prompt(msg);
+  if(input && input.trim().toUpperCase() === 'CONFIRMAR'){
+    doReset();
+  } else {
+    alert('Reset cancelado.');
+  }
+}
+async function doReset(){
+  var btn = document.getElementById('resetBtn');
+  if(btn){btn.textContent='Reseteando...';btn.disabled=true;}
+  try{
+    var r = await fetch(SCRIPT_URL+'?action=resetData&email='+encodeURIComponent(currentUser.email),{redirect:'follow'});
+    var d = await r.json();
+    if(d.status==='ok'){
+      alert('Reset completado.\n'+d.msg+'\n\nEl sistema esta listo para produccion.');
+      loadPending();
+      loadHistory();
+    } else {
+      alert('Error: '+d.msg);
+    }
+  }catch(e){
+    alert('Error de conexion: '+e.message);
+  }
+  if(btn){btn.textContent='RESET DATOS';btn.disabled=false;}
+}
 function openForgot(){document.getElementById('forgotModal').classList.add('on');}
 function closeForgot(){document.getElementById('forgotModal').classList.remove('on');document.getElementById('forgotOk').style.display='none';}
 async function sendForgot(){
