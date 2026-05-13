@@ -381,7 +381,7 @@ body{font-family:'Inter',sans-serif;background:var(--g50);min-height:100vh;}
 
 <script>
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzfP4zxIPUHlHlev6aqbS8ls6TT45G_18qSobbfBres60D310u82BD0OREawtmCO7Ba/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby0-tJ0YNX83PxzF1ZULKEItSOiVaixpVOWvrSnkF9GIqclMERkP3IeCbMo74gelonx/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -534,13 +534,14 @@ async function loadPending(){
     allPending=d.rows||[];
     var badge=document.getElementById('pendingBadge');
     if(badge)badge.textContent=allPending.length+' pendiente'+(allPending.length===1?'':'s');
-    var stP=document.getElementById('stPending');
-    if(stP)stP.textContent=allPending.length;
+    var stP=document.getElementById('stPending');if(stP)stP.textContent=allPending.length;
     if(!allPending.length){listEl.innerHTML=emptyState('Sin solicitudes pendientes.');return;}
     listEl.innerHTML=allPending.map(function(row,i){return buildReqCard(row,i);}).join('');
-  } catch(e){
-    loadEl.textContent='Error cargando: '+e.message;
-  }
+    listEl.onclick=function(e){
+      var del=e.target.closest('.pdel');
+      if(del){var ri=del.getAttribute('data-row'),tab=del.getAttribute('data-tab');if(confirm('Borrar?'))deleteRow('p',ri,tab);}
+    };
+  }catch(e){loadEl.textContent='Error: '+e.message;}
 }
 
 async function loadHistory(){
@@ -744,6 +745,13 @@ async function loadCalendar(){
     renderCalendar();
   }catch(e){console.log('Cal error:',e);}
 }
+function toISO(d){
+  if(!d)return'';
+  if(d.match(/^\d{4}-\d{2}-\d{2}/))return d.substring(0,10);
+  var p=d.split('/');
+  if(p.length===3&&p[2].length===4)return p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0');
+  return d;
+}
 function renderCalendar(){
   var meses=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   document.getElementById('calTitle').textContent=meses[calMonth]+' '+calYear;
@@ -757,7 +765,10 @@ function renderCalendar(){
   for(var day=1;day<=last.getDate();day++){
     var isToday=day===today.getDate()&&calMonth===today.getMonth()&&calYear===today.getFullYear();
     var dateStr=calYear+'-'+pad(calMonth+1)+'-'+pad(day);
-    var dayEvts=calEvents.filter(function(ev){return ev.inicio<=dateStr&&ev.fin>=dateStr;});
+    var dayEvts=calEvents.filter(function(ev){
+      var ini=toISO(ev.inicio),fin=toISO(ev.fin)||ini;
+      return ini<=dateStr&&fin>=dateStr;
+    });
     var hasEvts=dayEvts.length>0;
     html+='<div class="cal-day'+(isToday?' cal-today':'')+(hasEvts?' cal-hasevt':'')+'" data-date="'+dateStr+'" data-day="'+day+'" style="cursor:'+(hasEvts?'pointer':'default')+'">';
     html+='<div class="cal-day-num">'+day+'</div>';
@@ -775,19 +786,24 @@ function renderCalendar(){
 }
 function showDayDetail(dateStr,day){
   var meses=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  var evts=calEvents.filter(function(ev){return ev.inicio<=dateStr&&ev.fin>=dateStr;});
+  var evts=calEvents.filter(function(ev){
+    var ini=toISO(ev.inicio),fin=toISO(ev.fin)||ini;
+    return ini<=dateStr&&fin>=dateStr;
+  });
   var dc=document.getElementById('calDetailContent');
-  if(!evts.length){dc.innerHTML='<span style="color:#9CA3AF">Sin novedades.</span>';return;}
-  var tLabels={'Vacaciones':'Vacaciones','Tiempo Extra':'Tiempo extra','Festivo':'Festivo trabajado','Compensatorio':'Dia compensatorio','Correccion':'Correccion'};
-  var html='<div style="font-size:11px;font-weight:700;color:#0A3D47;margin-bottom:8px">'+day+' de '+meses[calMonth]+'</div>';
+  if(!evts.length){dc.innerHTML='<span style="color:#9CA3AF">Sin novedades este dia.</span>';return;}
+  var tLabels={'Vacaciones':'Vacaciones','Tiempo Extra':'Tiempo extra','Festivo':'Festivo trabajado','Compensatorio':'Dia compensatorio','Correccion':'Correccion de marcaje'};
+  var html='<div style="font-size:11px;font-weight:700;color:#0A3D47;margin-bottom:10px">'+day+' de '+meses[calMonth]+' '+calYear+'</div>';
   evts.forEach(function(ev){
     var nombre=ev.titulo.split(' - ').slice(1).join(' ');
+    var correo=ev.correo||'';
     var sc=ev.estado==='Aprobado'?'#059669':ev.estado==='Rechazado'?'#DC2626':'#D97706';
     var sb=ev.estado==='Aprobado'?'#ECFDF5':ev.estado==='Rechazado'?'#FEF2F2':'#FFFBEB';
-    html+='<div style="border-left:3px solid '+ev.color+';padding:7px 9px;border-radius:0 7px 7px 0;background:#F9FAFB;margin-bottom:7px">';
+    html+='<div style="border-left:3px solid '+ev.color+';padding:8px 10px;border-radius:0 8px 8px 0;background:#F9FAFB;margin-bottom:8px">';
     html+='<div style="font-size:12px;font-weight:700;color:#111827">'+nombre+'</div>';
+    if(correo)html+='<div style="font-size:10px;color:#6B7280;margin-top:1px">'+correo+'</div>';
     html+='<div style="font-size:10px;color:#6B7280;margin-top:1px">'+(tLabels[ev.tipo]||ev.tipo)+'</div>';
-    html+='<span style="display:inline-block;margin-top:3px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;background:'+sb+';color:'+sc+'">'+ev.estado+'</span>';
+    html+='<span style="display:inline-block;margin-top:4px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:'+sb+';color:'+sc+'">'+ev.estado+'</span>';
     html+='</div>';
   });
   dc.innerHTML=html;
