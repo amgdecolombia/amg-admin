@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+<!DOCTYPE html
+    setTimeout(function(){lastPollCount=-1;doPoll();},3000);>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -424,8 +425,8 @@ async function doLogin(){
       document.getElementById('dashboard').style.display='block';
       document.getElementById('topbarName').innerHTML=d.nombre+(role==='master'?'<span class="master-badge" style="display:inline-flex">MASTER</span>':'');
       document.getElementById('topbarEmail').textContent=email;
-      var masterTabs=['tabNovedades','tabCorrecciones','tabAdmins','tabCalendario'];
-      var directorTabs=['tabEmpleados'];
+      var masterTabs=['tabNovedades','tabCorrecciones','tabAdmins','tabCalendario','tabEmpleados'];
+      var directorTabs=[];
       if(role==='master'){
         masterTabs.concat(directorTabs).forEach(function(id){
           var el=document.getElementById(id);
@@ -439,6 +440,8 @@ async function doLogin(){
       }
       loadPending();
       loadHistory();
+    startPolling();
+    setTimeout(function(){lastPollCount=-1;doPoll();},4000);
     } else {
       errEl.textContent='Credenciales incorrectas. Verifica tu correo y clave.';
       errEl.style.display='block';
@@ -480,12 +483,20 @@ async function doPoll(){
     var stP=document.getElementById('stPending');
     if(stP)stP.textContent=count;
     if(count!==lastPollCount){
-      if(count>lastPollCount&&lastPollCount>=0){
+      if(lastPollCount>=0&&count>lastPollCount){
         var diff=count-lastPollCount;
-        showToast(diff+' nueva'+(diff===1?'':'s')+' solicitud'+(diff===1?'':'es'));
+        showToast(diff+' nueva'+(diff===1?'':'s')+' solicitud'+(diff===1?'':'es')+' — Toca para ver');
+        loadPending();
+        loadHistory();
+      } else if(lastPollCount===-1){
+        // First poll - just update counts, loadPending already called on login
+        lastPollCount=count;
+        return;
+      } else {
+        // Count decreased (someone else approved) - reload silently
+        loadPending();
+        loadHistory();
       }
-      loadPending();
-      loadHistory();
     }
     lastPollCount=count;
   }catch(e){console.log('Poll error:',e);}
@@ -626,8 +637,8 @@ function buildReqCard(row,idx){
   if(isMaster)html+='<div style="display:flex;justify-content:flex-end;margin-bottom:6px"><button onclick="deleteRow('+idx+',\''+rowIdx+'\',\''+tab+'\')" style="font-size:11px;padding:4px 10px;border-radius:7px;border:1px solid #FECACA;background:#FEF2F2;color:#991B1B;cursor:pointer;font-family:inherit">Borrar registro</button></div>';
   html+='<textarea class="obs-input" id="obs-'+idx+'" placeholder="Observaciones (requerido para rechazar)..."></textarea>';
   html+='<div class="req-actions">';
-  html+='<button class="btn-approve" id="bap-'+idx+'" onclick="decidir('+idx+',\'approve\',\''+rowIdx+'\',\''+tab+'\')">Aprobar</button>';
-  html+='<button class="btn-reject" id="brj-'+idx+'" onclick="decidir('+idx+',\'reject\',\''+rowIdx+'\',\''+tab+'\')">Rechazar</button>';
+  html+='<button class="btn-approve" id="bap-'+idx+'" onclick="decidir('+idx+',\'approve\',\''+rowIdx+'\',\''+tab+'\',\'obs-'+idx+'\')">Aprobar</button>';
+  html+='<button class="btn-reject" id="brj-'+idx+'" onclick="decidir('+idx+',\'reject\',\''+rowIdx+'\',\''+tab+'\',\'obs-'+idx+'\')">Rechazar</button>';
   html+='</div></div>';
   return html;
 }
@@ -696,20 +707,30 @@ function emptyState(msg){
 }
 
 async function decidir(idx,action,rowIndex,sheetName,obsId){
-  var obs=obsId&&document.getElementById(obsId)?document.getElementById(obsId).value.trim():'';
+  var obsElId = obsId || ('obs-'+idx);
+  var obsEl = document.getElementById(obsElId);
+  var obs = obsEl ? obsEl.value.trim() : '';
   if(action==='reject'&&!obs){alert('Para rechazar debes ingresar una observacion.');return;}
   var apBtn=document.getElementById('bap-'+idx);
   var rjBtn=document.getElementById('brj-'+idx);
   if(apBtn){apBtn.disabled=true;apBtn.textContent='Procesando...';}
-  if(rjBtn)rjBtn.disabled=true;
+  if(rjBtn){rjBtn.disabled=true;}
   try{
     var url=SCRIPT_URL+'?action='+(action==='approve'?'approveRow':'rejectRow')
-      +'&rowIndex='+encodeURIComponent(rowIndex)+'&sheetName='+encodeURIComponent(sheetName)
-      +'&observaciones='+encodeURIComponent(obs)+'&directorEmail='+encodeURIComponent(currentUser.email)
+      +'&rowIndex='+encodeURIComponent(rowIndex)
+      +'&sheetName='+encodeURIComponent(sheetName)
+      +'&observaciones='+encodeURIComponent(obs)
+      +'&directorEmail='+encodeURIComponent(currentUser.email)
       +'&directorName='+encodeURIComponent(currentUser.nombre);
     await fetch(url,{mode:'no-cors'});
-    setTimeout(function(){loadPending();loadHistory();},1500);
-  }catch(e){if(apBtn){apBtn.disabled=false;apBtn.textContent='Aprobar';}if(rjBtn)rjBtn.disabled=false;}
+    var card=document.getElementById('card-'+idx);
+    if(card){card.style.opacity='.4';card.style.pointerEvents='none';}
+    setTimeout(function(){loadPending();loadHistory();lastPollCount=-1;},1500);
+  }catch(e){
+    if(apBtn){apBtn.disabled=false;apBtn.textContent=action==='approve'?(currentUser.role==='master'?'Aprobar (GH)':'Pre-aprobar'):'Rechazar';}
+    if(rjBtn)rjBtn.disabled=false;
+    alert('Error al procesar: '+e.message);
+  }
 }
 async function decidirRow(rowIndex,sheetName,action,obs){
   try{
@@ -1031,6 +1052,8 @@ async function doReset(){
       alert('Reset completado.\n'+d.msg+'\n\nEl sistema esta listo para produccion.');
       loadPending();
       loadHistory();
+    startPolling();
+    setTimeout(function(){lastPollCount=-1;doPoll();},4000);
     } else {
       alert('Error: '+d.msg);
     }
