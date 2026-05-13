@@ -432,6 +432,7 @@ async function doLogin(){
           var el=document.getElementById(id);
           if(el)el.style.display='block';
         });
+        var rb=document.getElementById('resetBtn');if(rb)rb.style.display='inline-block';
       } else if(role==='director'){
         directorTabs.forEach(function(id){
           var el=document.getElementById(id);
