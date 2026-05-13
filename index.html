@@ -375,7 +375,7 @@ body{font-family:'Inter',sans-serif;background:var(--g50);min-height:100vh;}
 
 <script>
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwGLm-Vcm1i-FQnbOzYttTyaqqJmmnLEYZ3fYd4LnRnKnP1X2WHzft8WtHiQ8QupY3n/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwJ9U210E6ymZUnPMpPz8XqXGLmnWb5OjELRA9lH0hnBAu4n1lEvYjdk3wWPnQnI50G/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -396,14 +396,22 @@ async function doLogin(){
   var email=document.getElementById('lEmail').value.trim().toLowerCase();
   var pass=document.getElementById('lPass').value;
   if(!email||!pass){alert('Ingresa correo y clave.');return;}
+  var btn=document.querySelector('.login-btn');
+  btn.disabled=true;btn.textContent='Verificando...';
+  var errEl=document.getElementById('loginErr');
+  errEl.style.display='none';
   try{
-    var r=await fetch(SCRIPT_URL+'?action=login&email='+encodeURIComponent(email)+'&pass='+encodeURIComponent(pass));
-    var d=await r.json();
+    var url=SCRIPT_URL+'?action=login&email='+encodeURIComponent(email)+'&pass='+encodeURIComponent(pass);
+    var r=await fetch(url,{redirect:'follow'});
+    if(!r.ok){errEl.textContent='Error del servidor: '+r.status+'. Verifica que el script este deployado como Anyone.';errEl.style.display='block';btn.disabled=false;btn.textContent='Ingresar';return;}
+    var text=await r.text();
+    var d;
+    try{d=JSON.parse(text);}catch(pe){errEl.textContent='Respuesta invalida del servidor. Asegurate de ejecutar setupSistema() en Apps Script.';errEl.style.display='block';btn.disabled=false;btn.textContent='Ingresar';return;}
     if(d.status==='ok'){
       currentUser={email:email,nombre:d.nombre,role:d.role};
       document.getElementById('loginWrap').style.display='none';
       document.getElementById('dashboard').style.display='block';
-      document.getElementById('loginErr').style.display='none';
+      errEl.style.display='none';
       document.getElementById('topbarName').textContent=d.nombre;
       document.getElementById('topbarEmail').textContent=email;
       if(d.role==='master'){
@@ -416,9 +424,14 @@ async function doLogin(){
       }
       loadAll();
     }else{
-      document.getElementById('loginErr').style.display='block';
+      errEl.textContent='Credenciales incorrectas. Verifica tu correo y clave.';
+      errEl.style.display='block';
     }
-  }catch(e){alert('Error de conexion. Intenta de nuevo.');}
+  }catch(e){
+    errEl.textContent='No se pudo conectar al servidor ('+e.message+'). Verifica: 1) URL del script correcta 2) Deployment como Anyone 3) setupSistema() ejecutado.';
+    errEl.style.display='block';
+  }
+  btn.disabled=false;btn.textContent='Ingresar';
 }
 
 function doLogout(){
@@ -463,7 +476,7 @@ async function loadPending(){
     document.getElementById('stPending').textContent=allPending.length;
     if(!allPending.length){document.getElementById('listPending').innerHTML=emptyState('Sin solicitudes pendientes.');return;}
     document.getElementById('listPending').innerHTML=allPending.map(function(row,i){return buildReqCard(row,i);}).join('');
-  }catch(e){document.getElementById('loadingPending').textContent='Error cargando solicitudes.';}
+  }catch(e){document.getElementById('loadingPending').textContent='Error: '+e.message;}
 }
 
 async function loadHistory(){
@@ -480,7 +493,7 @@ async function loadHistory(){
     document.getElementById('stRejected').textContent=rejected;
     document.getElementById('stTotal').textContent=allPending.length+allHistory.length;
     renderHistory();
-  }catch(e){document.getElementById('loadingHistory').textContent='Error cargando historial.';}
+  }catch(e){document.getElementById('loadingHistory').textContent='Error: '+e.message;}
 }
 
 function renderHistory(){
