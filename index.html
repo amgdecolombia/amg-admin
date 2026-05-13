@@ -375,7 +375,7 @@ body{font-family:'Inter',sans-serif;background:var(--g50);min-height:100vh;}
 
 <script>
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwJ9U210E6ymZUnPMpPz8XqXGLmnWb5OjELRA9lH0hnBAu4n1lEvYjdk3wWPnQnI50G/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx3xvRM1jH8PSXwDVnUUPHsFXnKYV85rt8G0KE-xJpAJEaQVO8lcbMOYWXb8nvbckka/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -408,19 +408,20 @@ async function doLogin(){
     var d;
     try{d=JSON.parse(text);}catch(pe){errEl.textContent='Respuesta invalida del servidor. Asegurate de ejecutar setupSistema() en Apps Script.';errEl.style.display='block';btn.disabled=false;btn.textContent='Ingresar';return;}
     if(d.status==='ok'){
-      currentUser={email:email,nombre:d.nombre,role:d.role};
+      var role=(d.role||'').toLowerCase();
+      currentUser={email:email,nombre:d.nombre,role:role};
       document.getElementById('loginWrap').style.display='none';
       document.getElementById('dashboard').style.display='block';
       errEl.style.display='none';
       document.getElementById('topbarName').textContent=d.nombre;
       document.getElementById('topbarEmail').textContent=email;
-      if(d.role==='master'){
-        document.getElementById('masterBadge').style.display='inline-flex';
-        document.getElementById('tabNovedades').style.display='block';
-        document.getElementById('tabCorrecciones').style.display='block';
+      if(role==='master'||role==='director'){
+        document.getElementById('tabNovedades').style.display = role==='master'?'block':'none';
+        document.getElementById('tabCorrecciones').style.display = role==='master'?'block':'none';
         document.getElementById('tabEmpleados').style.display='block';
-        document.getElementById('tabAdmins').style.display='block';
-        document.getElementById('tabCalendario').style.display='block';
+        document.getElementById('tabAdmins').style.display = role==='master'?'block':'none';
+        document.getElementById('tabCalendario').style.display = role==='master'?'block':'none';
+        if(role==='master') document.getElementById('masterBadge').style.display='inline-flex';
       }
       loadAll();
     }else{
@@ -446,7 +447,7 @@ function doLogout(){
 function loadAll(){
   loadPending();
   loadHistory();
-  if(currentUser.role==='master'){
+  if(currentUser.role&&currentUser.role.toLowerCase()==='master'){
     loadEmpleados();
     loadCalendar();
   }
@@ -487,12 +488,13 @@ async function loadHistory(){
     var d=await r.json();
     document.getElementById('loadingHistory').style.display='none';
     allHistory=d.rows||[];
-    var approved=allHistory.filter(function(r){return r['Estado Director']==='Aprobado';}).length;
-    var rejected=allHistory.filter(function(r){return r['Estado Director']==='Rechazado';}).length;
+    var approved=allHistory.filter(function(row){return row['Estado Director']==='Aprobado';}).length;
+    var rejected=allHistory.filter(function(row){return row['Estado Director']==='Rechazado';}).length;
     document.getElementById('stApproved').textContent=approved;
     document.getElementById('stRejected').textContent=rejected;
     document.getElementById('stTotal').textContent=allPending.length+allHistory.length;
     renderHistory();
+    loadStats();
   }catch(e){document.getElementById('loadingHistory').textContent='Error: '+e.message;}
 }
 
@@ -787,7 +789,7 @@ async function loadCorrecciones(){
     });
     html+='</tbody></table></div>';
     document.getElementById('corrContent').innerHTML=html;
-  }catch(e){document.getElementById('corrContent').innerHTML='<p style="color:#991B1B;padding:1rem">Error cargando correcciones: '+e.message+'</p>';}
+  }catch(e){document.getElementById('corrContent').innerHTML='<p style="color:#991B1B;padding:1rem;font-size:13px">Error: '+e.message+'. Verifica que setupSistema() se haya ejecutado.</p>';}
 }
 
 async function ghDecide(rowIndex,decision,idx){
