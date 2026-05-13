@@ -375,7 +375,7 @@ body{font-family:'Inter',sans-serif;background:var(--g50);min-height:100vh;}
 
 <script>
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyMHlh9PVeVvrIt3AZ-CP9FlPeGbTBWgjIMRsOiSBLp7LkDNaRVneCZzzaiQuGxPBtY/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzfP4zxIPUHlHlev6aqbS8ls6TT45G_18qSobbfBres60D310u82BD0OREawtmCO7Ba/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -445,6 +445,7 @@ async function doLogin(){
 
 function doLogout(){
   currentUser=null;allPending=[];allHistory=[];
+  if(pollTimer)clearInterval(pollTimer);pollTimer=null;
   document.getElementById('dashboard').style.display='none';
   document.getElementById('loginWrap').style.display='flex';
   document.getElementById('lPass').value='';
@@ -452,6 +453,53 @@ function doLogout(){
   ['tabNovedades','tabCorrecciones','tabEmpleados','tabAdmins','tabCalendario'].forEach(function(id){
     var el=document.getElementById(id);if(el)el.style.display='none';
   });
+}
+
+var pollTimer=null,lastPollCount=0;
+function startPolling(){
+  if(pollTimer)clearInterval(pollTimer);
+  doPoll();
+  pollTimer=setInterval(doPoll,30000);
+}
+async function doPoll(){
+  if(!currentUser)return;
+  try{
+    var r=await fetch(SCRIPT_URL+'?action=poll&email='+encodeURIComponent(currentUser.email),{redirect:'follow'});
+    var d=await r.json();
+    var count=d.count||0;
+    var badge=document.getElementById('pendingBadge');
+    if(badge)badge.textContent=count+' pendiente'+(count===1?'':'s');
+    var stP=document.getElementById('stPending');
+    if(stP)stP.textContent=count;
+    if(count>lastPollCount&&lastPollCount>=0){
+      var diff=count-lastPollCount;
+      showToast(diff+' nueva'+(diff===1?'':'s')+' solicitud'+(diff===1?'':'es')+' pendiente'+(diff===1?'':'s'));
+      loadPending();
+      loadHistory();
+    }
+    lastPollCount=count;
+  }catch(e){console.log('Poll error:',e);}
+}
+function showToast(msg){
+  var t=document.getElementById('toast');
+  if(!t){
+    t=document.createElement('div');t.id='toast';
+    t.style.cssText='position:fixed;bottom:24px;right:24px;background:#0A3D47;color:white;'+
+      'padding:12px 18px;border-radius:12px;font-size:13px;font-weight:600;'+
+      'box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:999;'+
+      'animation:slideIn .3s ease;cursor:pointer;max-width:280px;';
+    t.onclick=function(){
+      t.style.display='none';
+      switchTab('pending');
+    };
+    var style=document.createElement('style');
+    style.textContent='@keyframes slideIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}';
+    document.head.appendChild(style);
+    document.body.appendChild(t);
+  }
+  t.innerHTML='&#128276; '+msg+' <span style="color:rgba(255,255,255,.6);font-size:11px;display:block;margin-top:2px">Toca para ver</span>';
+  t.style.display='block';
+  setTimeout(function(){if(t)t.style.display='none';},6000);
 }
 
 
