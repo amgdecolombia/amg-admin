@@ -395,63 +395,66 @@ function fmtDate(raw){
 async function doLogin(){
   var email=document.getElementById('lEmail').value.trim().toLowerCase();
   var pass=document.getElementById('lPass').value;
-  if(!email||!pass){alert('Ingresa correo y clave.');return;}
-  var btn=document.querySelector('.login-btn');
-  btn.disabled=true;btn.textContent='Verificando...';
   var errEl=document.getElementById('loginErr');
+  var btn=document.querySelector('.login-btn');
   errEl.style.display='none';
+  if(!email||!pass){errEl.textContent='Ingresa correo y clave.';errEl.style.display='block';return;}
+  btn.disabled=true;btn.textContent='Verificando...';
   try{
     var url=SCRIPT_URL+'?action=login&email='+encodeURIComponent(email)+'&pass='+encodeURIComponent(pass);
-    var r=await fetch(url,{redirect:'follow'});
-    if(!r.ok){errEl.textContent='Error del servidor: '+r.status+'. Verifica que el script este deployado como Anyone.';errEl.style.display='block';btn.disabled=false;btn.textContent='Ingresar';return;}
-    var text=await r.text();
+    var resp=await fetch(url,{redirect:'follow'});
+    var text=await resp.text();
     var d;
-    try{d=JSON.parse(text);}catch(pe){errEl.textContent='Respuesta invalida del servidor. Asegurate de ejecutar setupSistema() en Apps Script.';errEl.style.display='block';btn.disabled=false;btn.textContent='Ingresar';return;}
+    try{d=JSON.parse(text);}
+    catch(e){
+      errEl.textContent='Error del servidor. Verifica que el deployment sea "Anyone" y que setupSistema() se haya ejecutado.';
+      errEl.style.display='block';btn.disabled=false;btn.textContent='Ingresar';return;
+    }
     if(d.status==='ok'){
-      var role=(d.role||'').toLowerCase();
+      var role=(d.role||'').toLowerCase().trim();
       currentUser={email:email,nombre:d.nombre,role:role};
       document.getElementById('loginWrap').style.display='none';
       document.getElementById('dashboard').style.display='block';
-      errEl.style.display='none';
-      document.getElementById('topbarName').textContent=d.nombre;
+      document.getElementById('topbarName').innerHTML=d.nombre+(role==='master'?'<span class="master-badge" style="display:inline-flex">MASTER</span>':'');
       document.getElementById('topbarEmail').textContent=email;
-      if(role==='master'||role==='director'){
-        document.getElementById('tabNovedades').style.display = role==='master'?'block':'none';
-        document.getElementById('tabCorrecciones').style.display = role==='master'?'block':'none';
-        document.getElementById('tabEmpleados').style.display='block';
-        document.getElementById('tabAdmins').style.display = role==='master'?'block':'none';
-        document.getElementById('tabCalendario').style.display = role==='master'?'block':'none';
-        if(role==='master') document.getElementById('masterBadge').style.display='inline-flex';
+      var masterTabs=['tabNovedades','tabCorrecciones','tabAdmins','tabCalendario'];
+      var directorTabs=['tabEmpleados'];
+      if(role==='master'){
+        masterTabs.concat(directorTabs).forEach(function(id){
+          var el=document.getElementById(id);
+          if(el)el.style.display='block';
+        });
+      } else if(role==='director'){
+        directorTabs.forEach(function(id){
+          var el=document.getElementById(id);
+          if(el)el.style.display='block';
+        });
       }
-      loadAll();
-    }else{
+      loadPending();
+      loadHistory();
+    } else {
       errEl.textContent='Credenciales incorrectas. Verifica tu correo y clave.';
       errEl.style.display='block';
     }
-  }catch(e){
-    errEl.textContent='No se pudo conectar al servidor ('+e.message+'). Verifica: 1) URL del script correcta 2) Deployment como Anyone 3) setupSistema() ejecutado.';
+  } catch(e){
+    errEl.textContent='Sin conexion al servidor ('+e.message+'). Verifica la URL del script.';
     errEl.style.display='block';
   }
   btn.disabled=false;btn.textContent='Ingresar';
 }
 
 function doLogout(){
-  currentUser=null;
+  currentUser=null;allPending=[];allHistory=[];
   document.getElementById('dashboard').style.display='none';
   document.getElementById('loginWrap').style.display='flex';
   document.getElementById('lPass').value='';
-  document.getElementById('masterBadge').style.display='none';
-  ['tabNovedades','tabCorrecciones','tabEmpleados','tabAdmins','tabCalendario'].forEach(function(id){document.getElementById(id).style.display='none';});
+  document.getElementById('loginErr').style.display='none';
+  ['tabNovedades','tabCorrecciones','tabEmpleados','tabAdmins','tabCalendario'].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.style.display='none';
+  });
 }
 
-function loadAll(){
-  loadPending();
-  loadHistory();
-  if(currentUser.role&&currentUser.role.toLowerCase()==='master'){
-    loadEmpleados();
-    loadCalendar();
-  }
-}
+
 
 var ALL_TABS=['pending','stats','history','calendario','novedades','correcciones','empleados','admins'];
 function switchTab(t){
@@ -466,44 +469,46 @@ function switchTab(t){
 }
 
 async function loadPending(){
-  document.getElementById('loadingPending').style.display='block';
-  document.getElementById('listPending').innerHTML='';
+  var loadEl=document.getElementById('loadingPending');
+  var listEl=document.getElementById('listPending');
+  loadEl.style.display='block';loadEl.textContent='Cargando solicitudes...';
+  listEl.innerHTML='';
   try{
-    var r=await fetch(SCRIPT_URL+'?action=getPending&email='+encodeURIComponent(currentUser.email));
+    var r=await fetch(SCRIPT_URL+'?action=getPending&email='+encodeURIComponent(currentUser.email),{redirect:'follow'});
     var d=await r.json();
-    document.getElementById('loadingPending').style.display='none';
+    loadEl.style.display='none';
     allPending=d.rows||[];
-    document.getElementById('pendingBadge').textContent=allPending.length+' pendiente'+(allPending.length===1?'':'s');
-    document.getElementById('stPending').textContent=allPending.length;
-    if(!allPending.length){document.getElementById('listPending').innerHTML=emptyState('Sin solicitudes pendientes.');return;}
-    document.getElementById('listPending').innerHTML=allPending.map(function(row,i){return buildReqCard(row,i);}).join('');
-  }catch(e){document.getElementById('loadingPending').textContent='Error: '+e.message;}
+    var badge=document.getElementById('pendingBadge');
+    if(badge)badge.textContent=allPending.length+' pendiente'+(allPending.length===1?'':'s');
+    var stP=document.getElementById('stPending');
+    if(stP)stP.textContent=allPending.length;
+    if(!allPending.length){listEl.innerHTML=emptyState('Sin solicitudes pendientes.');return;}
+    listEl.innerHTML=allPending.map(function(row,i){return buildReqCard(row,i);}).join('');
+  } catch(e){
+    loadEl.textContent='Error cargando: '+e.message;
+  }
 }
 
 async function loadHistory(){
-  document.getElementById('loadingHistory').style.display='block';
-  document.getElementById('listHistory').innerHTML='';
+  var loadEl=document.getElementById('loadingHistory');
+  var listEl=document.getElementById('listHistory');
+  loadEl.style.display='block';loadEl.textContent='Cargando historial...';
+  listEl.innerHTML='';
   try{
-    var r=await fetch(SCRIPT_URL+'?action=getHistory&email='+encodeURIComponent(currentUser.email));
+    var r=await fetch(SCRIPT_URL+'?action=getHistory&email='+encodeURIComponent(currentUser.email),{redirect:'follow'});
     var d=await r.json();
-    document.getElementById('loadingHistory').style.display='none';
+    loadEl.style.display='none';
     allHistory=d.rows||[];
-    var approved=allHistory.filter(function(row){return row['Estado Director']==='Aprobado';}).length;
-    var rejected=allHistory.filter(function(row){return row['Estado Director']==='Rechazado';}).length;
-    document.getElementById('stApproved').textContent=approved;
-    document.getElementById('stRejected').textContent=rejected;
-    document.getElementById('stTotal').textContent=allPending.length+allHistory.length;
+    var approved=allHistory.filter(function(x){return x['Estado Director']==='Aprobado';}).length;
+    var rejected=allHistory.filter(function(x){return x['Estado Director']==='Rechazado';}).length;
+    var sa=document.getElementById('stApproved');if(sa)sa.textContent=approved;
+    var sr=document.getElementById('stRejected');if(sr)sr.textContent=rejected;
+    var st=document.getElementById('stTotal');if(st)st.textContent=allPending.length+allHistory.length;
     renderHistory();
     loadStats();
-  }catch(e){document.getElementById('loadingHistory').textContent='Error: '+e.message;}
-}
-
-function renderHistory(){
-  var ft=document.getElementById('filType').value;
-  var fs=document.getElementById('filStatus').value;
-  var filtered=allHistory.filter(function(r){return(!ft||r['_tab']===ft)&&(!fs||r['Estado Director']===fs);});
-  if(!filtered.length){document.getElementById('listHistory').innerHTML=emptyState('Sin registros con estos filtros.');return;}
-  document.getElementById('listHistory').innerHTML=filtered.map(function(r){return buildHistCard(r);}).join('');
+  } catch(e){
+    loadEl.textContent='Error cargando: '+e.message;
+  }
 }
 
 async function loadStats(){
