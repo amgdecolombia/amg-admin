@@ -423,7 +423,7 @@ async function doLogin(){
   btn.disabled=true;btn.textContent='Verificando...';
   try{
     var url=SCRIPT_URL+'?action=login&email='+encodeURIComponent(email)+'&pass='+encodeURIComponent(pass);
-    var resp=await fetch(url,{redirect:'follow'});
+    var resp=await fetch(url);
     var text=await resp.text();
     var d;
     try{d=JSON.parse(text);}
@@ -492,7 +492,7 @@ function startPolling(){
 async function doPoll(){
   if(!currentUser)return;
   try{
-    var r=await fetch(SCRIPT_URL+'?action=poll&email='+encodeURIComponent(currentUser.email),{redirect:'follow'});
+    var r=await fetch(SCRIPT_URL+'?action=poll&email='+encodeURIComponent(currentUser.email));
     var d=await r.json();
     if(d.status!=='ok')return;
     var count=d.count||0;
@@ -549,7 +549,7 @@ async function loadPending(){
   loadEl.style.display='block';loadEl.textContent='Cargando solicitudes...';
   listEl.innerHTML='';
   try{
-    var r=await fetch(SCRIPT_URL+'?action=getPending&email='+encodeURIComponent(currentUser.email),{redirect:'follow'});
+    var r=await fetch(SCRIPT_URL+'?action=getPending&email='+encodeURIComponent(currentUser.email));
     var d=await r.json();
     loadEl.style.display='none';
     allPending=d.rows||[];
@@ -571,7 +571,7 @@ async function loadHistory(){
   loadEl.style.display='block';loadEl.textContent='Cargando historial...';
   listEl.innerHTML='';
   try{
-    var r=await fetch(SCRIPT_URL+'?action=getHistory&email='+encodeURIComponent(currentUser.email),{redirect:'follow'});
+    var r=await fetch(SCRIPT_URL+'?action=getHistory&email='+encodeURIComponent(currentUser.email));
     var d=await r.json();
     loadEl.style.display='none';
     allHistory=d.rows||[];
@@ -861,7 +861,7 @@ function calNext(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCalend
 // EMPLEADOS
 async function loadEmpleados(){
   try{
-    var r=await fetch(SCRIPT_URL+'?action=getEmpleadosAdmin&email='+encodeURIComponent(currentUser.email),{redirect:'follow'});
+    var r=await fetch(SCRIPT_URL+'?action=getEmpleadosAdmin&email='+encodeURIComponent(currentUser.email));
     var d=await r.json();
     renderEmpleados(d.empleados||[]);
   }catch(e){document.getElementById('empContent').innerHTML='<p style="color:#9CA3AF;padding:2rem;text-align:center">Error cargando empleados.</p>';}
@@ -1060,7 +1060,7 @@ async function doReset(){
   var btn = document.getElementById('resetBtn');
   if(btn){btn.textContent='Reseteando...';btn.disabled=true;}
   try{
-    var r = await fetch(SCRIPT_URL+'?action=resetData&email='+encodeURIComponent(currentUser.email),{redirect:'follow'});
+    var r = await fetch(SCRIPT_URL+'?action=resetData&email='+encodeURIComponent(currentUser.email));
     var d = await r.json();
     if(d.status==='ok'){
       alert('Reset completado.\n'+d.msg+'\n\nEl sistema esta listo para produccion.');
@@ -1107,7 +1107,7 @@ async function doReset(){
   var btn=document.getElementById('resetBtn');
   if(btn){btn.textContent='Reseteando...';btn.disabled=true;}
   try{
-    var r=await fetch(SCRIPT_URL+'?action=resetData&email='+encodeURIComponent(currentUser.email),{redirect:'follow'});
+    var r=await fetch(SCRIPT_URL+'?action=resetData&email='+encodeURIComponent(currentUser.email));
     var d=await r.json();
     alert(d.status==='ok'?'Reset completado. '+d.msg:'Error: '+d.msg);
     loadPending();loadHistory();
@@ -1310,7 +1310,7 @@ function generarFormulario(row){
 var empCache = {};
 async function cargarEmpCache(){
   try{
-    var r=await fetch(SCRIPT_URL+'?action=getEmpleados',{redirect:'follow'});
+    var r=await fetch(SCRIPT_URL+'?action=getEmpleados');
     var d=await r.json();
     (d.empleados||[]).forEach(function(e){
       var key=(e.Email||e.email||'').toLowerCase();
