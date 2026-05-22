@@ -395,38 +395,22 @@ body{font-family:'Inter',sans-serif;background:var(--g50);min-height:100vh;}
 </div>
 
 <script>
+function gasGet(params,cb){
+  var n='_gc'+Date.now()+Math.floor(Math.random()*1e6);
+  var q=Object.keys(params).map(function(k){return encodeURIComponent(k)+'='+encodeURIComponent(params[k]);}).join('&')+'&callback='+n;
+  var done=false;
+  var t=setTimeout(function(){if(done)return;done=true;delete window[n];var s=document.getElementById(n);if(s)s.remove();cb(null,'Tiempo agotado');},15000);
+  window[n]=function(d){if(done)return;done=true;clearTimeout(t);delete window[n];var s=document.getElementById(n);if(s)s.remove();cb(d,null);};
+  var s=document.createElement('script');s.id=n;s.src=SCRIPT_URL+'?'+q;
+  s.onerror=function(){if(done)return;done=true;clearTimeout(t);delete window[n];s.remove();cb(null,'Error de red');};
+  document.head.appendChild(s);
+}
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzQ3e0je3QUC81VJtyuZrAkdmd4s7H5MiXIo3kBK1zBYrwtu3mWDecd5eg9TfUuZjbb/exec';
+
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzp-5qULJ20qDdQXCU7dB2dwuR3WqQEJiLokaF-2sD8WGdls5y4wTxo3DW_goTvWuK4/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
-function gasCall(params, callback) {
-  var cbName = 'gasCb_' + Date.now() + '_' + Math.floor(Math.random()*9999);
-  var url = SCRIPT_URL + '?' + Object.keys(params).map(function(k){
-    return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
-  }).join('&') + '&callback=' + cbName;
-  var timer = setTimeout(function(){
-    delete window[cbName];
-    var s=document.getElementById(cbName);if(s)s.remove();
-    callback(null, 'Tiempo agotado');
-  }, 15000);
-  window[cbName] = function(data){
-    clearTimeout(timer);
-    delete window[cbName];
-    var s=document.getElementById(cbName);if(s)s.remove();
-    callback(data, null);
-  };
-  var s = document.createElement('script');
-  s.id = cbName;
-  s.src = url;
-  s.onerror = function(){
-    clearTimeout(timer);
-    delete window[cbName];
-    s.remove();
-    callback(null, 'Error de red');
-  };
-  document.head.appendChild(s);
-}
 
 function pad(n){return String(n).padStart(2,'0');}
 function fmtDate(raw){
@@ -517,23 +501,17 @@ function startPolling(){
   doPoll();
   pollTimer=setInterval(doPoll,15000);
 }
-async function doPoll(){
+function doPoll(){
   if(!currentUser)return;
-  try{
-    var r=await fetch(SCRIPT_URL+'?action=poll&email='+encodeURIComponent(currentUser.email));
-    var d=await r.json();
-    if(d.status!=='ok')return;
-    var count=d.count||0;
-    var badge=document.getElementById('pendingBadge');
-    if(badge)badge.textContent=count+' pendiente'+(count===1?'':'s');
-    var stP=document.getElementById('stPending');if(stP)stP.textContent=count;
-    if(lastPollCount===-1){lastPollCount=count;return;}
-    if(count!==lastPollCount){
-      if(count>lastPollCount)showToast(count-lastPollCount+' nueva solicitud'+(count-lastPollCount===1?'':'s'));
-      loadPending();loadHistory();
-    }
-    lastPollCount=count;
-  }catch(e){console.log('poll:',e);}
+  gasGet({action:'poll',email:currentUser.email},function(d,e){
+    if(e||!d)return;
+    var c=d.count||0;
+    var b=document.getElementById('pendingBadge');if(b)b.textContent=c+' pendiente'+(c===1?'':'s');
+    var s=document.getElementById('stPending');if(s)s.textContent=c;
+    if(lastPollCount===-1){lastPollCount=c;return;}
+    if(c!==lastPollCount){if(c>lastPollCount)showToast(c-lastPollCount+' nueva solicitud'+(c-lastPollCount===1?'':'s'));loadPending();loadHistory();}
+    lastPollCount=c;
+  });
 }
 function showToast(msg){
   var t=document.getElementById('toast');
@@ -571,80 +549,39 @@ function switchTab(t){
   if(t==='stats')loadStats();
 }
 
-async function loadPending(){
-  var loadEl=document.getElementById('loadingPending');
-  var listEl=document.getElementById('listPending');
-  if(loadEl){loadEl.style.display='block';loadEl.style.color='#6B7280';loadEl.textContent='Cargando solicitudes...';}
-  if(listEl)listEl.innerHTML='';
-  var controller=new AbortController();
-  var timer=setTimeout(function(){controller.abort();},10000);
-  try{
-    var r=await fetch(SCRIPT_URL+'?action=getPending&email='+encodeURIComponent(currentUser.email),{signal:controller.signal});
-    clearTimeout(timer);
-    var text=await r.text();
-    var d;
-    try{d=JSON.parse(text);}catch(pe){
-      if(loadEl){loadEl.style.color='#DC2626';loadEl.textContent='Error al leer respuesta del servidor.';}
-      return;
-    }
-    if(loadEl)loadEl.style.display='none';
+function loadPending(){
+  var le=document.getElementById('loadingPending'),li=document.getElementById('listPending');
+  if(le){le.style.display='block';le.style.color='#6B7280';le.textContent='Cargando solicitudes...';}
+  if(li)li.innerHTML='';
+  gasGet({action:'getPending',email:currentUser.email},function(d,e){
+    if(le)le.style.display='none';
+    if(e||!d){if(li)li.innerHTML=emptyState('Error cargando. Recarga la pagina.');return;}
     allPending=d.rows||[];
-    var badge=document.getElementById('pendingBadge');
-    if(badge)badge.textContent=allPending.length+' pendiente'+(allPending.length===1?'':'s');
-    var stP=document.getElementById('stPending');if(stP)stP.textContent=allPending.length;
-    if(!allPending.length){if(listEl)listEl.innerHTML=emptyState('Sin solicitudes pendientes.');return;}
-    if(listEl){
-      listEl.innerHTML=allPending.map(function(row,i){return buildReqCard(row,i);}).join('');
-      listEl.onclick=function(e){
-        var del=e.target.closest('.pdel');
-        if(del){var ri=del.getAttribute('data-row'),tab=del.getAttribute('data-tab');if(confirm('Borrar?'))deleteRow('p',ri,tab);}
-      };
-    }
-  }catch(e){
-    clearTimeout(timer);
-    var msg=e.name==='AbortError'?'Tiempo de espera agotado. Verifica tu conexion.':'Error: '+e.message;
-    if(loadEl){loadEl.style.color='#DC2626';loadEl.textContent=msg;}
-  }
+    var b=document.getElementById('pendingBadge');if(b)b.textContent=allPending.length+' pendiente'+(allPending.length===1?'':'s');
+    var s=document.getElementById('stPending');if(s)s.textContent=allPending.length;
+    if(!allPending.length){if(li)li.innerHTML=emptyState('Sin solicitudes pendientes.');return;}
+    if(li)li.innerHTML=allPending.map(function(r,i){return buildReqCard(r,i);}).join('');
+  });
 }
 
-async function loadHistory(){
-  var loadEl=document.getElementById('loadingHistory');
-  var listEl=document.getElementById('listHistory');
-  if(loadEl){loadEl.style.display='block';loadEl.style.color='#6B7280';loadEl.textContent='Cargando historial...';}
-  if(listEl)listEl.innerHTML='';
-  var controller=new AbortController();
-  var timer=setTimeout(function(){controller.abort();},10000);
-  try{
-    var r=await fetch(SCRIPT_URL+'?action=getHistory&email='+encodeURIComponent(currentUser.email),{signal:controller.signal});
-    clearTimeout(timer);
-    var text=await r.text();
-    var d;
-    try{d=JSON.parse(text);}catch(pe){
-      if(loadEl){loadEl.style.color='#DC2626';loadEl.textContent='Error al leer respuesta del servidor.';}
-      return;
-    }
-    if(loadEl)loadEl.style.display='none';
+function loadHistory(){
+  var le=document.getElementById('loadingHistory'),li=document.getElementById('listHistory');
+  if(le){le.style.display='block';le.style.color='#6B7280';le.textContent='Cargando historial...';}
+  gasGet({action:'getHistory',email:currentUser.email},function(d,e){
+    if(le)le.style.display='none';
+    if(e||!d){if(li)li.innerHTML=emptyState('Error cargando historial.');return;}
     allHistory=d.rows||[];
-    var approved=allHistory.filter(function(x){return x['Estado Director']==='Aprobado';}).length;
-    var rejected=allHistory.filter(function(x){return x['Estado Director']==='Rechazado';}).length;
-    var sa=document.getElementById('stApproved');if(sa)sa.textContent=approved;
-    var sr=document.getElementById('stRejected');if(sr)sr.textContent=rejected;
+    var ap=allHistory.filter(function(x){return x['Estado Director']==='Aprobado';}).length;
+    var rj=allHistory.filter(function(x){return x['Estado Director']==='Rechazado';}).length;
+    var sa=document.getElementById('stApproved');if(sa)sa.textContent=ap;
+    var sr=document.getElementById('stRejected');if(sr)sr.textContent=rj;
     var st=document.getElementById('stTotal');if(st)st.textContent=allPending.length+allHistory.length;
-    renderHistory();
-    loadStats();
-  }catch(e){
-    clearTimeout(timer);
-    var msg=e.name==='AbortError'?'Tiempo de espera agotado. Verifica tu conexion.':'Error: '+e.message;
-    if(loadEl){loadEl.style.color='#DC2626';loadEl.textContent=msg;}
-  }
+    renderHistory();loadStats();
+  });
 }
 
-async function loadStats(){
-  try{
-    var r=await fetch(SCRIPT_URL+'?action=getStats&email='+encodeURIComponent(currentUser.email));
-    var d=await r.json();
-    if(d.status==='ok')renderCharts(d);
-  }catch(e){}
+function loadStats(){
+  gasGet({action:'getStats',email:currentUser.email},function(d,e){if(!e&&d)renderCharts(d);});
 }
 
 function tabBadge(tabName){
@@ -831,13 +768,13 @@ function renderCharts(d){
 }
 
 // CALENDARIO
-async function loadCalendar(){
-  try{
-    var r=await fetch(SCRIPT_URL+'?action=getCalendarData&email='+encodeURIComponent(currentUser.email));
-    var d=await r.json();
-    calEvents=d.events||[];
-    renderCalendar();
-  }catch(e){console.log('Cal error:',e);}
+function loadCalendar(){
+  var dc=document.getElementById('calDetailContent');
+  gasGet({action:'getCalendarData',email:currentUser.email},function(d,e){
+    if(e||!d){if(dc)dc.innerHTML='<span style="color:#DC2626">Error: '+(e||'')+'</span>';return;}
+    calEvents=d.events||[];renderCalendar();
+    if(dc&&!calEvents.filter(function(ev){return ev.tipo!=='Festivo Nacional';}).length)dc.innerHTML='<span style="color:#9CA3AF">Sin novedades este mes.</span>';
+  });
 }
 function toISO(d){
   if(!d)return'';
@@ -911,12 +848,13 @@ function calPrev(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCalend
 function calNext(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCalendar();}
 
 // EMPLEADOS
-async function loadEmpleados(){
-  try{
-    var r=await fetch(SCRIPT_URL+'?action=getEmpleadosAdmin&email='+encodeURIComponent(currentUser.email));
-    var d=await r.json();
+function loadEmpleados(){
+  var el=document.getElementById('empContent');
+  if(el)el.innerHTML='<p style="color:#9CA3AF;padding:2rem;text-align:center">Cargando...</p>';
+  gasGet({action:'getEmpleadosAdmin',email:currentUser.email},function(d,e){
+    if(e||!d||d.status!=='ok'){if(el)el.innerHTML='<p style="color:#DC2626;padding:2rem">Error: '+(e||d&&d.msg||'')+'</p>';return;}
     renderEmpleados(d.empleados||[]);
-  }catch(e){document.getElementById('empContent').innerHTML='<p style="color:#9CA3AF;padding:2rem;text-align:center">Error cargando empleados.</p>';}
+  });
 }
 function renderEmpleados(emps){
   var amg=emps.filter(function(e){return(e.empresa||'').indexOf('AMG')>=0;});
@@ -1049,12 +987,26 @@ async function ghDecide(rowIndex,decision,idx){
 }
 
 // ADMINS
-async function loadAdmins(){
-  try{
-    var r=await fetch(SCRIPT_URL+'?action=getAdminsLista&email='+encodeURIComponent(currentUser.email));
-    var d=await r.json();
-    renderAdmins(d.admins||[]);
-  }catch(e){document.getElementById('adminsContent').innerHTML='<p style="color:#991B1B;padding:1rem">Error cargando administradores.</p>';}
+function loadAdmins(){
+  var el=document.getElementById('adminsContent');
+  if(el)el.innerHTML='<p style="color:#9CA3AF;padding:1rem">Cargando...</p>';
+  gasGet({action:'getAdminsLista',email:currentUser.email},function(d,e){
+    if(e||!d){if(el)el.innerHTML='<p style="color:#DC2626;padding:1rem">Error: '+(e||'')+'</p>';return;}
+    var admins=d.admins||[];
+    if(!admins.length){if(el)el.innerHTML=emptyState('Sin administradores.');return;}
+    var html='<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="background:#F8FAFC">';
+    ['Nombre','Email','Rol','Estado','Acciones'].forEach(function(h){html+='<th style="text-align:left;padding:9px 10px;border-bottom:1px solid #E5E7EB;font-size:11px;color:#6B7280;font-weight:700">'+h+'</th>';});
+    html+='</tr></thead><tbody>';
+    admins.forEach(function(a){
+      html+='<tr><td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;font-weight:600">'+a.nombre+'</td>';
+      html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;font-size:11px;color:#6B7280">'+a.email+'</td>';
+      html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6"><span style="background:'+(a.role==='master'?'#FEF3C7':'#EFF6FF')+';color:'+(a.role==='master'?'#92400E':'#1E40AF')+';border-radius:99px;padding:2px 9px;font-size:11px;font-weight:700">'+a.role+'</span></td>';
+      html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;color:#059669;font-size:11px;font-weight:700">'+(a.estado||'Activo')+'</td>';
+      html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6"><button data-email="'+a.email+'" style="font-size:11px;padding:3px 10px;border-radius:6px;border:1px solid #E5E7EB;background:white;cursor:pointer;color:#DC2626">Dar de baja</button></td></tr>';
+    });
+    html+='</tbody></table>';
+    if(el){el.innerHTML=html;el.onclick=function(ev){var btn=ev.target.closest('button[data-email]');if(btn)terminarAdminAction(btn.getAttribute('data-email'));};}
+  });
 }
 function renderAdmins(admins){
   var html='<div style="background:white;border-radius:14px;border:1.5px solid #E5E7EB;overflow:hidden;margin-bottom:1rem">';
@@ -1361,12 +1313,9 @@ function generarFormulario(row){
 // Cache de empleados para cedula
 var empCache = {};
 function cargarEmpCache(){
-  gasCall({action:'getEmpleados'}, function(d, err){
-    if(err||!d)return;
-    (d.empleados||[]).forEach(function(e){
-      var key=(e.Email||e.email||'').toLowerCase();
-      if(key)empCache[key]=e;
-    });
+  gasGet({action:'getEmpleados'},function(d,e){
+    if(e||!d)return;
+    (d.empleados||[]).forEach(function(emp){var k=(emp.Email||emp.email||'').toLowerCase();if(k)empCache[k]=emp;});
   });
 }
 </script>
