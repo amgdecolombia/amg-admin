@@ -192,7 +192,7 @@ body{font-family:'Inter',sans-serif;background:var(--g50);min-height:100vh;}
     <div class="topbar-right">
       <span class="pending-badge" id="pendingBadge">Cargando...</span>
       <button id="resetBtn" onclick="confirmarReset()" style="display:none;padding:7px 14px;border-radius:9px;border:2px solid #991B1B;background:rgba(153,27,27,.15);color:#FECACA;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:.3px">RESET DATOS</button>
-      <button id="resetBtn" onclick="confirmarReset()" style="display:none;padding:7px 14px;border-radius:9px;border:2px solid #991B1B;background:rgba(153,27,27,.15);color:#FECACA;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:.3px">RESET DATOS</button><button class="logout-btn" onclick="doLogout()">Cerrar sesion</button>
+      <button class="logout-btn" onclick="doLogout()">Cerrar sesion</button>
     </div>
   </div>
 
@@ -234,7 +234,7 @@ body{font-family:'Inter',sans-serif;background:var(--g50);min-height:100vh;}
     <!-- HISTORIAL -->
     <div class="panel" id="panel-history">
       <div class="filter-bar">
-        <input type="text" id="filSearch" placeholder="Buscar empleado..." onkeyup="renderHistory()" style="padding:7px 12px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:13px;color:#374151;outline:none;width:180px"><input type="text" id="filSearch" placeholder="Buscar empleado..." onkeyup="renderHistory()" style="padding:7px 12px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:13px;color:#374151;outline:none;width:180px"><select class="filter-select" id="filType" onchange="renderHistory()">
+        <input type="text" id="filSearch" placeholder="Buscar empleado..." onkeyup="renderHistory()" style="padding:7px 12px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:13px;color:#374151;outline:none;width:180px"><select class="filter-select" id="filType" onchange="renderHistory()">
           <option value="">Todos los tipos</option>
           <option value="Tiempo Extra">Tiempo Extra</option>
           <option value="Festivos Trabajados">Festivos</option>
@@ -400,6 +400,34 @@ var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzQ3e0je3QUC81VJtyuZrA
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
+function gasCall(params, callback) {
+  var cbName = 'gasCb_' + Date.now() + '_' + Math.floor(Math.random()*9999);
+  var url = SCRIPT_URL + '?' + Object.keys(params).map(function(k){
+    return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
+  }).join('&') + '&callback=' + cbName;
+  var timer = setTimeout(function(){
+    delete window[cbName];
+    var s=document.getElementById(cbName);if(s)s.remove();
+    callback(null, 'Tiempo agotado');
+  }, 15000);
+  window[cbName] = function(data){
+    clearTimeout(timer);
+    delete window[cbName];
+    var s=document.getElementById(cbName);if(s)s.remove();
+    callback(data, null);
+  };
+  var s = document.createElement('script');
+  s.id = cbName;
+  s.src = url;
+  s.onerror = function(){
+    clearTimeout(timer);
+    delete window[cbName];
+    s.remove();
+    callback(null, 'Error de red');
+  };
+  document.head.appendChild(s);
+}
+
 function pad(n){return String(n).padStart(2,'0');}
 function fmtDate(raw){
   if(!raw)return'';
@@ -546,34 +574,56 @@ function switchTab(t){
 async function loadPending(){
   var loadEl=document.getElementById('loadingPending');
   var listEl=document.getElementById('listPending');
-  loadEl.style.display='block';loadEl.textContent='Cargando solicitudes...';
-  listEl.innerHTML='';
+  if(loadEl){loadEl.style.display='block';loadEl.style.color='#6B7280';loadEl.textContent='Cargando solicitudes...';}
+  if(listEl)listEl.innerHTML='';
+  var controller=new AbortController();
+  var timer=setTimeout(function(){controller.abort();},10000);
   try{
-    var r=await fetch(SCRIPT_URL+'?action=getPending&email='+encodeURIComponent(currentUser.email));
-    var d=await r.json();
-    loadEl.style.display='none';
+    var r=await fetch(SCRIPT_URL+'?action=getPending&email='+encodeURIComponent(currentUser.email),{signal:controller.signal});
+    clearTimeout(timer);
+    var text=await r.text();
+    var d;
+    try{d=JSON.parse(text);}catch(pe){
+      if(loadEl){loadEl.style.color='#DC2626';loadEl.textContent='Error al leer respuesta del servidor.';}
+      return;
+    }
+    if(loadEl)loadEl.style.display='none';
     allPending=d.rows||[];
     var badge=document.getElementById('pendingBadge');
     if(badge)badge.textContent=allPending.length+' pendiente'+(allPending.length===1?'':'s');
     var stP=document.getElementById('stPending');if(stP)stP.textContent=allPending.length;
-    if(!allPending.length){listEl.innerHTML=emptyState('Sin solicitudes pendientes.');return;}
-    listEl.innerHTML=allPending.map(function(row,i){return buildReqCard(row,i);}).join('');
-    listEl.onclick=function(e){
-      var del=e.target.closest('.pdel');
-      if(del){var ri=del.getAttribute('data-row'),tab=del.getAttribute('data-tab');if(confirm('Borrar?'))deleteRow('p',ri,tab);}
-    };
-  }catch(e){loadEl.textContent='Error: '+e.message;}
+    if(!allPending.length){if(listEl)listEl.innerHTML=emptyState('Sin solicitudes pendientes.');return;}
+    if(listEl){
+      listEl.innerHTML=allPending.map(function(row,i){return buildReqCard(row,i);}).join('');
+      listEl.onclick=function(e){
+        var del=e.target.closest('.pdel');
+        if(del){var ri=del.getAttribute('data-row'),tab=del.getAttribute('data-tab');if(confirm('Borrar?'))deleteRow('p',ri,tab);}
+      };
+    }
+  }catch(e){
+    clearTimeout(timer);
+    var msg=e.name==='AbortError'?'Tiempo de espera agotado. Verifica tu conexion.':'Error: '+e.message;
+    if(loadEl){loadEl.style.color='#DC2626';loadEl.textContent=msg;}
+  }
 }
 
 async function loadHistory(){
   var loadEl=document.getElementById('loadingHistory');
   var listEl=document.getElementById('listHistory');
-  loadEl.style.display='block';loadEl.textContent='Cargando historial...';
-  listEl.innerHTML='';
+  if(loadEl){loadEl.style.display='block';loadEl.style.color='#6B7280';loadEl.textContent='Cargando historial...';}
+  if(listEl)listEl.innerHTML='';
+  var controller=new AbortController();
+  var timer=setTimeout(function(){controller.abort();},10000);
   try{
-    var r=await fetch(SCRIPT_URL+'?action=getHistory&email='+encodeURIComponent(currentUser.email));
-    var d=await r.json();
-    loadEl.style.display='none';
+    var r=await fetch(SCRIPT_URL+'?action=getHistory&email='+encodeURIComponent(currentUser.email),{signal:controller.signal});
+    clearTimeout(timer);
+    var text=await r.text();
+    var d;
+    try{d=JSON.parse(text);}catch(pe){
+      if(loadEl){loadEl.style.color='#DC2626';loadEl.textContent='Error al leer respuesta del servidor.';}
+      return;
+    }
+    if(loadEl)loadEl.style.display='none';
     allHistory=d.rows||[];
     var approved=allHistory.filter(function(x){return x['Estado Director']==='Aprobado';}).length;
     var rejected=allHistory.filter(function(x){return x['Estado Director']==='Rechazado';}).length;
@@ -582,8 +632,10 @@ async function loadHistory(){
     var st=document.getElementById('stTotal');if(st)st.textContent=allPending.length+allHistory.length;
     renderHistory();
     loadStats();
-  } catch(e){
-    loadEl.textContent='Error cargando: '+e.message;
+  }catch(e){
+    clearTimeout(timer);
+    var msg=e.name==='AbortError'?'Tiempo de espera agotado. Verifica tu conexion.':'Error: '+e.message;
+    if(loadEl){loadEl.style.color='#DC2626';loadEl.textContent=msg;}
   }
 }
 
@@ -1308,16 +1360,16 @@ function generarFormulario(row){
 
 // Cache de empleados para cedula
 var empCache = {};
-async function cargarEmpCache(){
-  try{
-    var r=await fetch(SCRIPT_URL+'?action=getEmpleados');
-    var d=await r.json();
+function cargarEmpCache(){
+  gasCall({action:'getEmpleados'}, function(d, err){
+    if(err||!d)return;
     (d.empleados||[]).forEach(function(e){
       var key=(e.Email||e.email||'').toLowerCase();
       if(key)empCache[key]=e;
     });
-  }catch(ex){}
+  });
 }
 </script>
+<div id="toast" style="display:none;position:fixed;bottom:24px;right:24px;background:#0A3D47;color:white;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.25)"></div>
 </body>
 </html>
