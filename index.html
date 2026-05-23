@@ -260,7 +260,7 @@ body{font-family:'Inter',sans-serif;background:var(--g50);min-height:100vh;}
         <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#1E40AF"></div>Compensatorio</div>
         <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#065F46"></div>Vacaciones</div>
         <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#92400E"></div>Pendiente</div>
-        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#DC2626"></div>Festivo Nacional</div><div class="cal-legend-item"><div class="cal-legend-dot" style="background:#991B1B"></div>Rechazado</div>
+        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#991B1B"></div>Rechazado</div>
       </div>
       <div class="cal-nav">
         <button class="cal-btn" onclick="calPrev()">&#8592; Anterior</button>
@@ -339,19 +339,6 @@ body{font-family:'Inter',sans-serif;background:var(--g50);min-height:100vh;}
 
     <!-- EMPLEADOS -->
     <div class="panel" id="panel-empleados">
-      <div style="background:white;border-radius:14px;border:1.5px solid #E5E7EB;padding:1.25rem;margin-bottom:1rem">
-        <h3 style="font-size:14px;font-weight:700;color:#065F46;margin-bottom:12px">Agregar empleado nuevo</h3>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-          <div><label style="font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Nombre completo</label><input id="newEmpNombre" type="text" placeholder="Nombre y apellido" style="width:100%;padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:13px;outline:none"></div>
-          <div><label style="font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Correo corporativo</label><input id="newEmpEmail" type="email" placeholder="correo@amgdecolombia.com" style="width:100%;padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:13px;outline:none"></div>
-          <div><label style="font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">No. Identificacion</label><input id="newEmpID" type="text" placeholder="Cedula de ciudadania" style="width:100%;padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:13px;outline:none"></div>
-          <div><label style="font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Area</label><input id="newEmpArea" type="text" placeholder="GAF, GNO, GTC..." style="width:100%;padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:13px;outline:none"></div>
-          <div><label style="font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Empresa</label><select id="newEmpEmpresa" style="width:100%;padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:13px;outline:none;-webkit-appearance:none"><option value="AMG DE COLOMBIA">AMG DE COLOMBIA</option><option value="INMOVIMENTO SAS">INMOVIMENTO SAS</option></select></div>
-          <div><label style="font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Fecha de ingreso</label><input id="newEmpIngreso" type="date" style="width:100%;padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:13px;outline:none"></div>
-        </div>
-        <button onclick="agregarEmpleado()" style="padding:10px 20px;border-radius:9px;border:none;background:#065F46;color:white;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer">Agregar empleado</button>
-        <div id="addEmpOk" style="display:none;margin-top:8px;padding:8px 12px;background:#ECFDF5;border-radius:8px;font-size:13px;color:#065F46;font-weight:500">Empleado agregado correctamente.</div>
-      </div>
       <div style="background:white;border-radius:14px;border:1.5px solid var(--g200);padding:1.25rem;margin-bottom:1rem">
         <h3 style="font-size:14px;font-weight:700;color:var(--g800);margin-bottom:12px">Terminar empleado</h3>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
@@ -395,22 +382,10 @@ body{font-family:'Inter',sans-serif;background:var(--g50);min-height:100vh;}
 </div>
 
 <script>
-function gasGet(params,cb){
-  var n='_gc'+Date.now()+Math.floor(Math.random()*1e6);
-  var q=Object.keys(params).map(function(k){return encodeURIComponent(k)+'='+encodeURIComponent(params[k]);}).join('&')+'&callback='+n;
-  var done=false;
-  var t=setTimeout(function(){if(done)return;done=true;delete window[n];var s=document.getElementById(n);if(s)s.remove();cb(null,'Tiempo agotado');},15000);
-  window[n]=function(d){if(done)return;done=true;clearTimeout(t);delete window[n];var s=document.getElementById(n);if(s)s.remove();cb(d,null);};
-  var s=document.createElement('script');s.id=n;s.src=SCRIPT_URL+'?'+q;
-  s.onerror=function(){if(done)return;done=true;clearTimeout(t);delete window[n];s.remove();cb(null,'Error de red');};
-  document.head.appendChild(s);
-}
-
 
 var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzp-5qULJ20qDdQXCU7dB2dwuR3WqQEJiLokaF-2sD8WGdls5y4wTxo3DW_goTvWuK4/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
-
 
 function pad(n){return String(n).padStart(2,'0');}
 function fmtDate(raw){
@@ -435,7 +410,7 @@ async function doLogin(){
   btn.disabled=true;btn.textContent='Verificando...';
   try{
     var url=SCRIPT_URL+'?action=login&email='+encodeURIComponent(email)+'&pass='+encodeURIComponent(pass);
-    var resp=await fetch(url);
+    var resp=await fetch(url,{redirect:'follow'});
     var text=await resp.text();
     var d;
     try{d=JSON.parse(text);}
@@ -453,12 +428,11 @@ async function doLogin(){
       var masterTabs=['tabNovedades','tabCorrecciones','tabAdmins','tabCalendario','tabEmpleados'];
       var directorTabs=[];
       if(role==='master'){
+        var rb=document.getElementById('resetBtn');if(rb)rb.style.display='inline-block';
         masterTabs.concat(directorTabs).forEach(function(id){
           var el=document.getElementById(id);
           if(el)el.style.display='block';
         });
-        var rb=document.getElementById('resetBtn');if(rb)rb.style.display='inline-block';
-        document.getElementById('masterBadge').style.display='inline-flex';
       } else if(role==='director'){
         directorTabs.forEach(function(id){
           var el=document.getElementById(id);
@@ -469,7 +443,6 @@ async function doLogin(){
       loadHistory();
     startPolling();
     setTimeout(function(){lastPollCount=-1;doPoll();},4000);
-    cargarEmpCache();
     } else {
       errEl.textContent='Credenciales incorrectas. Verifica tu correo y clave.';
       errEl.style.display='block';
@@ -489,7 +462,6 @@ function doLogout(){
   document.getElementById('lPass').value='';
   document.getElementById('loginErr').style.display='none';
   var rb=document.getElementById('resetBtn');if(rb)rb.style.display='none';
-  var rb2=document.getElementById('resetBtn');if(rb2)rb2.style.display='none';
   ['tabNovedades','tabCorrecciones','tabEmpleados','tabAdmins','tabCalendario'].forEach(function(id){
     var el=document.getElementById(id);if(el)el.style.display='none';
   });
@@ -501,17 +473,23 @@ function startPolling(){
   doPoll();
   pollTimer=setInterval(doPoll,15000);
 }
-function doPoll(){
+async function doPoll(){
   if(!currentUser)return;
-  gasGet({action:'poll',email:currentUser.email},function(d,e){
-    if(e||!d)return;
-    var c=d.count||0;
-    var b=document.getElementById('pendingBadge');if(b)b.textContent=c+' pendiente'+(c===1?'':'s');
-    var s=document.getElementById('stPending');if(s)s.textContent=c;
-    if(lastPollCount===-1){lastPollCount=c;return;}
-    if(c!==lastPollCount){if(c>lastPollCount)showToast(c-lastPollCount+' nueva solicitud'+(c-lastPollCount===1?'':'s'));loadPending();loadHistory();}
-    lastPollCount=c;
-  });
+  try{
+    var r=await fetch(SCRIPT_URL+'?action=poll&email='+encodeURIComponent(currentUser.email));
+    var d=JSON.parse(await r.text());
+    if(d.status!=='ok')return;
+    var count=d.count||0;
+    var badge=document.getElementById('pendingBadge');
+    if(badge)badge.textContent=count+' pendiente'+(count===1?'':'s');
+    var stP=document.getElementById('stPending');if(stP)stP.textContent=count;
+    if(lastPollCount===-1){lastPollCount=count;return;}
+    if(count!==lastPollCount){
+      if(count>lastPollCount)showToast(count-lastPollCount+' nueva solicitud'+(count-lastPollCount===1?'':'s'));
+      loadPending();loadHistory();
+    }
+    lastPollCount=count;
+  }catch(e){console.log('poll:',e);}
 }
 function showToast(msg){
   var t=document.getElementById('toast');
@@ -549,39 +527,56 @@ function switchTab(t){
   if(t==='stats')loadStats();
 }
 
-function loadPending(){
-  var le=document.getElementById('loadingPending'),li=document.getElementById('listPending');
-  if(le){le.style.display='block';le.style.color='#6B7280';le.textContent='Cargando solicitudes...';}
-  if(li)li.innerHTML='';
-  gasGet({action:'getPending',email:currentUser.email},function(d,e){
-    if(le)le.style.display='none';
-    if(e||!d){if(li)li.innerHTML=emptyState('Error cargando. Recarga la pagina.');return;}
+async function loadPending(){
+  var loadEl=document.getElementById('loadingPending');
+  var listEl=document.getElementById('listPending');
+  loadEl.style.display='block';loadEl.textContent='Cargando solicitudes...';
+  listEl.innerHTML='';
+  try{
+    var r=await fetch(SCRIPT_URL+'?action=getPending&email='+encodeURIComponent(currentUser.email),{redirect:'follow'});
+    var d=await r.json();
+    loadEl.style.display='none';
     allPending=d.rows||[];
-    var b=document.getElementById('pendingBadge');if(b)b.textContent=allPending.length+' pendiente'+(allPending.length===1?'':'s');
-    var s=document.getElementById('stPending');if(s)s.textContent=allPending.length;
-    if(!allPending.length){if(li)li.innerHTML=emptyState('Sin solicitudes pendientes.');return;}
-    if(li)li.innerHTML=allPending.map(function(r,i){return buildReqCard(r,i);}).join('');
-  });
+    var badge=document.getElementById('pendingBadge');
+    if(badge)badge.textContent=allPending.length+' pendiente'+(allPending.length===1?'':'s');
+    var stP=document.getElementById('stPending');if(stP)stP.textContent=allPending.length;
+    if(!allPending.length){listEl.innerHTML=emptyState('Sin solicitudes pendientes.');return;}
+    listEl.innerHTML=allPending.map(function(row,i){return buildReqCard(row,i);}).join('');
+    listEl.onclick=function(e){
+      var del=e.target.closest('.pdel');
+      if(del){var ri=del.getAttribute('data-row'),tab=del.getAttribute('data-tab');if(confirm('Borrar?'))deleteRow('p',ri,tab);}
+    };
+  }catch(e){loadEl.textContent='Error: '+e.message;}
 }
 
-function loadHistory(){
-  var le=document.getElementById('loadingHistory'),li=document.getElementById('listHistory');
-  if(le){le.style.display='block';le.style.color='#6B7280';le.textContent='Cargando historial...';}
-  gasGet({action:'getHistory',email:currentUser.email},function(d,e){
-    if(le)le.style.display='none';
-    if(e||!d){if(li)li.innerHTML=emptyState('Error cargando historial.');return;}
+async function loadHistory(){
+  var loadEl=document.getElementById('loadingHistory');
+  var listEl=document.getElementById('listHistory');
+  loadEl.style.display='block';loadEl.textContent='Cargando historial...';
+  listEl.innerHTML='';
+  try{
+    var r=await fetch(SCRIPT_URL+'?action=getHistory&email='+encodeURIComponent(currentUser.email),{redirect:'follow'});
+    var d=await r.json();
+    loadEl.style.display='none';
     allHistory=d.rows||[];
-    var ap=allHistory.filter(function(x){return x['Estado Director']==='Aprobado';}).length;
-    var rj=allHistory.filter(function(x){return x['Estado Director']==='Rechazado';}).length;
-    var sa=document.getElementById('stApproved');if(sa)sa.textContent=ap;
-    var sr=document.getElementById('stRejected');if(sr)sr.textContent=rj;
+    var approved=allHistory.filter(function(x){return x['Estado Director']==='Aprobado';}).length;
+    var rejected=allHistory.filter(function(x){return x['Estado Director']==='Rechazado';}).length;
+    var sa=document.getElementById('stApproved');if(sa)sa.textContent=approved;
+    var sr=document.getElementById('stRejected');if(sr)sr.textContent=rejected;
     var st=document.getElementById('stTotal');if(st)st.textContent=allPending.length+allHistory.length;
-    renderHistory();loadStats();
-  });
+    renderHistory();
+    loadStats();
+  } catch(e){
+    loadEl.textContent='Error cargando: '+e.message;
+  }
 }
 
-function loadStats(){
-  gasGet({action:'getStats',email:currentUser.email},function(d,e){if(!e&&d)renderCharts(d);});
+async function loadStats(){
+  try{
+    var r=await fetch(SCRIPT_URL+'?action=getStats&email='+encodeURIComponent(currentUser.email));
+    var d=await r.json();
+    if(d.status==='ok')renderCharts(d);
+  }catch(e){}
 }
 
 function tabBadge(tabName){
@@ -616,8 +611,7 @@ function buildReqCard(row,idx){
   html+='<div class="req-name">'+nombre+'</div>';
   html+='<div class="req-sub">'+empresaBadge(empresa)+' '+vehiculo+(aprobador?' &middot; Dir: '+aprobador:'')+'</div>';
   html+='</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">';
-  html+='<span class="'+tabBadge(tab)+'">'+tab+'</span>';
-  html+=empresaBadge(empresa);
+  html+='<span class="'+tabBadge(tab)+'">'+tab+'</span>'+empresaBadge(empresa);
   if(festAcum&&parseInt(festAcum)>=2)html+='<span class="badge badge-alert">'+festAcum+' festivos mes</span>';
   if(isMaster)html+='<span class="badge badge-master">MASTER</span>';
   html+='</div></div>';
@@ -642,8 +636,6 @@ function buildReqCard(row,idx){
 function buildHistCard(row){
   var tab=row['_tab']||'',nombre=row['Nombre']||'',empresa=row['Empresa']||'';
   var correo=row['Correo']||'',estado=row['Estado Director']||'';
-  // Encode row for formulario button
-  var rowJson=encodeURIComponent(JSON.stringify(row));
   var fecha=fmtDate(row['Fecha Decision Director']||''),obs=row['Obs Director']||'';
   var ts=fmtDate(row['Marca de tiempo']||''),rowIdx=row['_rowIndex']||'';
   var mapsLink=row['Ver en Mapa']||'';
@@ -661,11 +653,6 @@ function buildHistCard(row){
   html+='<span class="'+tabBadge(tab)+'">'+tab.split(' ')[0]+'</span>';
   if(fecha)html+='<div style="font-size:10px;color:#9CA3AF;font-family:monospace">'+fecha+'</div>';
   html+='</div></div>';
-  if(estado==='Aprobado'){
-    html+='<div style="padding:6px 14px 0;display:flex;justify-content:flex-end">';
-    html+='<button onclick="generarFormulario(JSON.parse(decodeURIComponent(this.getAttribute(\'data-row\'))))" data-row="'+rowJson+'" style="padding:6px 14px;border-radius:8px;border:1.5px solid #0A3D47;background:#E0F4F4;color:#0A3D47;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">&#128438; Generar formulario para firma</button>';
-    html+='</div>';
-  }
   if(isMaster&&rowIdx){
     html+='<div style="border-top:1px solid #F3F4F6;padding:10px 14px;display:flex;gap:8px;align-items:center">';
     html+='<textarea class="hobs" data-row="'+rowIdx+'" placeholder="Observacion..." style="flex:1;padding:6px 10px;border:1.5px solid #E5E7EB;border-radius:8px;font-family:inherit;font-size:12px;resize:none;height:36px;outline:none"></textarea>';
@@ -768,13 +755,13 @@ function renderCharts(d){
 }
 
 // CALENDARIO
-function loadCalendar(){
-  var dc=document.getElementById('calDetailContent');
-  gasGet({action:'getCalendarData',email:currentUser.email},function(d,e){
-    if(e||!d){if(dc)dc.innerHTML='<span style="color:#DC2626">Error: '+(e||'')+'</span>';return;}
-    calEvents=d.events||[];renderCalendar();
-    if(dc&&!calEvents.filter(function(ev){return ev.tipo!=='Festivo Nacional';}).length)dc.innerHTML='<span style="color:#9CA3AF">Sin novedades este mes.</span>';
-  });
+async function loadCalendar(){
+  try{
+    var r=await fetch(SCRIPT_URL+'?action=getCalendarData&email='+encodeURIComponent(currentUser.email));
+    var d=await r.json();
+    calEvents=d.events||[];
+    renderCalendar();
+  }catch(e){console.log('Cal error:',e);}
 }
 function toISO(d){
   if(!d)return'';
@@ -803,10 +790,10 @@ function renderCalendar(){
     var hasEvts=dayEvts.length>0;
     html+='<div class="cal-day'+(isToday?' cal-today':'')+(hasEvts?' cal-hasevt':'')+'" data-date="'+dateStr+'" data-day="'+day+'" style="cursor:'+(hasEvts?'pointer':'default')+'">';
     html+='<div class="cal-day-num">'+day+'</div>';
-    var festNac=dayEvts.filter(function(ev){return ev.tipo==='Festivo Nacional';});
-    var otros=dayEvts.filter(function(ev){return ev.tipo!=='Festivo Nacional';});
-    if(festNac.length){html+='<div style="background:#FEE2E2;color:#991B1B;border-radius:4px;font-size:8px;font-weight:700;padding:1px 4px;margin-bottom:2px;line-height:1.3">&#127464;&#127476; '+festNac[0].titulo.split(' - ').slice(1).join(' ')+'</div>';}
-    otros.slice(0,2).forEach(function(ev){html+='<div class="cal-evt" style="background:'+ev.color+'">'+ev.titulo.split(' - ').slice(-1)[0]+'</div>';});
+    var festNac=dayEvts.filter(function(e){return e.tipo==='Festivo Nacional';});
+    var otros=dayEvts.filter(function(e){return e.tipo!=='Festivo Nacional';});
+    if(festNac.length)html+='<div style="background:#FEE2E2;color:#991B1B;border-radius:4px;font-size:8px;font-weight:700;padding:1px 4px;margin-bottom:2px">&#127464;&#127476; '+festNac[0].titulo.split(' - ').slice(1).join(' ')+'</div>';
+    otros.slice(0,2).forEach(function(e){html+='<div class="cal-evt" style="background:'+e.color+'">'+e.titulo.split(' - ').slice(-1)[0]+'</div>';});
     if(otros.length>2)html+='<div style="font-size:9px;color:#9CA3AF;font-weight:600">+'+(otros.length-2)+' mas</div>';
     html+='</div>';
   }
@@ -820,27 +807,25 @@ function renderCalendar(){
 }
 function showDayDetail(dateStr,day){
   var meses=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  var evts=calEvents.filter(function(ev){var ini=toISO(ev.inicio),fin=toISO(ev.fin)||ini;return ini<=dateStr&&fin>=dateStr;});
+  var evts=calEvents.filter(function(ev){
+    var ini=toISO(ev.inicio),fin=toISO(ev.fin)||ini;
+    return ini<=dateStr&&fin>=dateStr;
+  });
   var dc=document.getElementById('calDetailContent');
   if(!evts.length){dc.innerHTML='<span style="color:#9CA3AF">Sin novedades este dia.</span>';return;}
   var tLabels={'Vacaciones':'Vacaciones','Tiempo Extra':'Tiempo extra','Festivo':'Festivo trabajado','Compensatorio':'Dia compensatorio','Correccion':'Correccion de marcaje'};
-  var html='<div style="font-size:11px;font-weight:700;color:#0A3D47;margin-bottom:10px">'+day+' de '+meses[calMonth]+'</div>';
+  var html='<div style="font-size:11px;font-weight:700;color:#0A3D47;margin-bottom:10px">'+day+' de '+meses[calMonth]+' '+calYear+'</div>';
   evts.forEach(function(ev){
-    if(ev.tipo==='Festivo Nacional'){
-      html+='<div style="border-left:3px solid #DC2626;padding:8px 10px;border-radius:0 8px 8px 0;background:#FEF2F2;margin-bottom:8px">';
-      html+='<div style="font-size:13px">&#127464;&#127476; <strong style="color:#991B1B">'+ev.titulo.split(' - ').slice(1).join(' ')+'</strong></div>';
-      html+='<div style="font-size:10px;color:#DC2626;margin-top:2px;font-weight:600">Festivo Nacional Colombia — Dia no laborable</div>';
-      html+='</div>';
-    } else {
-      var sc2=ev.estado==='Aprobado'?'#059669':ev.estado==='Rechazado'?'#DC2626':'#D97706';
-      var sb2=ev.estado==='Aprobado'?'#ECFDF5':ev.estado==='Rechazado'?'#FEF2F2':'#FFFBEB';
-      html+='<div style="border-left:3px solid '+ev.color+';padding:8px 10px;border-radius:0 8px 8px 0;background:#F9FAFB;margin-bottom:8px">';
-      html+='<div style="font-size:12px;font-weight:700;color:#111827">'+ev.titulo.split(' - ').slice(1).join(' ')+'</div>';
-      if(ev.correo)html+='<div style="font-size:10px;color:#6B7280;margin-top:1px">'+ev.correo+'</div>';
-      html+='<div style="font-size:10px;color:#6B7280;margin-top:1px">'+(tLabels[ev.tipo]||ev.tipo)+'</div>';
-      html+='<span style="display:inline-block;margin-top:4px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:'+sb2+';color:'+sc2+'">'+ev.estado+'</span>';
-      html+='</div>';
-    }
+    var nombre=ev.titulo.split(' - ').slice(1).join(' ');
+    var correo=ev.correo||'';
+    var sc=ev.estado==='Aprobado'?'#059669':ev.estado==='Rechazado'?'#DC2626':'#D97706';
+    var sb=ev.estado==='Aprobado'?'#ECFDF5':ev.estado==='Rechazado'?'#FEF2F2':'#FFFBEB';
+    html+='<div style="border-left:3px solid '+ev.color+';padding:8px 10px;border-radius:0 8px 8px 0;background:#F9FAFB;margin-bottom:8px">';
+    html+='<div style="font-size:12px;font-weight:700;color:#111827">'+nombre+'</div>';
+    if(correo)html+='<div style="font-size:10px;color:#6B7280;margin-top:1px">'+correo+'</div>';
+    html+='<div style="font-size:10px;color:#6B7280;margin-top:1px">'+(tLabels[ev.tipo]||ev.tipo)+'</div>';
+    html+='<span style="display:inline-block;margin-top:4px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:'+sb+';color:'+sc+'">'+ev.estado+'</span>';
+    html+='</div>';
   });
   dc.innerHTML=html;
 }
@@ -848,13 +833,12 @@ function calPrev(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCalend
 function calNext(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCalendar();}
 
 // EMPLEADOS
-function loadEmpleados(){
-  var el=document.getElementById('empContent');
-  if(el)el.innerHTML='<p style="color:#9CA3AF;padding:2rem;text-align:center">Cargando...</p>';
-  gasGet({action:'getEmpleadosAdmin',email:currentUser.email},function(d,e){
-    if(e||!d||d.status!=='ok'){if(el)el.innerHTML='<p style="color:#DC2626;padding:2rem">Error: '+(e||d&&d.msg||'')+'</p>';return;}
+async function loadEmpleados(){
+  try{
+    var r=await fetch(SCRIPT_URL+'?action=getEmpleadosAdmin&email='+encodeURIComponent(currentUser.email));
+    var d=await r.json();
     renderEmpleados(d.empleados||[]);
-  });
+  }catch(e){document.getElementById('empContent').innerHTML='<p style="color:#9CA3AF;padding:2rem;text-align:center">Error cargando empleados.</p>';}
 }
 function renderEmpleados(emps){
   var amg=emps.filter(function(e){return(e.empresa||'').indexOf('AMG')>=0;});
@@ -874,11 +858,16 @@ function renderEmpGroup(titulo,color,emps){
   emps.forEach(function(e){
     var hasAlert=e.nocturnas>0||e.festivos>=2||e.otPendientes>0;
     html+='<tr style="'+(hasAlert?'background:#FFF7ED;':'')+'">';
-    html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6">';
-    var uT=e.ultimoTipo||'';var uBg=uT==='Entrada a turno'?'#ECFDF5':uT==='Salida de turno'?'#FEF2F2':'#F9FAFB';var uC=uT==='Entrada a turno'?'#065F46':uT==='Salida de turno'?'#991B1B':'#6B7280';
-    if(e.ultimoRegistro){if(uT)html+='<span style="background:'+uBg+';color:'+uC+';border-radius:99px;padding:1px 7px;font-size:9px;font-weight:700;display:block;margin-bottom:2px">'+(uT==='Entrada a turno'?'Entrada':'Salida')+'</span>';html+='<span style="font-size:10px;font-family:monospace;color:#6B7280">'+e.ultimoRegistro+'</span>';}
-    else{html+='<span style="color:#D1D5DB;font-size:11px">Sin registros</span>';}
-    html+='</td>';;
+    html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;font-weight:600;color:#111827;white-space:nowrap">'+e.nombre+'</td>';
+    html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;color:#6B7280;font-size:11px">'+e.email+'</td>';
+    html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6"><span style="background:#E5E7EB;border-radius:99px;padding:2px 8px;font-size:10px;font-weight:600">'+e.area+'</span></td>';
+    html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6"><span style="background:#ECFDF5;color:#065F46;border-radius:99px;padding:2px 8px;font-size:11px;font-weight:600">'+e.entradas+'</span></td>';
+    html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6"><span style="background:#FEF2F2;color:#991B1B;border-radius:99px;padding:2px 8px;font-size:11px;font-weight:600">'+e.salidas+'</span></td>';
+    html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;color:#374151;font-size:11px;white-space:nowrap">'+(e.horasTotal||0)+' hrs</td>';
+    html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6">'+(e.nocturnas>0?'<span style="background:#FEF2F2;color:#991B1B;border-radius:99px;padding:2px 8px;font-size:11px;font-weight:600">'+e.nocturnas+'</span>':'<span style="color:#9CA3AF;font-size:11px">0</span>')+'</td>';
+    html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6">'+(e.festivos>0?'<span style="background:'+(e.festivos>=2?'#F5F3FF':'#FFFBEB')+';color:'+(e.festivos>=2?'#4C1D95':'#92400E')+';border-radius:99px;padding:2px 8px;font-size:11px;font-weight:600">'+e.festivos+'</span>':'<span style="color:#9CA3AF;font-size:11px">0</span>')+'</td>';
+    html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6">'+(e.otPendientes>0?'<span style="background:#FFFBEB;color:#92400E;border-radius:99px;padding:2px 8px;font-size:11px;font-weight:600">'+e.otPendientes+'</span>':'<span style="color:#059669;font-size:11px;font-weight:600">OK</span>')+'</td>';
+    html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;color:#9CA3AF;font-size:10px;font-family:monospace;white-space:nowrap">'+(e.ultimoRegistro||'Sin registro')+'</td>';
     html+='</tr>';
   });
   html+='</tbody></table></div></div>';
@@ -987,26 +976,12 @@ async function ghDecide(rowIndex,decision,idx){
 }
 
 // ADMINS
-function loadAdmins(){
-  var el=document.getElementById('adminsContent');
-  if(el)el.innerHTML='<p style="color:#9CA3AF;padding:1rem">Cargando...</p>';
-  gasGet({action:'getAdminsLista',email:currentUser.email},function(d,e){
-    if(e||!d){if(el)el.innerHTML='<p style="color:#DC2626;padding:1rem">Error: '+(e||'')+'</p>';return;}
-    var admins=d.admins||[];
-    if(!admins.length){if(el)el.innerHTML=emptyState('Sin administradores.');return;}
-    var html='<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="background:#F8FAFC">';
-    ['Nombre','Email','Rol','Estado','Acciones'].forEach(function(h){html+='<th style="text-align:left;padding:9px 10px;border-bottom:1px solid #E5E7EB;font-size:11px;color:#6B7280;font-weight:700">'+h+'</th>';});
-    html+='</tr></thead><tbody>';
-    admins.forEach(function(a){
-      html+='<tr><td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;font-weight:600">'+a.nombre+'</td>';
-      html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;font-size:11px;color:#6B7280">'+a.email+'</td>';
-      html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6"><span style="background:'+(a.role==='master'?'#FEF3C7':'#EFF6FF')+';color:'+(a.role==='master'?'#92400E':'#1E40AF')+';border-radius:99px;padding:2px 9px;font-size:11px;font-weight:700">'+a.role+'</span></td>';
-      html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;color:#059669;font-size:11px;font-weight:700">'+(a.estado||'Activo')+'</td>';
-      html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6"><button data-email="'+a.email+'" style="font-size:11px;padding:3px 10px;border-radius:6px;border:1px solid #E5E7EB;background:white;cursor:pointer;color:#DC2626">Dar de baja</button></td></tr>';
-    });
-    html+='</tbody></table>';
-    if(el){el.innerHTML=html;el.onclick=function(ev){var btn=ev.target.closest('button[data-email]');if(btn)terminarAdminAction(btn.getAttribute('data-email'));};}
-  });
+async function loadAdmins(){
+  try{
+    var r=await fetch(SCRIPT_URL+'?action=getAdminsLista&email='+encodeURIComponent(currentUser.email));
+    var d=await r.json();
+    renderAdmins(d.admins||[]);
+  }catch(e){document.getElementById('adminsContent').innerHTML='<p style="color:#991B1B;padding:1rem">Error cargando administradores.</p>';}
 }
 function renderAdmins(admins){
   var html='<div style="background:white;border-radius:14px;border:1.5px solid #E5E7EB;overflow:hidden;margin-bottom:1rem">';
@@ -1064,7 +1039,7 @@ async function doReset(){
   var btn = document.getElementById('resetBtn');
   if(btn){btn.textContent='Reseteando...';btn.disabled=true;}
   try{
-    var r = await fetch(SCRIPT_URL+'?action=resetData&email='+encodeURIComponent(currentUser.email));
+    var r = await fetch(SCRIPT_URL+'?action=resetData&email='+encodeURIComponent(currentUser.email),{redirect:'follow'});
     var d = await r.json();
     if(d.status==='ok'){
       alert('Reset completado.\n'+d.msg+'\n\nEl sistema esta listo para produccion.');
@@ -1072,7 +1047,6 @@ async function doReset(){
       loadHistory();
     startPolling();
     setTimeout(function(){lastPollCount=-1;doPoll();},4000);
-    cargarEmpCache();
     } else {
       alert('Error: '+d.msg);
     }
@@ -1092,18 +1066,8 @@ async function sendForgot(){
 }
 
 
-function ghApproveFromPending(rowIndex,sheetName,obsId){
-  var obs=obsId&&document.getElementById(obsId)?document.getElementById(obsId).value.trim():'';
-  fetch(SCRIPT_URL+'?action=approveGH&email='+encodeURIComponent(currentUser.email)+'&rowIndex='+encodeURIComponent(rowIndex)+'&sheetName='+encodeURIComponent(sheetName)+'&decision=approve&obs='+encodeURIComponent(obs),{mode:'no-cors'}).then(function(){setTimeout(function(){loadPending();loadHistory();},1500);});
-}
-function ghRejectFromPending(rowIndex,sheetName,obsId){
-  var obs=obsId&&document.getElementById(obsId)?document.getElementById(obsId).value.trim():'';
-  if(!obs){alert('Para rechazar debes ingresar una observacion.');return;}
-  fetch(SCRIPT_URL+'?action=approveGH&email='+encodeURIComponent(currentUser.email)+'&rowIndex='+encodeURIComponent(rowIndex)+'&sheetName='+encodeURIComponent(sheetName)+'&decision=reject&obs='+encodeURIComponent(obs),{mode:'no-cors'}).then(function(){setTimeout(function(){loadPending();loadHistory();},1500);});
-}
 function confirmarReset(){
-  var msg='RESET DE DATOS\n\nEsta accion borrara todos los registros de prueba y cargara los datos reales de vacaciones.\n\nNo se puede deshacer.\n\nEscribe CONFIRMAR para continuar:';
-  var input=prompt(msg);
+  var input=prompt('RESET DE DATOS\n\nEscribe CONFIRMAR para borrar todos los registros de prueba y cargar las vacaciones reales:');
   if(input&&input.trim().toUpperCase()==='CONFIRMAR'){doReset();}
   else{alert('Reset cancelado.');}
 }
@@ -1112,211 +1076,11 @@ async function doReset(){
   if(btn){btn.textContent='Reseteando...';btn.disabled=true;}
   try{
     var r=await fetch(SCRIPT_URL+'?action=resetData&email='+encodeURIComponent(currentUser.email));
-    var d=await r.json();
+    var d=JSON.parse(await r.text());
     alert(d.status==='ok'?'Reset completado. '+d.msg:'Error: '+d.msg);
     loadPending();loadHistory();
   }catch(e){alert('Error: '+e.message);}
   if(btn){btn.textContent='RESET DATOS';btn.disabled=false;}
-}
-async function agregarEmpleado(){
-  var nombre=document.getElementById('newEmpNombre').value.trim();
-  var email=document.getElementById('newEmpEmail').value.trim().toLowerCase();
-  var cedula=document.getElementById('newEmpID').value.trim();
-  var area=document.getElementById('newEmpArea').value.trim();
-  var empresa=document.getElementById('newEmpEmpresa').value;
-  var ingreso=document.getElementById('newEmpIngreso').value;
-  if(!nombre||!email){alert('Nombre y correo son obligatorios.');return;}
-  var url=SCRIPT_URL+'?action=addEmpleado&email='+encodeURIComponent(currentUser.email)+'&empNombre='+encodeURIComponent(nombre)+'&empEmail='+encodeURIComponent(email)+'&empID='+encodeURIComponent(cedula)+'&empArea='+encodeURIComponent(area)+'&empEmpresa='+encodeURIComponent(empresa)+'&empIngreso='+encodeURIComponent(ingreso);
-  await fetch(url,{mode:'no-cors'});
-  var ok=document.getElementById('addEmpOk');if(ok)ok.style.display='block';
-  setTimeout(function(){if(ok)ok.style.display='none';['newEmpNombre','newEmpEmail','newEmpID','newEmpArea','newEmpIngreso'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});loadEmpleados();},2000);
-}
-function renderHistory(){
-  var ft=document.getElementById('filType').value;
-  var fs=document.getElementById('filStatus').value;
-  var fsEl=document.getElementById('filSearch');var fq=fsEl?fsEl.value.toLowerCase():'';
-  var filtered=allHistory.filter(function(r){
-    return(!ft||(r['_tab']||'')===ft)&&(!fs||(r['Estado Director']||'')===fs)&&(!fq||(r['Nombre']||'').toLowerCase().indexOf(fq)>=0||(r['Correo']||'').toLowerCase().indexOf(fq)>=0);
-  });
-  var listEl=document.getElementById('listHistory');
-  if(!filtered.length){listEl.innerHTML=emptyState('Sin registros con estos filtros.');return;}
-  listEl.innerHTML=filtered.map(function(r){return buildHistCard(r);}).join('');
-  listEl.onclick=function(e){
-    var btn=e.target.closest('.hact');
-    if(btn){var ri=btn.getAttribute('data-row'),tab=btn.getAttribute('data-tab'),act=btn.getAttribute('data-action');var obsEl=listEl.querySelector('.hobs[data-row="'+ri+'"]');var obs=obsEl?obsEl.value.trim():'';if((act==='reject'||act==='gh-reject'||act==='override-reject')&&!obs){alert('Para rechazar debes ingresar una observacion.');return;}if(act==='gh-approve'||act==='gh-reject'){fetch(SCRIPT_URL+'?action=approveGH&email='+encodeURIComponent(currentUser.email)+'&rowIndex='+encodeURIComponent(ri)+'&sheetName='+encodeURIComponent(tab)+'&decision='+(act==='gh-approve'?'approve':'reject')+'&obs='+encodeURIComponent(obs),{mode:'no-cors'}).then(function(){setTimeout(function(){loadPending();loadHistory();},1500);});}else{decidirRow(ri,tab,act.indexOf('approve')>=0?'approve':'reject',obs);}return;}
-    var del=e.target.closest('.hdel');if(del){var ri=del.getAttribute('data-row'),tab=del.getAttribute('data-tab');if(confirm('Borrar?'))deleteRow('h',ri,tab);}
-  };
-}
-async function decidirRow(rowIndex,sheetName,action,obs){
-  var url=SCRIPT_URL+'?action='+(action==='approve'?'approveRow':'rejectRow')+'&rowIndex='+encodeURIComponent(rowIndex)+'&sheetName='+encodeURIComponent(sheetName)+'&observaciones='+encodeURIComponent(obs)+'&directorEmail='+encodeURIComponent(currentUser.email)+'&directorName='+encodeURIComponent(currentUser.nombre);
-  await fetch(url,{mode:'no-cors'});
-  setTimeout(function(){loadPending();loadHistory();},1500);
-}
-
-var LOGO_B64 = document.getElementById('amg-logo-b64') ? document.getElementById('amg-logo-b64').src : '';
-
-var TIPO_LABELS = {
-  'Solicitudes de Vacaciones': 'SOLICITUD DE VACACIONES',
-  'Tiempo Extra': 'SOLICITUD DE HORAS EXTRA',
-  'Dias Compensatorios': 'SOLICITUD DE DIA COMPENSATORIO',
-  'Festivos Trabajados': 'SOLICITUD POR FESTIVO TRABAJADO',
-  'Correcciones de Marcaje': 'SOLICITUD DE CORRECCION DE MARCAJE',
-};
-
-var TIPO_FIELDS = {
-  'Solicitudes de Vacaciones': [
-    {label:'Fecha de inicio', key:'Fecha Inicio'},
-    {label:'Fecha de fin', key:'Fecha Fin'},
-    {label:'Dias habiles solicitados', key:'Dias Habiles'},
-    {label:'Motivo / observaciones', key:'Motivo'},
-  ],
-  'Tiempo Extra': [
-    {label:'Fecha de las horas extra', key:'Fecha Extra'},
-    {label:'Hora de inicio', key:'Hora Inicio'},
-    {label:'Hora de fin', key:'Hora Fin'},
-    {label:'Total horas solicitadas', key:'Horas Solicitadas'},
-    {label:'Motivo', key:'Motivo'},
-  ],
-  'Dias Compensatorios': [
-    {label:'Fecha solicitada del compensatorio', key:'Fecha Compensatorio'},
-    {label:'Motivo', key:'Motivo'},
-  ],
-  'Festivos Trabajados': [
-    {label:'Fecha del festivo trabajado', key:'Fecha Festivo'},
-    {label:'Hora de inicio', key:'Hora Inicio'},
-    {label:'Hora de fin', key:'Hora Fin'},
-    {label:'Motivo', key:'Motivo'},
-  ],
-  'Correcciones de Marcaje': [
-    {label:'Tipo de marcaje', key:'Tipo Marcaje'},
-    {label:'Fecha del marcaje', key:'Fecha Marcaje'},
-    {label:'Hora incorrecta registrada', key:'Hora Incorrecta'},
-    {label:'Hora correcta', key:'Hora Correcta'},
-    {label:'Motivo de la correccion', key:'Motivo'},
-  ],
-};
-
-function generarFormulario(row){
-  var tab = row['_tab']||'';
-  var titulo = TIPO_LABELS[tab]||'SOLICITUD DE NOVEDAD';
-  var nombre = row['Nombre']||'';
-  var empresa = row['Empresa']||'';
-  var area = row['Area']||'';
-  var aprobador = row['Aprobador']||'';
-  var fechaReg = fmtDate(row['Marca de tiempo']||'');
-  var obsDir = row['Obs Director']||'';
-  var obsGH = row['Obs GH']||'';
-  var estado = row['Estado Director']||'';
-
-  // Get employee data for cedula
-  var empData = empCache[row['Correo']||''] || {};
-  var cedula = empData.identificacion || empData.Identificacion || '';
-  var fields = TIPO_FIELDS[tab]||[];
-
-  var fieldRows = fields.map(function(f){
-    var val = row[f.key]||'';
-    return '<tr><td class="lbl">'+f.label+'</td><td class="val">'+val+'</td></tr>';
-  }).join('');
-
-  var html = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">'
-    + '<style>'
-    + 'body{font-family:Arial,sans-serif;margin:0;padding:0;color:#1E293B;font-size:12px}'
-    + '.page{width:21cm;min-height:29.7cm;margin:0 auto;padding:2cm 2.2cm;box-sizing:border-box}'
-    + '.hdr{display:flex;align-items:center;gap:16px;margin-bottom:6px}'
-    + '.hdr img{height:44px}'
-    + '.hdr-txt h1{font-size:11px;font-weight:700;color:#0A3D47;margin:0}'
-    + '.hdr-txt p{font-size:9px;color:#64748B;margin:2px 0 0}'
-    + '.title-bar{background:#0A3D47;color:white;padding:10px 16px;border-radius:6px;margin-bottom:16px}'
-    + '.title-bar h2{font-size:14px;font-weight:700;margin:0;letter-spacing:.3px}'
-    + '.title-bar p{font-size:10px;margin:2px 0 0;opacity:.7}'
-    + '.section{margin-bottom:14px}'
-    + '.section-title{font-size:10px;font-weight:700;color:#0A3D47;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;padding-bottom:3px;border-bottom:1.5px solid #0A3D47}'
-    + 'table{width:100%;border-collapse:collapse}'
-    + '.lbl{background:#F1F5F9;font-weight:700;color:#374151;padding:7px 10px;border:1px solid #E2E8F0;width:38%;font-size:11px}'
-    + '.val{padding:7px 10px;border:1px solid #E2E8F0;color:#1E293B;font-size:11px}'
-    + '.emp-table td{padding:7px 10px;border:1px solid #E2E8F0;font-size:11px}'
-    + '.emp-table .lbl{background:#F1F5F9;font-weight:700;color:#374151;width:38%}'
-    + '.status-box{border-radius:6px;padding:10px 14px;margin-bottom:14px}'
-    + '.status-aprobado{background:#ECFDF5;border:1.5px solid #6EE7B7}'
-    + '.status-title{font-weight:700;font-size:11px;color:#065F46;margin-bottom:3px}'
-    + '.status-sub{font-size:10px;color:#374151}'
-    + '.sign-section{margin-top:32px}'
-    + '.sign-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-top:16px}'
-    + '.sign-box{border-top:1.5px solid #1E293B;padding-top:8px;text-align:center}'
-    + '.sign-label{font-size:10px;color:#374151;font-weight:700}'
-    + '.sign-sub{font-size:9px;color:#94A3B8;margin-top:2px}'
-    + '.sign-space{height:56px}'
-    + '.footer{margin-top:24px;padding-top:8px;border-top:1px solid #E2E8F0;display:flex;justify-content:space-between;align-items:center}'
-    + '.footer p{font-size:8px;color:#94A3B8;margin:0}'
-    + '.badge{display:inline-block;padding:2px 9px;border-radius:99px;font-size:10px;font-weight:700}'
-    + '.badge-amg{background:#0A3D47;color:white}'
-    + '.badge-inm{background:#1E40AF;color:white}'
-    + '.legal-note{background:#FFFBEB;border:1px solid #FCD34D;border-radius:6px;padding:8px 12px;font-size:10px;color:#92400E;margin-top:12px;line-height:1.6}'
-    + '@media print{body{margin:0}@page{margin:1.5cm;size:A4}}'
-    + '</style></head><body><div class="page">'
-
-    // Header
-    + '<div class="hdr">'
-    + '<img src="data:image/jpeg;base64,'+LOGO_B64+'" alt="AMG">'
-    + '<div class="hdr-txt"><h1>AMG de Colombia SAS</h1><p>Gestion Humana  &bull;  Documento Interno</p></div>'
-    + '<div style="margin-left:auto;text-align:right"><div style="font-size:9px;color:#94A3B8">Codigo: GH-SOL-001</div><div style="font-size:9px;color:#94A3B8">Fecha: '+new Date().toLocaleDateString('es-CO')+'</div></div>'
-    + '</div>'
-    + '<div style="border-top:2px solid #0A3D47;margin:8px 0 14px"></div>'
-
-    // Title bar
-    + '<div class="title-bar"><h2>'+titulo+'</h2><p>Solicitud registrada el: '+fechaReg+'</p></div>'
-
-    // Status
-    + '<div class="status-box status-aprobado">'
-    + '<div class="status-title">Aprobado — Decision de Gestion Humana</div>'
-    + (obsDir?'<div class="status-sub">Obs. Director: '+obsDir+'</div>':'')
-    + (obsGH?'<div class="status-sub">Obs. GH: '+obsGH+'</div>':'')
-    + '</div>'
-
-    // Employee data
-    + '<div class="section"><div class="section-title">Datos del empleado</div>'
-    + '<table class="emp-table">'
-    + '<tr><td class="lbl">Nombre completo</td><td>'+nombre+'</td><td class="lbl">No. Identificacion</td><td>'+(cedula||'________________')+'</td></tr>'
-    + '<tr><td class="lbl">Empresa</td><td><span class="badge '+(empresa.indexOf('INMO')>=0?'badge-inm':'badge-amg')+'">'+empresa+'</span></td><td class="lbl">Area</td><td>'+area+'</td></tr>'
-    + '</table></div>'
-
-    // Request detail
-    + '<div class="section"><div class="section-title">Detalle de la solicitud</div>'
-    + '<table>'+fieldRows+'</table></div>'
-
-    // Legal note
-    + '<div class="legal-note">La presente solicitud ha sido tramitada a traves del Sistema Digital de Registro de Turno y Novedades de Personal de AMG de Colombia SAS, conforme a los articulos 58 y siguientes del Codigo Sustantivo del Trabajo y al Reglamento Interno de Trabajo vigente. Las partes declaran estar conformes con el contenido de este documento.</div>'
-
-    // Signatures
-    + '<div class="sign-section"><div class="section-title">Firmas</div>'
-    + '<div class="sign-grid">'
-    + '<div class="sign-box"><div class="sign-space"></div><div class="sign-label">'+nombre+'</div><div class="sign-sub">Empleado</div><div class="sign-sub">C.C.: '+(cedula||'_______________')+'</div></div>'
-    + '<div class="sign-box"><div class="sign-space"></div><div class="sign-label">'+aprobador+'</div><div class="sign-sub">Director aprobador</div></div>'
-    + '<div class="sign-box"><div class="sign-space"></div><div class="sign-label">Yury Trujillo</div><div class="sign-sub">Gestion Humana</div><div class="sign-sub">C.C.: 51.835.380</div></div>'
-    + '</div></div>'
-
-    + '<div class="footer"><p>AMG de Colombia SAS &bull; Inmovimento SAS &bull; Documento generado por el sistema</p><p>Conservar en el expediente del empleado</p></div>'
-    + '</div>'
-    + '<script>window.onload=function(){window.print();}<\/script>'
-    + '</body></html>';
-
-  var win = window.open('','_blank','width=900,height=700');
-  if(win){
-    win.document.open();
-    win.document.write(html);
-    win.document.close();
-  } else {
-    alert('Permite ventanas emergentes para generar el formulario.');
-  }
-}
-
-// Cache de empleados para cedula
-var empCache = {};
-function cargarEmpCache(){
-  gasGet({action:'getEmpleados'},function(d,e){
-    if(e||!d)return;
-    (d.empleados||[]).forEach(function(emp){var k=(emp.Email||emp.email||'').toLowerCase();if(k)empCache[k]=emp;});
-  });
 }
 </script>
 <div id="toast" style="display:none;position:fixed;bottom:24px;right:24px;background:#0A3D47;color:white;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.25)"></div>
