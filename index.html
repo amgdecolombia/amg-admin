@@ -615,12 +615,14 @@ function buildReqCard(row,idx){
   if(festAcum&&parseInt(festAcum)>=2)html+='<span class="badge badge-alert">'+festAcum+' festivos mes</span>';
   if(isMaster)html+='<span class="badge badge-master">MASTER</span>';
   html+='</div></div>';
-  var fechaEv=row['Fecha Extra']||row['Fecha Festivo']||row['Fecha Compensatorio']||row['Fecha Marcaje']||row['Fecha Inicio']||'';
+  var fechaIni=row['Fecha Extra']||row['Fecha Festivo']||row['Fecha Compensatorio']||row['Fecha Marcaje']||row['Fecha Inicio']||'';
+  var fechaFin=row['Fecha Fin']||'';
+  var diasHab=row['Dias Habiles']||'';
   html+='<div class="req-details">';
   html+='<div class="req-detail"><div class="rd-lbl">Empleado</div><div class="rd-val" style="font-size:11px">'+correo+'</div></div>';
   html+='<div class="req-detail"><div class="rd-lbl">Registrado</div><div class="rd-val">'+ts+'</div></div>';
-  if(fechaEv)html+='<div class="req-detail"><div class="rd-lbl">Fecha solicitud</div><div class="rd-val">'+fechaEv+'</div></div>';
-  if(horaI)html+='<div class="req-detail"><div class="rd-lbl">Horario</div><div class="rd-val">'+horaI+' — '+horaF+(horas?' ('+horas+')':'')+'</div></div>';
+  if(fechaIni&&fechaFin){html+='<div class="req-detail" style="grid-column:1/-1"><div class="rd-lbl">Periodo solicitado</div><div class="rd-val" style="font-weight:700;color:#0A3D47">'+fechaIni+' al '+fechaFin+(diasHab?' <span style="color:#059669">('+diasHab+' dias habiles)</span>':'')+'</div></div>';}else if(fechaIni){html+='<div class="req-detail"><div class="rd-lbl">Fecha</div><div class="rd-val" style="font-weight:600">'+fechaIni+'</div></div>';}
+  if(horaI&&horaF)html+='<div class="req-detail"><div class="rd-lbl">Horario</div><div class="rd-val" style="font-weight:600">'+horaI+' — '+horaF+(horas?' ('+horas+' hrs)':'')+'</div></div>';
   if(motivo)html+='<div class="req-detail"><div class="rd-lbl">Motivo</div><div class="rd-val">'+motivo+'</div></div>';
   html+='<div class="req-detail"><div class="rd-lbl">GPS</div><div class="rd-val">'+gps+(mapsLink&&mapsLink!=='No disponible'?' <a href="'+mapsLink+'" target="_blank" style="color:#1D9E9E;font-size:11px">Ver mapa</a>':'')+'</div></div>';
   html+='</div>';
