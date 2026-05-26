@@ -383,7 +383,7 @@ body{font-family:'Inter',sans-serif;background:var(--g50);min-height:100vh;}
 
 <script>
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzp-5qULJ20qDdQXCU7dB2dwuR3WqQEJiLokaF-2sD8WGdls5y4wTxo3DW_goTvWuK4/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby0PqKFpY9paOo5uwAJRPzhRuMYSgGEQBlA2IjSf2P4e4Ud6zBqRUIZTLbIIDjxsK7L/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -612,6 +612,8 @@ function buildReqCard(row,idx){
   html+='<div class="req-sub">'+empresaBadge(empresa)+' '+vehiculo+(aprobador?' &middot; Dir: '+aprobador:'')+'</div>';
   html+='</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">';
   html+='<span class="'+tabBadge(tab)+'">'+tab+'</span>'+empresaBadge(empresa);
+  var fpStatus=row['FP Status']||'';
+  if(fpStatus==='ALERTA')html+='<span style="background:#FEF2F2;color:#991B1B;border-radius:99px;padding:2px 10px;font-size:10px;font-weight:700;border:1px solid #FECACA">&#9888; Dispositivo diferente</span>';
   if(festAcum&&parseInt(festAcum)>=2)html+='<span class="badge badge-alert">'+festAcum+' festivos mes</span>';
   if(isMaster)html+='<span class="badge badge-master">MASTER</span>';
   html+='</div></div>';
