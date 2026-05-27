@@ -399,7 +399,7 @@ body{font-family:'Inter',sans-serif;background:var(--g50);min-height:100vh;}
 
 <script>
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxJaBOD_71xEly9XNK5hI9bVYZnuxneOXwl8k4Ah_QGtUiN77JCnNBqDNrFTV20wQ5e/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxvzYnuxKaaUd69OPfu83rU3W58CeryZxPq2O3bc-XztvtM_nD3Dx2nEGE1qAOGRmie/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -1217,7 +1217,7 @@ async function doReset(){
 
 // ── reiniciarPiloto ───────────────────────────────────────────────────────────
 async function reiniciarPiloto(){
-  if(!confirm('REINICIAR PILOTO\n\nEsto borrara:\n- Registros de entrada/salida\n- Tiempo extra, festivos, compensatorios, correcciones\n- Fingerprints de dispositivos\n\nNO borra las vacaciones reales.\n\nContinuar?'))return;
+  if(!confirm('REINICIAR PILOTO\n\nEsto borrara:\n- Registros de entrada/salida\n- Tiempo extra, festivos, compensatorios\n- Vacaciones de prueba\n- Correcciones y novedades\n- Fingerprints de dispositivos\n\nLas vacaciones REALES se cargan al hacer RESET DATOS.\n\nContinuar?'))return;
   var btn=document.getElementById('pilotoResetBtn');
   if(btn){btn.disabled=true;btn.textContent='Limpiando...';}
   try{
