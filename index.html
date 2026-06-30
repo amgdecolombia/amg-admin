@@ -399,7 +399,7 @@ body{font-family:'Inter',sans-serif;background:var(--g50);min-height:100vh;}
 
 <script>
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxpj6YIDXX1tOH1qGTqVcExg1-yljCLAjYfSR1rzCVvQUWwSMp_g5TphWRTSQERYVc/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzb8xCSHrGrAoYhXhLjNBoAm3dZ2Udou3by0VVr8p6ayWSY-MrcfDCC-FhFh9cnYbn1/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -900,7 +900,7 @@ function renderEmpGroup(titulo,color,emps){
   var html='<div style="margin-bottom:1.5rem"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><div style="width:4px;height:20px;background:'+color+';border-radius:2px"></div><h3 style="font-size:13px;font-weight:700;color:'+color+'">'+titulo+'</h3><span style="background:'+color+'20;color:'+color+';border-radius:99px;padding:2px 8px;font-size:11px;font-weight:600">'+emps.length+' empleados</span></div>';
   html+='<div style="background:white;border-radius:14px;border:1.5px solid #E5E7EB;overflow:auto">';
   html+='<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:#F9FAFB">';
-  ['Nombre','Correo','Area','Entradas','Salidas','Horas','Nocturnas','Festivos','OT Pend.','Ultimo Registro'].forEach(function(h){html+='<th style="text-align:left;font-size:10px;font-weight:600;color:#9CA3AF;text-transform:uppercase;padding:8px 10px;border-bottom:1px solid #E5E7EB;white-space:nowrap">'+h+'</th>';});
+  ['Nombre','Correo','Area','Entradas','Salidas','Horas','Nocturnas','Festivos','OT Pend.','Ultimo Registro',''].forEach(function(h){html+='<th style="text-align:left;font-size:10px;font-weight:600;color:#9CA3AF;text-transform:uppercase;padding:8px 10px;border-bottom:1px solid #E5E7EB;white-space:nowrap">'+h+'</th>';});
   html+='</tr></thead><tbody>';
   emps.forEach(function(e){
     var hasAlert=e.nocturnas>0||e.festivos>=2||e.otPendientes>0;
@@ -915,6 +915,7 @@ function renderEmpGroup(titulo,color,emps){
     html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6">'+(e.festivos>0?'<span style="background:'+(e.festivos>=2?'#F5F3FF':'#FFFBEB')+';color:'+(e.festivos>=2?'#4C1D95':'#92400E')+';border-radius:99px;padding:2px 8px;font-size:11px;font-weight:600">'+e.festivos+'</span>':'<span style="color:#9CA3AF;font-size:11px">0</span>')+'</td>';
     html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6">'+(e.otPendientes>0?'<span style="background:#FFFBEB;color:#92400E;border-radius:99px;padding:2px 8px;font-size:11px;font-weight:600">'+e.otPendientes+'</span>':'<span style="color:#059669;font-size:11px;font-weight:600">OK</span>')+'</td>';
     html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;color:#9CA3AF;font-size:10px;font-family:monospace;white-space:nowrap">'+(e.ultimoRegistro||'Sin registro')+'</td>';
+    html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6"><button onclick="eliminarEmpleadoDirecto('+JSON.stringify(e.email)+','+JSON.stringify(e.nombre)+')" style="padding:4px 10px;border-radius:6px;border:1.5px solid #FECACA;background:#FEF2F2;color:#991B1B;font-family:inherit;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">Eliminar</button></td>';
     html+='</tr>';
   });
   html+='</tbody></table></div></div>';
@@ -1360,6 +1361,20 @@ async function reportarProblema(){
   a.download='AMG_Reporte_'+new Date().toISOString().slice(0,16).replace(/[T:]/g,'_')+'.txt';
   document.body.appendChild(a);a.click();document.body.removeChild(a);
   showToast('Reporte descargado.');
+}
+
+async function eliminarEmpleadoDirecto(email,nombre){
+  if(!confirm('Vas a eliminar a '+nombre+' ('+email+') del sistema.\n\nEsta accion lo marca como inactivo y ya no podra registrar turnos.\n\nContinuar?'))return;
+  try{
+    var r=await fetch(SCRIPT_URL+'?action=terminarEmpleado&email='+encodeURIComponent(currentUser.email)+'&empEmail='+encodeURIComponent(email));
+    var d=JSON.parse(await r.text());
+    if(d.status==='ok'){
+      showToast(nombre+' eliminado correctamente.');
+      loadEmpleados();
+    }else{
+      alert('Error: '+(d.msg||'No se pudo eliminar.'));
+    }
+  }catch(e){alert('Error: '+e.message);}
 }
 </script>
 <div id="toast" style="display:none;position:fixed;bottom:24px;right:24px;background:#0A3D47;color:white;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.25)"></div>
