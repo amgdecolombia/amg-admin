@@ -882,13 +882,18 @@ function calNext(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCalend
 
 // EMPLEADOS
 async function loadEmpleados(){
+  var el=document.getElementById('empContent');
+  if(el)el.innerHTML='<p style="color:#9CA3AF;padding:1rem;text-align:center">Cargando...</p>';
   try{
     var r=await fetch(SCRIPT_URL+'?action=getEmpleadosAdmin&email='+encodeURIComponent(currentUser.email));
-    var d=await r.json();
+    var txt=await r.text();
+    var d=JSON.parse(txt);
+    if(d.status!=='ok'){if(el)el.innerHTML='<p style="color:#DC2626;padding:1rem">Error: '+(d.msg||'')+'</p>';return;}
     renderEmpleados(d.empleados||[]);
-  }catch(e){document.getElementById('empContent').innerHTML='<p style="color:#9CA3AF;padding:2rem;text-align:center">Error cargando empleados.</p>';}
+  }catch(e){if(el)el.innerHTML='<p style="color:#DC2626;padding:1rem">Error: '+e.message+'</p>';}
 }
 function renderEmpleados(emps){
+  window._empIdx=0; window._empMap={};
   var amg=emps.filter(function(e){return(e.empresa||'').indexOf('AMG')>=0;});
   var inm=emps.filter(function(e){return(e.empresa||'').indexOf('INMOVIMENTO')>=0;});
   var html='';
@@ -925,8 +930,12 @@ function renderEmpGroup(titulo,color,emps){
     html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6">'+(e.otPendientes>0?'<span style="background:#FFFBEB;color:#92400E;border-radius:99px;padding:2px 8px;font-size:11px;font-weight:600">'+e.otPendientes+'</span>':'<span style="color:#059669;font-size:11px;font-weight:600">OK</span>')+'</td>';
     html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;color:#9CA3AF;font-size:10px;font-family:monospace;white-space:nowrap">'+(e.ultimoRegistro||'Sin registro')+'</td>';
     html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6">';
-    html+='<button data-em="'+e.email+'" data-nm="'+e.nombre+'" data-act="edit" style="padding:4px 10px;border-radius:6px;border:1.5px solid #BFDBFE;background:#EFF6FF;color:#1E40AF;font-family:inherit;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;margin-right:4px">Editar</button>';
-    html+='<button data-em="'+e.email+'" data-nm="'+e.nombre+'" data-act="retire" style="padding:4px 10px;border-radius:6px;border:1.5px solid #FECACA;background:#FEF2F2;color:#991B1B;font-family:inherit;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">Retirar</button>';
+    var eidx=window._empIdx=window._empIdx||0;
+    window._empMap=window._empMap||{};
+    window._empMap['e'+eidx]={email:e.email,nombre:e.nombre};
+    html+='<button onclick="abrirEditEmp(window._empMap[\'e'+eidx+'\'].email,window._empMap[\'e'+eidx+'\'].nombre)" style="padding:4px 10px;border-radius:6px;border:1.5px solid #BFDBFE;background:#EFF6FF;color:#1E40AF;font-family:inherit;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;margin-right:4px">Editar</button>';
+    html+='<button onclick="eliminarEmpleadoDirecto(window._empMap[\'e'+eidx+'\'].email,window._empMap[\'e'+eidx+'\'].nombre)" style="padding:4px 10px;border-radius:6px;border:1.5px solid #FECACA;background:#FEF2F2;color:#991B1B;font-family:inherit;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">Retirar</button>';
+    eidx++;window._empIdx=eidx;
     html+='</td>';
     html+='</tr>';
   });
