@@ -399,7 +399,7 @@ body{font-family:'Inter',sans-serif;background:var(--g50);min-height:100vh;}
 
 <script>
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWFssmqpO4F_QfSVWXnkQj6ALU-F9XZU6yUVBj4lwFkWMI488PY26iLnokRcAUPsOI/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwbhmFiGe9uzDfO_OR88m0k0Y-h2vx8QPbtE3Mn_SHrK55w8LkV9Yh833lh1VIZBwYn/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -460,6 +460,7 @@ async function doLogin(){
       if(role==='master'){
         var rb=document.getElementById('resetBtn');if(rb)rb.style.display='inline-block';
         var pb=document.getElementById('pilotoResetBtn');if(pb)pb.style.display='inline-block';
+      var sb2=document.getElementById('sugBtn');if(sb2)sb2.style.display='block';
       }
     startPolling();
     setTimeout(function(){lastPollCount=-1;doPoll();},4000);
@@ -915,7 +916,10 @@ function renderEmpGroup(titulo,color,emps){
     html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6">'+(e.festivos>0?'<span style="background:'+(e.festivos>=2?'#F5F3FF':'#FFFBEB')+';color:'+(e.festivos>=2?'#4C1D95':'#92400E')+';border-radius:99px;padding:2px 8px;font-size:11px;font-weight:600">'+e.festivos+'</span>':'<span style="color:#9CA3AF;font-size:11px">0</span>')+'</td>';
     html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6">'+(e.otPendientes>0?'<span style="background:#FFFBEB;color:#92400E;border-radius:99px;padding:2px 8px;font-size:11px;font-weight:600">'+e.otPendientes+'</span>':'<span style="color:#059669;font-size:11px;font-weight:600">OK</span>')+'</td>';
     html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;color:#9CA3AF;font-size:10px;font-family:monospace;white-space:nowrap">'+(e.ultimoRegistro||'Sin registro')+'</td>';
-    html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6"><button onclick="eliminarEmpleadoDirecto('+JSON.stringify(e.email)+','+JSON.stringify(e.nombre)+')" style="padding:4px 10px;border-radius:6px;border:1.5px solid #FECACA;background:#FEF2F2;color:#991B1B;font-family:inherit;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">Eliminar</button></td>';
+    html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;display:flex;gap:4px">';
+    html+='<button onclick="abrirEditEmp('+JSON.stringify(e.email)+','+JSON.stringify(e.nombre)+')" style="padding:4px 10px;border-radius:6px;border:1.5px solid #BFDBFE;background:#EFF6FF;color:#1E40AF;font-family:inherit;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">Editar</button>';
+    html+='<button onclick="eliminarEmpleadoDirecto('+JSON.stringify(e.email)+','+JSON.stringify(e.nombre)+')" style="padding:4px 10px;border-radius:6px;border:1.5px solid #FECACA;background:#FEF2F2;color:#991B1B;font-family:inherit;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">Retirar</button>';
+    html+='</td>';
     html+='</tr>';
   });
   html+='</tbody></table></div></div>';
@@ -1097,6 +1101,7 @@ async function doReset(){
       if(role==='master'){
         var rb=document.getElementById('resetBtn');if(rb)rb.style.display='inline-block';
         var pb=document.getElementById('pilotoResetBtn');if(pb)pb.style.display='inline-block';
+      var sb2=document.getElementById('sugBtn');if(sb2)sb2.style.display='block';
       }
     startPolling();
     setTimeout(function(){lastPollCount=-1;doPoll();},4000);
@@ -1376,7 +1381,372 @@ async function eliminarEmpleadoDirecto(email,nombre){
     }
   }catch(e){alert('Error: '+e.message);}
 }
+
+var _editEmpEmail = '';
+
+function abrirEditEmp(email, nombre){
+  _editEmpEmail = email;
+  document.getElementById('editEmpEmailActual').textContent = 'Editando: '+nombre+' ('+email+')';
+  ['editEmpNewEmail','editEmpNewNombre','editEmpNewArea'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('editEmpNewEmpresa').value = '';
+  var msg=document.getElementById('editEmpMsg'); if(msg) msg.style.display='none';
+  document.getElementById('editEmpModal').style.display='flex';
+}
+
+function cerrarEditEmp(){
+  document.getElementById('editEmpModal').style.display='none';
+}
+
+async function guardarEditEmp(){
+  var newEmail   = document.getElementById('editEmpNewEmail').value.trim().toLowerCase();
+  var newNombre  = document.getElementById('editEmpNewNombre').value.trim();
+  var newArea    = document.getElementById('editEmpNewArea').value.trim();
+  var newEmpresa = document.getElementById('editEmpNewEmpresa').value;
+  var msgEl = document.getElementById('editEmpMsg');
+
+  if(!newEmail && !newNombre && !newArea && !newEmpresa){
+    msgEl.textContent='Completa al menos un campo para actualizar.';
+    msgEl.style.background='#FEF2F2';msgEl.style.color='#991B1B';
+    msgEl.style.display='block'; return;
+  }
+  if(newEmail && !newEmail.endsWith('@amgdecolombia.com') && !newEmail.endsWith('@inmovimento.co')){
+    msgEl.textContent='El correo debe ser @amgdecolombia.com o @inmovimento.co';
+    msgEl.style.background='#FEF2F2';msgEl.style.color='#991B1B';
+    msgEl.style.display='block'; return;
+  }
+  msgEl.textContent='Guardando...';msgEl.style.background='#F8FAFC';msgEl.style.color='#374151';msgEl.style.display='block';
+  try{
+    var url=SCRIPT_URL+'?action=updateEmpleado&email='+encodeURIComponent(currentUser.email)
+      +'&empEmail='+encodeURIComponent(_editEmpEmail)
+      +(newEmail?'&newEmail='+encodeURIComponent(newEmail):'')
+      +(newNombre?'&newNombre='+encodeURIComponent(newNombre):'')
+      +(newArea?'&newArea='+encodeURIComponent(newArea):'')
+      +(newEmpresa?'&newEmpresa='+encodeURIComponent(newEmpresa):'');
+    var r=await fetch(url);
+    var d=JSON.parse(await r.text());
+    if(d.status==='ok'){
+      msgEl.textContent=d.msg||'Actualizado correctamente.';
+      msgEl.style.background='#ECFDF5';msgEl.style.color='#065F46';
+      setTimeout(function(){cerrarEditEmp();loadEmpleados();},1800);
+    } else {
+      msgEl.textContent='Error: '+(d.msg||'Intenta de nuevo');
+      msgEl.style.background='#FEF2F2';msgEl.style.color='#991B1B';
+    }
+  }catch(e){
+    msgEl.textContent='Error: '+e.message;
+    msgEl.style.background='#FEF2F2';msgEl.style.color='#991B1B';
+  }
+}
+
+// ── Sugerencias ──────────────────────────────────────────────────────────────
+function abrirSug(){
+  var txt=document.getElementById('sugTexto');if(txt)txt.value='';
+  var msg=document.getElementById('sugMsg');if(msg)msg.style.display='none';
+  document.getElementById('sugModal').style.display='flex';
+}
+function cerrarSug(){ document.getElementById('sugModal').style.display='none'; }
+
+async function enviarSug(){
+  var texto=document.getElementById('sugTexto').value.trim();
+  var tipo=document.getElementById('sugTipo').value;
+  var msgEl=document.getElementById('sugMsg');
+  if(!texto){msgEl.textContent='Escribe tu sugerencia antes de enviar.';msgEl.style.background='#FEF2F2';msgEl.style.color='#991B1B';msgEl.style.display='block';return;}
+  msgEl.textContent='Enviando...';msgEl.style.background='#F8FAFC';msgEl.style.color='#374151';msgEl.style.display='block';
+  try{
+    var url=SCRIPT_URL+'?action=saveSugerencia&email='+encodeURIComponent(currentUser.email)
+      +'&nombre='+encodeURIComponent(currentUser.nombre||currentUser.email)
+      +'&tipo='+encodeURIComponent(tipo)
+      +'&texto='+encodeURIComponent(texto);
+    var r=await fetch(url);
+    var d=JSON.parse(await r.text());
+    msgEl.textContent=d.status==='ok'?'Enviado. Gracias por tu aporte.':'Error: '+(d.msg||'');
+    msgEl.style.background=d.status==='ok'?'#ECFDF5':'#FEF2F2';
+    msgEl.style.color=d.status==='ok'?'#065F46':'#991B1B';
+    if(d.status==='ok')setTimeout(cerrarSug,2000);
+  }catch(e){msgEl.textContent='Error: '+e.message;msgEl.style.background='#FEF2F2';msgEl.style.color='#991B1B';}
+}
+
+// ── Supervisor dashboard ─────────────────────────────────────────────────────
+function mostrarSupDashboard(){
+  document.getElementById('loginWrap').style.display='none';
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('supDashboard').style.display='block';
+  cargarSupData();
+}
+
+var _supData = null;
+
+async function cargarSupData(){
+  try{
+    var r=await fetch(SCRIPT_URL+'?action=getSupervisorData&email='+encodeURIComponent(currentUser.email));
+    var d=JSON.parse(await r.text());
+    if(d.status!=='ok'){console.error('Sup data:',d.msg);return;}
+    _supData=d;
+    renderSupDashboard(d);
+  }catch(e){console.error('cargarSupData:',e);}
+}
+
+function renderSupDashboard(d){
+  var res=d.resumen||{};
+  document.getElementById('supFecha').textContent='Ultima actualizacion: '+d.fecha;
+
+  // KPIs
+  var kpis=[
+    {icon:'&#128100;',label:'Empleados activos',val:res.totalEmpleados,color:'#0A3D47'},
+    {icon:'&#9989;',label:'Marcajes hoy',val:res.marcajesHoy,color:'#065F46'},
+    {icon:'&#128197;',label:'Esta semana',val:res.marcajesSemana,color:'#1E40AF'},
+    {icon:'&#128336;',label:'Este mes',val:res.marcajesMes,color:'#6B7280'},
+    {icon:'&#128683;',label:'Sin marcar hoy',val:res.sinMarcarHoy,color:res.sinMarcarHoy>0?'#991B1B':'#065F46'},
+    {icon:'&#9203;',label:'Solicitudes pend.',val:res.solicitudesPend,color:res.solicitudesPend>0?'#92400E':'#065F46'},
+    {icon:'&#9888;',label:'Alertas seguridad',val:res.alertasSeguridad,color:res.alertasSeguridad>0?'#991B1B':'#065F46'},
+    {icon:'&#128161;',label:'Sugerencias',val:res.sugsPendientes,color:res.sugsPendientes>0?'#92400E':'#065F46'},
+  ];
+  document.getElementById('supKpis').innerHTML=kpis.map(function(k){
+    return '<div style="background:white;border-radius:12px;padding:14px;border:1.5px solid #E5E7EB;text-align:center">'+
+      '<div style="font-size:22px;margin-bottom:4px">'+k.icon+'</div>'+
+      '<div style="font-size:28px;font-weight:800;color:'+k.color+'">'+k.val+'</div>'+
+      '<div style="font-size:10px;color:#6B7280;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">'+k.label+'</div>'+
+      '</div>';
+  }).join('');
+
+  // Sin marcar hoy
+  var sinM=d.sinMarcarHoy||[];
+  document.getElementById('supSinMarcar').innerHTML=sinM.length===0
+    ? '<div style="color:#065F46;font-weight:600">&#10003; Todos han marcado hoy</div>'
+    : sinM.map(function(e){
+        return '<div style="padding:5px 0;border-bottom:1px solid #F3F4F6;display:flex;justify-content:space-between;align-items:center">'+
+          '<span style="font-weight:600">'+e.nombre+'</span>'+
+          '<span style="font-size:10px;color:#9CA3AF">'+e.correo+'</span>'+
+          '</div>';
+      }).join('');
+
+  // Directores
+  var dirs=d.directores||[];
+  document.getElementById('supDirectores').innerHTML=dirs.map(function(dir){
+    return '<div style="padding:6px 0;border-bottom:1px solid #F3F4F6">'+
+      '<div style="font-weight:600;font-size:12px">'+dir.nombre+'</div>'+
+      '<div style="display:flex;gap:10px;margin-top:3px">'+
+        '<span style="font-size:10px;color:#6B7280">Hoy: <b style="color:#0A3D47">'+dir.marcajesHoy+'</b></span>'+
+        '<span style="font-size:10px;color:#6B7280">Semana: <b style="color:#0A3D47">'+dir.marcajesSemana+'</b></span>'+
+        '<span style="font-size:10px;color:#6B7280">Ultimo: <b style="color:#0A3D47">'+dir.ultimoAcceso+'</b></span>'+
+      '</div></div>';
+  }).join('');
+
+  // Employee table
+  var emps=(d.empleados||[]).sort(function(a,b){return (b.marcajesMes||0)-(a.marcajesMes||0);});
+  var thead='<thead><tr style="background:#F8FAFC">';
+  ['Empleado','Empresa','Area','Hoy','Semana','Mes','Total','Ultimo marcaje','Estado'].forEach(function(h){
+    thead+='<th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;border-bottom:1px solid #E5E7EB;white-space:nowrap">'+h+'</th>';
+  });
+  thead+='</tr></thead>';
+
+  var tbody='<tbody>';
+  emps.forEach(function(e){
+    var alColor = e.alertas>0 ? '#FEF2F2' : '';
+    var marcHoy = e.marcajesHoy>0;
+    tbody+='<tr style="background:'+alColor+'">';
+    tbody+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;font-weight:600">'+e.nombre+'<br><span style="font-size:10px;color:#9CA3AF;font-weight:400">'+e.correo+'</span></td>';
+    tbody+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;font-size:11px">'+e.empresa+'</td>';
+    tbody+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;font-size:11px">'+e.area+'</td>';
+    tbody+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;text-align:center"><span style="font-weight:700;color:'+(marcHoy?'#065F46':'#991B1B')+'">'+e.marcajesHoy+'</span></td>';
+    tbody+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;text-align:center;font-weight:600">'+e.marcajesSemana+'</td>';
+    tbody+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;text-align:center;font-weight:600">'+e.marcajesMes+'</td>';
+    tbody+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;text-align:center;color:#6B7280">'+e.totalMarcajes+'</td>';
+    tbody+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;font-size:10px;color:#374151;white-space:nowrap">'+(e.ultimoStr||'Sin registros')+(e.ultimoTipo?' <span style="color:#6B7280">('+e.ultimoTipo+')</span>':'')+'</td>';
+    tbody+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6">'+(e.alertas>0?'<span style="background:#FEF2F2;color:#991B1B;border-radius:99px;padding:2px 8px;font-size:10px;font-weight:700">&#9888; '+e.alertas+' alerta'+(e.alertas>1?'s':'')+'</span>':'<span style="color:#065F46;font-size:11px">&#10003; OK</span>')+'</td>';
+    tbody+='</tr>';
+  });
+  tbody+='</tbody>';
+
+  document.getElementById('supTable').innerHTML=thead+tbody;
+}
+
+function filtrarSupTable(){
+  var q=document.getElementById('supSearch').value.toLowerCase();
+  var rows=document.getElementById('supTable').querySelectorAll('tbody tr');
+  rows.forEach(function(row){row.style.display=row.textContent.toLowerCase().includes(q)?'':'none';});
+}
+
+// Auto-refresh every 60s for supervisor
+setInterval(function(){
+  if(currentUser&&currentUser.role==='supervisor')cargarSupData();
+},60000);
+
+function abrirGestionEmpleados(){
+  var modal=document.getElementById('supEmpModal');
+  if(modal){modal.style.display='flex';loadSupEmpleados();return;}
+  var m=document.createElement('div');
+  m.id='supEmpModal';
+  m.style.cssText='display:flex;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:9999;align-items:flex-start;justify-content:center;overflow-y:auto;padding:20px';
+  document.body.appendChild(m);
+  var inner=document.createElement('div');
+  inner.style.cssText='background:white;border-radius:18px;width:100%;max-width:900px;margin:auto;overflow:hidden';
+  inner.innerHTML='<div style="background:#0A3D47;padding:14px 20px;display:flex;align-items:center;justify-content:space-between"><span style="color:white;font-size:14px;font-weight:700">Gestion de Empleados</span><button id="supEmpClose" style="border:none;background:rgba(255,255,255,.2);color:white;border-radius:8px;padding:6px 12px;cursor:pointer;font-family:inherit">Cerrar</button></div>'+
+    '<div style="padding:1.25rem">'+
+    '<div style="background:#F8FAFC;border-radius:12px;border:1.5px solid #E5E7EB;padding:1rem;margin-bottom:1rem">'+
+    '<h3 style="font-size:13px;font-weight:700;color:#065F46;margin-bottom:10px">+ Agregar empleado</h3>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">'+
+    '<div><label style="font-size:10px;font-weight:700;color:#6B7280;display:block;margin-bottom:3px">Nombre</label><input id="supEmpNombre" type="text" placeholder="Nombre y apellido" style="width:100%;padding:8px 10px;border:1.5px solid #E5E7EB;border-radius:8px;font-family:inherit;font-size:12px;outline:none;box-sizing:border-box"></div>'+
+    '<div><label style="font-size:10px;font-weight:700;color:#6B7280;display:block;margin-bottom:3px">Correo</label><input id="supEmpEmail" type="email" placeholder="correo@amgdecolombia.com" style="width:100%;padding:8px 10px;border:1.5px solid #E5E7EB;border-radius:8px;font-family:inherit;font-size:12px;outline:none;box-sizing:border-box"></div>'+
+    '<div><label style="font-size:10px;font-weight:700;color:#6B7280;display:block;margin-bottom:3px">Identificacion</label><input id="supEmpID" type="text" placeholder="Cedula" style="width:100%;padding:8px 10px;border:1.5px solid #E5E7EB;border-radius:8px;font-family:inherit;font-size:12px;outline:none;box-sizing:border-box"></div>'+
+    '<div><label style="font-size:10px;font-weight:700;color:#6B7280;display:block;margin-bottom:3px">Area</label><input id="supEmpArea" type="text" placeholder="GAF, GNO..." style="width:100%;padding:8px 10px;border:1.5px solid #E5E7EB;border-radius:8px;font-family:inherit;font-size:12px;outline:none;box-sizing:border-box"></div>'+
+    '<div><label style="font-size:10px;font-weight:700;color:#6B7280;display:block;margin-bottom:3px">Empresa</label><select id="supEmpEmpresa" style="width:100%;padding:8px 10px;border:1.5px solid #E5E7EB;border-radius:8px;font-family:inherit;font-size:12px;outline:none;background:white;box-sizing:border-box"><option value="AMG DE COLOMBIA">AMG DE COLOMBIA</option><option value="INMOVIMENTO SAS">INMOVIMENTO SAS</option></select></div>'+
+    '<div><label style="font-size:10px;font-weight:700;color:#6B7280;display:block;margin-bottom:3px">Fecha ingreso</label><input id="supEmpIngreso" type="date" style="width:100%;padding:8px 10px;border:1.5px solid #E5E7EB;border-radius:8px;font-family:inherit;font-size:12px;outline:none;box-sizing:border-box"></div>'+
+    '</div>'+
+    '<button onclick="supAgregarEmpleado()" style="padding:8px 18px;border-radius:8px;border:none;background:#065F46;color:white;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Agregar</button>'+
+    '<div id="supAddMsg" style="display:none;margin-top:8px;padding:6px 10px;border-radius:7px;font-size:12px"></div>'+
+    '</div>'+
+    '<div id="supEmpList" style="font-size:12px;color:#9CA3AF;text-align:center;padding:1rem">Cargando...</div>'+
+    '</div>';
+  m.appendChild(inner);
+  document.getElementById('supEmpClose').onclick=function(){m.style.display='none';};
+  loadSupEmpleados();
+}
+
+async function supAgregarEmpleado(){
+  var n=document.getElementById('supEmpNombre').value.trim();
+  var em=document.getElementById('supEmpEmail').value.trim().toLowerCase();
+  var id=document.getElementById('supEmpID').value.trim();
+  var ar=document.getElementById('supEmpArea').value.trim();
+  var emp=document.getElementById('supEmpEmpresa').value;
+  var ing=document.getElementById('supEmpIngreso').value;
+  var msg=document.getElementById('supAddMsg');
+  if(!n||!em){msg.textContent='Nombre y correo obligatorios.';msg.style.background='#FEF2F2';msg.style.color='#991B1B';msg.style.display='block';return;}
+  try{
+    var r=await fetch(SCRIPT_URL+'?action=addEmpleado&email='+encodeURIComponent(currentUser.email)+'&empNombre='+encodeURIComponent(n)+'&empEmail='+encodeURIComponent(em)+'&empID='+encodeURIComponent(id)+'&empArea='+encodeURIComponent(ar)+'&empEmpresa='+encodeURIComponent(emp)+'&empIngreso='+encodeURIComponent(ing));
+    var d=JSON.parse(await r.text());
+    msg.textContent=d.status==='ok'?n+' agregado.':'Error: '+(d.msg||'');
+    msg.style.background=d.status==='ok'?'#ECFDF5':'#FEF2F2';
+    msg.style.color=d.status==='ok'?'#065F46':'#991B1B';
+    msg.style.display='block';
+    if(d.status==='ok')setTimeout(function(){msg.style.display='none';['supEmpNombre','supEmpEmail','supEmpID','supEmpArea','supEmpIngreso'].forEach(function(id2){var el=document.getElementById(id2);if(el)el.value='';});loadSupEmpleados();cargarSupData();},2000);
+  }catch(e){msg.textContent='Error: '+e.message;msg.style.background='#FEF2F2';msg.style.color='#991B1B';msg.style.display='block';}
+}
+
+async function loadSupEmpleados(){
+  var el=document.getElementById('supEmpList');
+  if(el)el.innerHTML='<div style="color:#9CA3AF;text-align:center;padding:1rem">Cargando...</div>';
+  try{
+    var r=await fetch(SCRIPT_URL+'?action=getEmpleadosAdmin&email='+encodeURIComponent(currentUser.email));
+    var d=JSON.parse(await r.text());
+    var emps=d.empleados||[];
+    var html='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><thead><tr style="background:#F8FAFC">';
+    ['Nombre','Correo','Area','Empresa','Estado','Acciones'].forEach(function(h){html+='<th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;border-bottom:1px solid #E5E7EB;white-space:nowrap">'+h+'</th>';});
+    html+='</tr></thead><tbody>';
+    emps.forEach(function(e){
+      var ret=(e.estado||e.Estado||'').toLowerCase()==='retirado'||(e.estado||e.Estado||'').toLowerCase()==='terminado';
+      html+='<tr style="'+(ret?'opacity:.5':'')+'"><td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;font-weight:600;font-size:12px">'+e.nombre+'</td>';
+      html+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;font-size:11px;color:#6B7280">'+e.email+'</td>';
+      html+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;font-size:11px">'+e.area+'</td>';
+      html+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;font-size:11px">'+e.empresa+'</td>';
+      html+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6"><span style="font-size:10px;font-weight:700;color:'+(ret?'#991B1B':'#065F46')+'">'+(e.estado||e.Estado||'Activo')+'</span></td>';
+      html+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6">';
+      if(!ret)html+='<button data-em="'+e.email+'" data-nm="'+e.nombre+'" data-act="edit" style="padding:3px 8px;border-radius:5px;border:1.5px solid #BFDBFE;background:#EFF6FF;color:#1E40AF;font-family:inherit;font-size:10px;font-weight:700;cursor:pointer;margin-right:4px">Editar</button><button data-em="'+e.email+'" data-nm="'+e.nombre+'" data-act="retire" style="padding:3px 8px;border-radius:5px;border:1.5px solid #FECACA;background:#FEF2F2;color:#991B1B;font-family:inherit;font-size:10px;font-weight:700;cursor:pointer">Retirar</button>';
+      html+='</td></tr>';
+    });
+    html+='</tbody></table></div>';
+    if(el){
+      el.innerHTML=html;
+      el.onclick=function(ev){
+        var btn=ev.target.closest('button[data-act]');
+        if(!btn)return;
+        if(btn.getAttribute('data-act')==='edit')abrirEditEmp(btn.getAttribute('data-em'),btn.getAttribute('data-nm'));
+        else eliminarEmpleadoDirecto(btn.getAttribute('data-em'),btn.getAttribute('data-nm'));
+      };
+    }
+  }catch(e){if(el)el.innerHTML='<div style="color:#DC2626;padding:1rem">Error: '+e.message+'</div>';}
+}
 </script>
 <div id="toast" style="display:none;position:fixed;bottom:24px;right:24px;background:#0A3D47;color:white;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.25)"></div>
+
+<div id="editEmpModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:9998;align-items:center;justify-content:center;padding:1rem">
+  <div style="background:white;border-radius:18px;padding:1.5rem;max-width:440px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+      <h3 style="font-size:15px;font-weight:700;color:#0A3D47;margin:0">Editar empleado</h3>
+      <button onclick="cerrarEditEmp()" style="border:none;background:none;font-size:20px;cursor:pointer;color:#6B7280">&times;</button>
+    </div>
+    <div id="editEmpEmailActual" style="font-size:11px;color:#6B7280;margin-bottom:12px;background:#F8FAFC;padding:6px 10px;border-radius:6px"></div>
+    <div style="display:grid;gap:10px">
+      <div><label style="font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Nuevo correo corporativo</label>
+        <input id="editEmpNewEmail" type="email" placeholder="Dejar vacio para no cambiar" style="width:100%;padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:13px;outline:none;box-sizing:border-box"></div>
+      <div><label style="font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Nombre completo</label>
+        <input id="editEmpNewNombre" type="text" placeholder="Dejar vacio para no cambiar" style="width:100%;padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:13px;outline:none;box-sizing:border-box"></div>
+      <div><label style="font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Area</label>
+        <input id="editEmpNewArea" type="text" placeholder="Dejar vacio para no cambiar" style="width:100%;padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:13px;outline:none;box-sizing:border-box"></div>
+      <div><label style="font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Empresa</label>
+        <select id="editEmpNewEmpresa" style="width:100%;padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:13px;outline:none;background:white;box-sizing:border-box">
+          <option value="">No cambiar</option>
+          <option value="AMG DE COLOMBIA">AMG DE COLOMBIA</option>
+          <option value="INMOVIMENTO SAS">INMOVIMENTO SAS</option>
+        </select></div>
+    </div>
+    <div id="editEmpMsg" style="display:none;margin-top:10px;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:500"></div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button onclick="cerrarEditEmp()" style="flex:1;padding:10px;border-radius:9px;border:1.5px solid #E5E7EB;background:white;font-family:inherit;font-size:13px;cursor:pointer;color:#374151">Cancelar</button>
+      <button onclick="guardarEditEmp()" style="flex:2;padding:10px;border-radius:9px;border:none;background:#0A3D47;color:white;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+<div id="sugModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:9998;align-items:center;justify-content:center;padding:1rem">
+  <div style="background:white;border-radius:18px;padding:1.5rem;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+      <h3 style="font-size:15px;font-weight:700;color:#0A3D47;margin:0">&#128161; Sugerencia o comentario</h3>
+      <button onclick="cerrarSug()" style="border:none;background:none;font-size:20px;cursor:pointer;color:#6B7280">&times;</button>
+    </div>
+    <select id="sugTipo" style="width:100%;padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:13px;margin-bottom:10px;outline:none;background:white">
+      <option value="Sugerencia">Sugerencia de mejora</option>
+      <option value="Error">Reporte de error</option>
+      <option value="Consulta">Consulta</option>
+      <option value="Otro">Otro</option>
+    </select>
+    <textarea id="sugTexto" placeholder="Escribe tu sugerencia o comentario..." style="width:100%;height:120px;padding:10px 12px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:13px;resize:none;outline:none;box-sizing:border-box"></textarea>
+    <div id="sugMsg" style="display:none;margin-top:8px;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:500"></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button onclick="cerrarSug()" style="flex:1;padding:10px;border-radius:9px;border:1.5px solid #E5E7EB;background:white;font-family:inherit;font-size:13px;cursor:pointer;color:#374151">Cancelar</button>
+      <button onclick="enviarSug()" style="flex:2;padding:10px;border-radius:9px;border:none;background:#0A3D47;color:white;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer">Enviar</button>
+    </div>
+  </div>
+</div><button onclick="abrirSug()" style="position:fixed;bottom:20px;left:20px;z-index:900;padding:10px 16px;border-radius:99px;border:none;background:#0A3D47;color:white;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 14px rgba(10,61,71,.4);display:none" id="sugBtn">&#128161; Sugerencia</button>
+
+<!-- SUPERVISOR DASHBOARD -->
+<div id="supDashboard" style="display:none;min-height:100vh;background:#F0F4F8;padding:0">
+  <div style="background:#0A3D47;padding:14px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100">
+    <div style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:18px">&#128200;</div>
+    <div>
+      <div style="color:white;font-size:14px;font-weight:700">Dashboard Supervisor</div>
+      <div id="supFecha" style="color:rgba(255,255,255,.6);font-size:11px"></div>
+    </div>
+    <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+      <button onclick="cargarSupData()" style="padding:7px 14px;border-radius:8px;border:none;background:rgba(255,255,255,.15);color:white;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer">&#8635; Actualizar</button>
+      <button onclick="abrirGestionEmpleados()" style="padding:7px 14px;border-radius:8px;border:none;background:rgba(255,255,255,.2);color:white;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer">&#128100; Gestionar empleados</button>
+      <button onclick="doLogout()" style="padding:7px 14px;border-radius:8px;border:none;background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);font-family:inherit;font-size:12px;cursor:pointer">Salir</button>
+    </div>
+  </div>
+  <div style="padding:16px;max-width:1100px;margin:0 auto">
+    <!-- KPI Cards -->
+    <div id="supKpis" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:20px"></div>
+    <!-- Two columns -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div style="background:white;border-radius:14px;padding:1rem;border:1.5px solid #E5E7EB">
+        <div style="font-size:12px;font-weight:700;color:#0A3D47;margin-bottom:10px">&#128683; Sin marcar hoy</div>
+        <div id="supSinMarcar" style="font-size:13px;color:#374151"></div>
+      </div>
+      <div style="background:white;border-radius:14px;padding:1rem;border:1.5px solid #E5E7EB">
+        <div style="font-size:12px;font-weight:700;color:#0A3D47;margin-bottom:10px">&#128100; Actividad directores</div>
+        <div id="supDirectores" style="font-size:13px;color:#374151"></div>
+      </div>
+    </div>
+    <!-- Employee table -->
+    <div style="background:white;border-radius:14px;border:1.5px solid #E5E7EB;overflow:hidden">
+      <div style="padding:12px 16px;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:12px;font-weight:700;color:#0A3D47">&#128203; Marcajes por empleado</div>
+        <input id="supSearch" type="text" placeholder="Buscar empleado..." onkeyup="filtrarSupTable()" style="padding:6px 12px;border:1.5px solid #E5E7EB;border-radius:8px;font-family:inherit;font-size:12px;outline:none;width:180px">
+      </div>
+      <div style="overflow-x:auto"><table id="supTable" style="width:100%;border-collapse:collapse;font-size:12px"></table></div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
