@@ -894,7 +894,15 @@ function renderEmpleados(emps){
   var html='';
   html+=renderEmpGroup('AMG DE COLOMBIA SAS','#0A3D47',amg);
   html+=renderEmpGroup('INMOVIMENTO SAS','#1E40AF',inm);
-  document.getElementById('empContent').innerHTML=html;
+  var empEl=document.getElementById('empContent');
+  empEl.innerHTML=html;
+  empEl.onclick=function(ev){
+    var btn=ev.target.closest('button[data-act]');
+    if(!btn)return;
+    var em=btn.getAttribute('data-em'),nm=btn.getAttribute('data-nm');
+    if(btn.getAttribute('data-act')==='edit')abrirEditEmp(em,nm);
+    else eliminarEmpleadoDirecto(em,nm);
+  };
 }
 function renderEmpGroup(titulo,color,emps){
   if(!emps.length)return'';
@@ -916,9 +924,9 @@ function renderEmpGroup(titulo,color,emps){
     html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6">'+(e.festivos>0?'<span style="background:'+(e.festivos>=2?'#F5F3FF':'#FFFBEB')+';color:'+(e.festivos>=2?'#4C1D95':'#92400E')+';border-radius:99px;padding:2px 8px;font-size:11px;font-weight:600">'+e.festivos+'</span>':'<span style="color:#9CA3AF;font-size:11px">0</span>')+'</td>';
     html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6">'+(e.otPendientes>0?'<span style="background:#FFFBEB;color:#92400E;border-radius:99px;padding:2px 8px;font-size:11px;font-weight:600">'+e.otPendientes+'</span>':'<span style="color:#059669;font-size:11px;font-weight:600">OK</span>')+'</td>';
     html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;color:#9CA3AF;font-size:10px;font-family:monospace;white-space:nowrap">'+(e.ultimoRegistro||'Sin registro')+'</td>';
-    html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;display:flex;gap:4px">';
-    html+='<button onclick="abrirEditEmp('+JSON.stringify(e.email)+','+JSON.stringify(e.nombre)+')" style="padding:4px 10px;border-radius:6px;border:1.5px solid #BFDBFE;background:#EFF6FF;color:#1E40AF;font-family:inherit;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">Editar</button>';
-    html+='<button onclick="eliminarEmpleadoDirecto('+JSON.stringify(e.email)+','+JSON.stringify(e.nombre)+')" style="padding:4px 10px;border-radius:6px;border:1.5px solid #FECACA;background:#FEF2F2;color:#991B1B;font-family:inherit;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">Retirar</button>';
+    html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6">';
+    html+='<button data-em="'+e.email+'" data-nm="'+e.nombre+'" data-act="edit" style="padding:4px 10px;border-radius:6px;border:1.5px solid #BFDBFE;background:#EFF6FF;color:#1E40AF;font-family:inherit;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;margin-right:4px">Editar</button>';
+    html+='<button data-em="'+e.email+'" data-nm="'+e.nombre+'" data-act="retire" style="padding:4px 10px;border-radius:6px;border:1.5px solid #FECACA;background:#FEF2F2;color:#991B1B;font-family:inherit;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">Retirar</button>';
     html+='</td>';
     html+='</tr>';
   });
@@ -1657,6 +1665,16 @@ async function loadSupEmpleados(){
       };
     }
   }catch(e){if(el)el.innerHTML='<div style="color:#DC2626;padding:1rem">Error: '+e.message+'</div>';}
+}
+
+async function terminarAdminAction(email){
+  if(!confirm('Dar de baja al administrador '+email+'?'))return;
+  try{
+    var r=await fetch(SCRIPT_URL+'?action=terminarEmpleado&email='+encodeURIComponent(currentUser.email)+'&empEmail='+encodeURIComponent(email));
+    var d=JSON.parse(await r.text());
+    if(d.status==='ok'){showToast('Administrador dado de baja.');loadAdmins();}
+    else alert('Error: '+(d.msg||''));
+  }catch(e){alert('Error: '+e.message);}
 }
 </script>
 <div id="toast" style="display:none;position:fixed;bottom:24px;right:24px;background:#0A3D47;color:white;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.25)"></div>
