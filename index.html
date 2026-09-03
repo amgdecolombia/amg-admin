@@ -174,7 +174,7 @@ body{font-family:'Inter',sans-serif;background:var(--g50);min-height:100vh;}
     </div>
     <div class="login-body">
       <div class="login-err" id="loginErr">Credenciales incorrectas. Verifica tu correo y clave.</div>
-      <div class="fg"><label class="lbl">Correo corporativo</label><input class="fi" type="email" id="lEmail" placeholder="tu@amgdecolombia.com"></div>
+      <div class="fg"><label class="lbl">Correo corporativo</label><input class="fi" type="email" id="lEmail" type="text" autocomplete="username" style="width:100%;padding:10px 14px;border:1.5px solid #E5E7EB;border-radius:10px;font-family:inherit;font-size:14px;outline:none;box-sizing:border-box" placeholder="correo@empresa.com"></div>
       <div class="fg"><label class="lbl">Clave de acceso</label><input class="fi" type="password" id="lPass" placeholder="Clave" onkeydown="if(event.key==='Enter')doLogin()"></div>
       <button class="login-btn" onclick="doLogin()">Ingresar</button>
       <div class="forgot-lnk" onclick="openForgot()">Olvide mi clave</div>
@@ -399,7 +399,7 @@ body{font-family:'Inter',sans-serif;background:var(--g50);min-height:100vh;}
 
 <script>
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwbhmFiGe9uzDfO_OR88m0k0Y-h2vx8QPbtE3Mn_SHrK55w8LkV9Yh833lh1VIZBwYn/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyIvNWlrQRtQdLoX2-oj6uuyWiIbddsB7u7YwXXdSxOynPBq74XtIeA3MsjkJCZS3w/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -422,7 +422,7 @@ async function doLogin(){
   var errEl=document.getElementById('loginErr');
   var btn=document.querySelector('.login-btn');
   errEl.style.display='none';
-  if(!email||!pass){errEl.textContent='Ingresa correo y clave.';errEl.style.display='block';return;}
+  if(!email||!pass){errEl.textContent='Ingresa usuario y clave.';errEl.style.display='block';return;}
   btn.disabled=true;btn.textContent='Verificando...';
   try{
     var url=SCRIPT_URL+'?action=login&email='+encodeURIComponent(email)+'&pass='+encodeURIComponent(pass);
@@ -455,8 +455,8 @@ async function doLogin(){
         });
       }
       loadPending();
-      loadHistory();
       cargarEmpCache();
+      setTimeout(function(){loadHistory();},800);
       if(role==='master'){
         var rb=document.getElementById('resetBtn');if(rb)rb.style.display='inline-block';
         var pb=document.getElementById('pilotoResetBtn');if(pb)pb.style.display='inline-block';
@@ -492,7 +492,7 @@ var pollTimer=null,lastPollCount=-1;
 function startPolling(){
   if(pollTimer)clearInterval(pollTimer);
   doPoll();
-  pollTimer=setInterval(doPoll,15000);
+  pollTimer=setInterval(doPoll,30000);
 }
 async function doPoll(){
   if(!currentUser)return;
@@ -552,6 +552,7 @@ function switchTab(t){
   document.querySelectorAll('.tab').forEach(function(b){b.classList.remove('active');});
   document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
   document.querySelector('.tab[data-tab="'+t+'"]').classList.add('active');
+  if(t==='emp'){var ec=document.getElementById('empContent');if(ec&&ec.innerHTML.trim()==='')loadEmpleados();}
   document.getElementById('panel-'+t).classList.add('active');
   if(t==='calendario')loadCalendar();
   if(t==='novedades')loadNovedades();
@@ -1113,8 +1114,8 @@ async function doReset(){
     if(d.status==='ok'){
       alert('Reset completado.\n'+d.msg+'\n\nEl sistema esta listo para produccion.');
       loadPending();
-      loadHistory();
       cargarEmpCache();
+      setTimeout(function(){loadHistory();},800);
       if(role==='master'){
         var rb=document.getElementById('resetBtn');if(rb)rb.style.display='inline-block';
         var pb=document.getElementById('pilotoResetBtn');if(pb)pb.style.display='inline-block';
@@ -1146,7 +1147,7 @@ var _pollTimer=null;
 function startPolling(){
   if(_pollTimer)clearInterval(_pollTimer);
   doPoll();
-  _pollTimer=setInterval(doPoll,15000);
+  _pollTimer=setInterval(doPoll,30000);
 }
 async function doPoll(){
   if(!currentUser)return;
