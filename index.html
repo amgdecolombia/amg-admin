@@ -399,7 +399,7 @@ body{font-family:'Inter',sans-serif;background:var(--g50);min-height:100vh;}
 
 <script>
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwQl9tgAo8ppNTvEforcLRLfMLaimaULv7X7LXbgbQnEFYnck-XU4wY_MGgG-hW-SEZ/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwhpxncfZMFUWnG076yPaiu3PMc0cYL9UK0sRjl5bDMUKNqHRcRrvenjaXxelHi_0el/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -1804,13 +1804,14 @@ function renderSupAccesos(d){
   });
   h+='</tr></thead><tbody>';
   rows.forEach(function(a){
-    var falla=a.resultado!=='Exitoso';
-    h+='<tr style="'+(falla?'background:#FEF2F2':'')+'">';
+    var inferido=a.resultado==='Inferido';
+    var falla=(a.resultado!=='Exitoso'&&!inferido);
+    h+='<tr style="'+(falla?'background:#FEF2F2':(inferido?'background:#F8FAFC':''))+'">';
     h+='<td style="padding:7px 10px;border-bottom:1px solid #F3F4F6;font-family:monospace;font-size:11px;white-space:nowrap">'+a.fecha+'</td>';
     h+='<td style="padding:7px 10px;border-bottom:1px solid #F3F4F6;font-size:11px">'+a.usuario+'</td>';
     h+='<td style="padding:7px 10px;border-bottom:1px solid #F3F4F6;font-size:11px;font-weight:600">'+a.nombre+'</td>';
     h+='<td style="padding:7px 10px;border-bottom:1px solid #F3F4F6;font-size:11px;color:#6B7280">'+(a.rol||'-')+'</td>';
-    h+='<td style="padding:7px 10px;border-bottom:1px solid #F3F4F6"><span style="font-size:10px;font-weight:700;color:'+(falla?'#991B1B':'#065F46')+'">'+a.resultado+'</span></td>';
+    h+='<td style="padding:7px 10px;border-bottom:1px solid #F3F4F6"><span style="font-size:10px;font-weight:700;color:'+(falla?'#991B1B':(inferido?'#6B7280':'#065F46'))+'">'+a.resultado+(inferido?' (por decision)':'')+'</span></td>';
     h+='</tr>';
   });
   el.innerHTML=h+'</tbody>';
@@ -1851,6 +1852,16 @@ function exportarCSV(tipo){
   a.download='AMG_'+nombre+'_'+rg+'_'+new Date().toISOString().slice(0,10)+'.csv';
   document.body.appendChild(a);a.click();document.body.removeChild(a);
   URL.revokeObjectURL(a.href);
+}
+
+async function reconstruirAccesos(){
+  if(!confirm('Se reconstruira el historial de ingresos a partir de las decisiones ya registradas (aprobaciones y rechazos).\n\nEstos accesos quedan marcados como "Inferido" y no se duplican si lo ejecutas de nuevo.\n\nContinuar?'))return;
+  try{
+    var r=await fetch(SCRIPT_URL+'?action=backfillAccesos&email='+encodeURIComponent(currentUser.email)+'&t='+Date.now());
+    var d=JSON.parse(await r.text());
+    if(d.status==='ok'){ alert(d.msg); cargarSupData(); }
+    else alert('Error: '+(d.msg||'No se pudo reconstruir.'));
+  }catch(e){ alert('Error: '+e.message); }
 }
 </script>
 <div id="toast" style="display:none;position:fixed;bottom:24px;right:24px;background:#0A3D47;color:white;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.25)"></div>
@@ -1941,6 +1952,7 @@ function exportarCSV(tipo){
         <button onclick="exportarCSV('marcajes')" style="padding:7px 12px;border-radius:9px;border:1.5px solid #BFDBFE;background:#EFF6FF;color:#1E40AF;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Exportar marcajes</button>
         <button onclick="exportarCSV('usuarios')" style="padding:7px 12px;border-radius:9px;border:1.5px solid #BFDBFE;background:#EFF6FF;color:#1E40AF;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Exportar usuarios</button>
         <button onclick="exportarCSV('accesos')" style="padding:7px 12px;border-radius:9px;border:1.5px solid #BFDBFE;background:#EFF6FF;color:#1E40AF;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Exportar accesos</button>
+        <button onclick="reconstruirAccesos()" style="padding:7px 12px;border-radius:9px;border:1.5px solid #E5E7EB;background:white;color:#374151;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Reconstruir historial</button>
       </div>
     </div>
     <div id="supAlertas" style="margin-bottom:14px"></div>
