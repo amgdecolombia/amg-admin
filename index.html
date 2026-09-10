@@ -399,7 +399,7 @@ body{font-family:'Inter',sans-serif;background:var(--g50);min-height:100vh;}
 
 <script>
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwhpxncfZMFUWnG076yPaiu3PMc0cYL9UK0sRjl5bDMUKNqHRcRrvenjaXxelHi_0el/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzy_zGgEAAqmhqKFQXx0TjdKjKdl80L6WSHXU4HlFRIGvldxWzb0Oy-L1NG_zpU_w4/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -1863,6 +1863,16 @@ async function reconstruirAccesos(){
     else alert('Error: '+(d.msg||'No se pudo reconstruir.'));
   }catch(e){ alert('Error: '+e.message); }
 }
+
+async function repararHeaders(){
+  if(!confirm('Se corregiran los encabezados del tab de marcajes para que coincidan con los datos.\n\nNo se modifica ningun registro, solo la fila de titulos.\n\nContinuar?'))return;
+  try{
+    var r=await fetch(SCRIPT_URL+'?action=repararHeaders&email='+encodeURIComponent(currentUser.email)+'&t='+Date.now());
+    var d=JSON.parse(await r.text());
+    if(d.status==='ok'){ alert(d.msg); if(d.cambiado)cargarSupData(); }
+    else alert('Error: '+(d.msg||'No se pudo reparar.'));
+  }catch(e){ alert('Error: '+e.message); }
+}
 </script>
 <div id="toast" style="display:none;position:fixed;bottom:24px;right:24px;background:#0A3D47;color:white;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.25)"></div>
 
@@ -1953,6 +1963,7 @@ async function reconstruirAccesos(){
         <button onclick="exportarCSV('usuarios')" style="padding:7px 12px;border-radius:9px;border:1.5px solid #BFDBFE;background:#EFF6FF;color:#1E40AF;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Exportar usuarios</button>
         <button onclick="exportarCSV('accesos')" style="padding:7px 12px;border-radius:9px;border:1.5px solid #BFDBFE;background:#EFF6FF;color:#1E40AF;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Exportar accesos</button>
         <button onclick="reconstruirAccesos()" style="padding:7px 12px;border-radius:9px;border:1.5px solid #E5E7EB;background:white;color:#374151;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Reconstruir historial</button>
+        <button onclick="repararHeaders()" style="padding:7px 12px;border-radius:9px;border:1.5px solid #FDE68A;background:#FFFBEB;color:#92400E;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Reparar encabezados</button>
       </div>
     </div>
     <div id="supAlertas" style="margin-bottom:14px"></div>
