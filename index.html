@@ -437,6 +437,11 @@ async function doLogin(){
     if(d.status==='ok'){
       var role=(d.role||'').toLowerCase().trim();
       currentUser={email:email,nombre:d.nombre||email,role:role};
+      if(role==='supervisor'){
+        btn.disabled=false;btn.textContent='Ingresar';
+        mostrarSupDashboard();
+        return;
+      }
       document.getElementById('loginWrap').style.display='none';
       document.getElementById('dashboard').style.display='block';
       document.getElementById('topbarName').innerHTML=d.nombre+(role==='master'?'<span class="master-badge" style="display:inline-flex">MASTER</span>':'');
