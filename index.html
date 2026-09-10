@@ -399,7 +399,7 @@ body{font-family:'Inter',sans-serif;background:var(--g50);min-height:100vh;}
 
 <script>
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzy_zGgEAAqmhqKFQXx0TjdKjKdl80L6WSHXU4HlFRIGvldxWzb0Oy-L1NG_zpU_w4/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxVokj9DLxbp3QcQdkKP3gZIyMCqicNRqDNj6eLJlA18aR44DsPtMkW7nfeju5BDJpo/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -1817,42 +1817,7 @@ function renderSupAccesos(d){
   el.innerHTML=h+'</tbody>';
 }
 
-function csvCell(v){
-  var s=(v===null||v===undefined)?'':String(v);
-  return '"'+s.replace(/"/g,'""')+'"';
-}
 
-function exportarCSV(tipo){
-  if(!_supData){alert('Espera a que carguen los datos.');return;}
-  var rg=(document.getElementById('supRango')||{}).value||'mes';
-  var filas=[], nombre='';
-  if(tipo==='marcajes'){
-    nombre='marcajes';
-    filas.push(['Fecha y hora','Empleado','Correo','Tipo','Vehiculo','Horas','GPS','Estado seguridad']);
-    (_supData.marcajes||[]).filter(function(m){return rg==='todos'?true:m.enRango;}).forEach(function(m){
-      filas.push([m.fecha,m.nombre,m.correo,m.tipo,m.vehiculo,m.horas,m.gpsOk,m.fpStatus||'OK']);
-    });
-  } else if(tipo==='usuarios'){
-    nombre='usuarios';
-    filas.push(['Nombre','Usuario','Rol','Activo','Decisiones','Decisiones mes','Pendientes','Accesos','Ultimo acceso','Dias sin entrar']);
-    (_supData.directores||[]).forEach(function(u){
-      filas.push([u.nombre,u.email,u.rol,u.activo,u.decisiones,u.decisionesMes,u.pendientes,u.accesos,u.ultimoAcceso,(u.diasSinEntrar===null?'':u.diasSinEntrar)]);
-    });
-  } else {
-    nombre='accesos';
-    filas.push(['Fecha y hora','Usuario','Nombre','Rol','Resultado']);
-    (_supData.accesosLog||[]).forEach(function(a){
-      filas.push([a.fecha,a.usuario,a.nombre,a.rol,a.resultado]);
-    });
-  }
-  var csv='\uFEFF'+filas.map(function(f){return f.map(csvCell).join(';');}).join('\r\n');
-  var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
-  var a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='AMG_'+nombre+'_'+rg+'_'+new Date().toISOString().slice(0,10)+'.csv';
-  document.body.appendChild(a);a.click();document.body.removeChild(a);
-  URL.revokeObjectURL(a.href);
-}
 
 async function reconstruirAccesos(){
   if(!confirm('Se reconstruira el historial de ingresos a partir de las decisiones ya registradas (aprobaciones y rechazos).\n\nEstos accesos quedan marcados como "Inferido" y no se duplican si lo ejecutas de nuevo.\n\nContinuar?'))return;
@@ -1872,6 +1837,108 @@ async function repararHeaders(){
     if(d.status==='ok'){ alert(d.msg); if(d.cambiado)cargarSupData(); }
     else alert('Error: '+(d.msg||'No se pudo reparar.'));
   }catch(e){ alert('Error: '+e.message); }
+}
+
+function xEsc(v){
+  var s=(v===null||v===undefined)?'':String(v);
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function rangoLabel(rg){
+  return {dia:'Hoy',semana:'Esta semana',mes:'Este mes',trimestre:'Este trimestre',
+          ano:'Este ano',todos:'Historico completo',custom:'Rango personalizado'}[rg]||rg;
+}
+
+function exportarCSV(tipo){
+  if(!_supData){alert('Espera a que carguen los datos.');return;}
+  var rg=(document.getElementById('supRango')||{}).value||'mes';
+  var titulo='', cols=[], filas=[], anchos=[];
+
+  if(tipo==='marcajes'){
+    titulo='Registro de marcajes';
+    cols=['Fecha y hora','Empleado','Correo','Empresa','Area','Tipo','Vehiculo','Horas','GPS','Seguridad'];
+    anchos=[130,210,210,150,70,130,150,60,60,150];
+    (_supData.marcajes||[]).filter(function(m){return rg==='todos'?true:m.enRango;}).forEach(function(m){
+      filas.push([m.fecha,m.nombre,m.correo,m.empresa,m.area,m.tipo,m.vehiculo||'',m.horas||'',
+                  (m.gpsOk==='Si'?'Si':'No'),(m.fpStatus||'OK')]);
+    });
+  } else if(tipo==='usuarios'){
+    titulo='Actividad de usuarios del sistema';
+    cols=['Nombre','Usuario','Rol','Activo','Decisiones','Decisiones mes','Pendientes','Ingresos','Ultimo ingreso','Dias sin entrar'];
+    anchos=[200,180,110,60,80,95,85,70,130,95];
+    (_supData.directores||[]).forEach(function(u){
+      filas.push([u.nombre,u.email,(u.rol||'').toUpperCase(),u.activo||'Si',u.decisiones,u.decisionesMes,
+                  u.pendientes,u.accesos||0,u.ultimoAcceso,(u.diasSinEntrar===null?'':u.diasSinEntrar)]);
+    });
+  } else if(tipo==='empleados'){
+    titulo='Marcajes por empleado';
+    cols=['Empleado','Correo','Empresa','Area','Hoy','Semana','Mes','Periodo','Total','Ultimo marcaje','Alertas'];
+    anchos=[200,210,150,70,55,65,55,70,60,130,65];
+    (_supData.empleados||[]).forEach(function(e){
+      filas.push([e.nombre,e.correo,e.empresa,e.area,e.marcajesHoy,e.marcajesSemana,e.marcajesMes,
+                  e.marcajesRango||0,e.totalMarcajes,e.ultimoStr||'Sin registros',e.alertas||0]);
+    });
+  } else {
+    titulo='Accesos al sistema';
+    cols=['Fecha y hora','Usuario','Nombre','Rol','Resultado'];
+    anchos=[130,180,200,110,120];
+    (_supData.accesosLog||[]).forEach(function(a){
+      filas.push([a.fecha,a.usuario,a.nombre,(a.rol||'').toUpperCase(),a.resultado]);
+    });
+  }
+
+  if(!filas.length){alert('No hay datos para exportar en este periodo.');return;}
+
+  var h='<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8">'+
+    '<xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>'+
+    '<x:Name>'+xEsc(titulo.slice(0,28))+'</x:Name>'+
+    '<x:WorksheetOptions><x:FreezePanes/><x:SplitHorizontal>3</x:SplitHorizontal>'+
+    '<x:TopRowBottomPane>3</x:TopRowBottomPane><x:ActivePane>2</x:ActivePane>'+
+    '</x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml>'+
+    '<style>'+
+    'table{border-collapse:collapse;font-family:Calibri,Arial,sans-serif;font-size:11pt}'+
+    'td,th{border:0.5pt solid #D0D7DE;padding:5px 8px;vertical-align:middle}'+
+    '.t{background:#0A3D47;color:#FFFFFF;font-size:15pt;font-weight:bold;border:none;padding:10px 8px}'+
+    '.s{background:#0A3D47;color:#9FD3C7;font-size:9pt;border:none;padding:0 8px 10px 8px}'+
+    '.h{background:#065F46;color:#FFFFFF;font-weight:bold;font-size:10pt;text-align:left}'+
+    '.z{background:#F4F8F7}'+
+    '.al{background:#FEF2F2;color:#991B1B;font-weight:bold}'+
+    '.c{text-align:center}'+
+    '</style></head><body><table>';
+
+  h+='<tr><td class="t" colspan="'+cols.length+'">AMG de Colombia SAS &#183; '+xEsc(titulo)+'</td></tr>';
+  h+='<tr><td class="s" colspan="'+cols.length+'">Periodo: '+xEsc(rangoLabel(rg))+
+     ' &#183; Generado: '+xEsc(new Date().toLocaleString('es-CO'))+
+     ' &#183; '+filas.length+' registro'+(filas.length===1?'':'s')+'</td></tr>';
+
+  h+='<tr>';
+  cols.forEach(function(c,ix){ h+='<th class="h" width="'+(anchos[ix]||100)+'">'+xEsc(c)+'</th>'; });
+  h+='</tr>';
+
+  filas.forEach(function(f,ri){
+    var alerta=false;
+    var ultimo=String(f[f.length-1]||'');
+    if(tipo==='marcajes'&&ultimo&&ultimo!=='OK')alerta=true;
+    if(tipo==='accesos'&&ultimo==='Fallido')alerta=true;
+    h+='<tr>';
+    f.forEach(function(v,ci){
+      var cls=[];
+      if(ri%2===1)cls.push('z');
+      if(typeof v==='number')cls.push('c');
+      if(alerta&&ci===f.length-1)cls.push('al');
+      h+='<td'+(cls.length?' class="'+cls.join(' ')+'"':'')+'>'+xEsc(v)+'</td>';
+    });
+    h+='</tr>';
+  });
+
+  h+='</table></body></html>';
+
+  var blob=new Blob(['\uFEFF'+h],{type:'application/vnd.ms-excel;charset=utf-8;'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='AMG_'+tipo+'_'+rg+'_'+new Date().toISOString().slice(0,10)+'.xls';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(function(){URL.revokeObjectURL(a.href);},1500);
 }
 </script>
 <div id="toast" style="display:none;position:fixed;bottom:24px;right:24px;background:#0A3D47;color:white;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.25)"></div>
@@ -1958,10 +2025,12 @@ async function repararHeaders(){
         <input id="supHasta" type="date" style="padding:6px 10px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:12px;outline:none">
         <button onclick="cargarSupData()" style="padding:7px 12px;border-radius:9px;border:none;background:#0A3D47;color:white;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Aplicar</button>
       </span>
-      <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">
-        <button onclick="exportarCSV('marcajes')" style="padding:7px 12px;border-radius:9px;border:1.5px solid #BFDBFE;background:#EFF6FF;color:#1E40AF;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Exportar marcajes</button>
-        <button onclick="exportarCSV('usuarios')" style="padding:7px 12px;border-radius:9px;border:1.5px solid #BFDBFE;background:#EFF6FF;color:#1E40AF;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Exportar usuarios</button>
-        <button onclick="exportarCSV('accesos')" style="padding:7px 12px;border-radius:9px;border:1.5px solid #BFDBFE;background:#EFF6FF;color:#1E40AF;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Exportar accesos</button>
+      <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+        <span style="font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.4px">Descargar Excel</span>
+        <button onclick="exportarCSV('marcajes')" style="padding:7px 12px;border-radius:9px;border:1.5px solid #BFDBFE;background:#EFF6FF;color:#1E40AF;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Marcajes</button>
+        <button onclick="exportarCSV('usuarios')" style="padding:7px 12px;border-radius:9px;border:1.5px solid #BFDBFE;background:#EFF6FF;color:#1E40AF;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Usuarios</button>
+        <button onclick="exportarCSV('empleados')" style="padding:7px 12px;border-radius:9px;border:1.5px solid #BFDBFE;background:#EFF6FF;color:#1E40AF;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Empleados</button>
+        <button onclick="exportarCSV('accesos')" style="padding:7px 12px;border-radius:9px;border:1.5px solid #BFDBFE;background:#EFF6FF;color:#1E40AF;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Accesos</button>
         <button onclick="reconstruirAccesos()" style="padding:7px 12px;border-radius:9px;border:1.5px solid #E5E7EB;background:white;color:#374151;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Reconstruir historial</button>
         <button onclick="repararHeaders()" style="padding:7px 12px;border-radius:9px;border:1.5px solid #FDE68A;background:#FFFBEB;color:#92400E;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Reparar encabezados</button>
       </div>
