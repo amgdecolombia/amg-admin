@@ -399,7 +399,7 @@ body{font-family:'Inter',sans-serif;background:var(--g50);min-height:100vh;}
 
 <script>
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyIvNWlrQRtQdLoX2-oj6uuyWiIbddsB7u7YwXXdSxOynPBq74XtIeA3MsjkJCZS3w/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwQl9tgAo8ppNTvEforcLRLfMLaimaULv7X7LXbgbQnEFYnck-XU4wY_MGgG-hW-SEZ/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -1510,7 +1510,14 @@ async function cargarSupData(){
   var k=document.getElementById('supKpis');
   if(k&&!k.innerHTML.trim())k.innerHTML='<div style="grid-column:1/-1;color:#9CA3AF;padding:12px;font-size:13px">Cargando metricas...</div>';
   try{
-    var r=await fetch(SCRIPT_URL+'?action=getSupervisorData&email='+encodeURIComponent(currentUser.email)+'&t='+Date.now());
+    var rg=(document.getElementById('supRango')||{}).value||'mes';
+    var qs='&rango='+rg;
+    if(rg==='custom'){
+      var dd=(document.getElementById('supDesde')||{}).value||'';
+      var hh=(document.getElementById('supHasta')||{}).value||'';
+      qs+='&desde='+dd+'&hasta='+hh;
+    }
+    var r=await fetch(SCRIPT_URL+'?action=getSupervisorData&email='+encodeURIComponent(currentUser.email)+qs+'&t='+Date.now());
     var txt=await r.text();
     var d;
     try{ d=JSON.parse(txt); }
@@ -1535,6 +1542,9 @@ function renderSupDashboard(d){
     {icon:'&#9203;',label:'Solicitudes pend.',val:res.solicitudesPend,color:res.solicitudesPend>0?'#92400E':'#065F46'},
     {icon:'&#9888;',label:'Alertas seguridad',val:res.alertasSeguridad,color:res.alertasSeguridad>0?'#991B1B':'#065F46'},
     {icon:'&#128161;',label:'Sugerencias',val:res.sugsPendientes,color:res.sugsPendientes>0?'#92400E':'#065F46'},
+    {icon:'&#128202;',label:'Marcajes periodo',val:res.marcajesRango,color:'#0A3D47'},
+    {icon:'&#128274;',label:'Ingresos periodo',val:res.accesosRango,color:'#1E40AF'},
+    {icon:'&#128683;',label:'Logins fallidos',val:res.loginsFallidos,color:res.loginsFallidos>0?'#991B1B':'#065F46'},
   ];
   document.getElementById('supKpis').innerHTML=kpis.map(function(k){
     return '<div style="background:white;border-radius:12px;padding:14px;border:1.5px solid #E5E7EB;text-align:center">'+
@@ -1557,15 +1567,27 @@ function renderSupDashboard(d){
 
   // Directores
   var dirs=d.directores||[];
-  if(!dirs.length)document.getElementById('supDirectores').innerHTML='<div style="color:#9CA3AF">Sin directores registrados</div>';
-  else document.getElementById('supDirectores').innerHTML=dirs.map(function(dir){
-    return '<div style="padding:6px 0;border-bottom:1px solid #F3F4F6">'+
-      '<div style="font-weight:600;font-size:12px">'+dir.nombre+'</div>'+
-      '<div style="display:flex;gap:10px;margin-top:3px">'+
-        '<span style="font-size:10px;color:#6B7280">Hoy: <b style="color:#0A3D47">'+dir.marcajesHoy+'</b></span>'+
-        '<span style="font-size:10px;color:#6B7280">Semana: <b style="color:#0A3D47">'+dir.marcajesSemana+'</b></span>'+
-        '<span style="font-size:10px;color:#6B7280">Ultimo: <b style="color:#0A3D47">'+dir.ultimoAcceso+'</b></span>'+
-      '</div></div>';
+  var rolCol={master:'#065F46',supervisor:'#1E40AF',director:'#92400E'};
+  var rolTxt={master:'GESTION HUMANA',supervisor:'SUPERVISOR',director:'DIRECTOR'};
+  if(!dirs.length)document.getElementById('supDirectores').innerHTML='<div style="color:#9CA3AF">Sin usuarios registrados</div>';
+  else document.getElementById('supDirectores').innerHTML=dirs.map(function(u){
+    var c=rolCol[u.rol]||'#6B7280', t=rolTxt[u.rol]||(u.rol||'').toUpperCase();
+    var inactivo=(u.activo||'').toLowerCase()==='no';
+    return '<div style="padding:8px 0;border-bottom:1px solid #F3F4F6;'+(inactivo?'opacity:.5':'')+'">'+
+      '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'+
+        '<span style="font-weight:600;font-size:12px">'+u.nombre+'</span>'+
+        '<span style="background:'+c+'1A;color:'+c+';border-radius:99px;padding:1px 7px;font-size:9px;font-weight:800;letter-spacing:.3px">'+t+'</span>'+
+        (inactivo?'<span style="font-size:9px;color:#991B1B;font-weight:700">INACTIVO</span>':'')+
+      '</div>'+
+      '<div style="display:flex;gap:10px;margin-top:3px;flex-wrap:wrap">'+
+        '<span style="font-size:10px;color:#6B7280">Decisiones: <b style="color:#0A3D47">'+u.decisiones+'</b></span>'+
+        '<span style="font-size:10px;color:#6B7280">Este mes: <b style="color:#0A3D47">'+u.decisionesMes+'</b></span>'+
+        '<span style="font-size:10px;color:#6B7280">Pendientes: <b style="color:'+(u.pendientes>0?'#92400E':'#065F46')+'">'+u.pendientes+'</b></span>'+
+        (u.marcajesSemana?'<span style="font-size:10px;color:#6B7280">Marcajes sem.: <b style="color:#0A3D47">'+u.marcajesSemana+'</b></span>':'')+
+      '</div>'+
+      '<div style="font-size:10px;color:#9CA3AF;margin-top:2px">Ultima decision: '+u.ultimaDecision+'</div>'+
+      '<div style="font-size:10px;margin-top:1px;color:'+(u.ultimoAcceso==='Nunca ha entrado'?'#991B1B':(u.diasSinEntrar>=7?'#92400E':'#9CA3AF'))+'">Ultimo ingreso: '+u.ultimoAcceso+(u.diasSinEntrar!==null&&u.diasSinEntrar>0?' ('+u.diasSinEntrar+' d)':'')+' &#183; '+(u.accesos||0)+' ingresos</div>'+
+    '</div>';
   }).join('');
 
   // Employee table
@@ -1597,6 +1619,8 @@ function renderSupDashboard(d){
 
   document.getElementById('supTable').innerHTML=thead+tbody;
   renderSupLog();
+  renderSupAlertas(d);
+  renderSupAccesos(d);
 }
 
 function filtrarSupTable(){
@@ -1740,6 +1764,94 @@ function renderSupLog(){
   h+='</tbody>';
   el.innerHTML=h;
 }
+
+function cambiarRango(){
+  var rg=document.getElementById('supRango').value;
+  document.getElementById('supCustomWrap').style.display = (rg==='custom') ? 'flex' : 'none';
+  if(rg!=='custom')cargarSupData();
+}
+
+function renderSupAlertas(d){
+  var el=document.getElementById('supAlertas');
+  if(!el)return;
+  var al=d.alertasUso||[];
+  if(!al.length){
+    el.innerHTML='<div style="background:#ECFDF5;border:1.5px solid #A7F3D0;color:#065F46;border-radius:12px;padding:12px 14px;font-size:13px;font-weight:600">&#10003; Todo en orden. No hay alertas de uso en este periodo.</div>';
+    return;
+  }
+  var altos=al.filter(function(a){return a.nivel==='alto';});
+  var medios=al.filter(function(a){return a.nivel!=='alto';});
+  var h='<div style="background:white;border:1.5px solid #FECACA;border-radius:12px;overflow:hidden">';
+  h+='<div style="background:#FEF2F2;padding:10px 14px;font-size:12px;font-weight:700;color:#991B1B">&#9888; Alertas de uso ('+al.length+')</div>';
+  h+='<div style="padding:8px 14px">';
+  altos.concat(medios).forEach(function(a){
+    var c=a.nivel==='alto'?'#991B1B':'#92400E';
+    h+='<div style="padding:6px 0;border-bottom:1px solid #F3F4F6;font-size:12px;color:#374151;display:flex;gap:8px;align-items:flex-start">'+
+       '<span style="color:'+c+';font-weight:800">&#8226;</span><span>'+a.texto+'</span></div>';
+  });
+  h+='</div></div>';
+  el.innerHTML=h;
+}
+
+function renderSupAccesos(d){
+  var el=document.getElementById('supAccTable');
+  if(!el)return;
+  var rows=d.accesosLog||[];
+  if(!rows.length){el.innerHTML='<tbody><tr><td style="padding:16px;color:#9CA3AF;font-size:13px">Sin accesos registrados en este periodo.</td></tr></tbody>';return;}
+  var h='<thead><tr style="background:#F8FAFC;position:sticky;top:0">';
+  ['Fecha y hora','Usuario','Nombre','Rol','Resultado'].forEach(function(t){
+    h+='<th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;border-bottom:1px solid #E5E7EB;white-space:nowrap">'+t+'</th>';
+  });
+  h+='</tr></thead><tbody>';
+  rows.forEach(function(a){
+    var falla=a.resultado!=='Exitoso';
+    h+='<tr style="'+(falla?'background:#FEF2F2':'')+'">';
+    h+='<td style="padding:7px 10px;border-bottom:1px solid #F3F4F6;font-family:monospace;font-size:11px;white-space:nowrap">'+a.fecha+'</td>';
+    h+='<td style="padding:7px 10px;border-bottom:1px solid #F3F4F6;font-size:11px">'+a.usuario+'</td>';
+    h+='<td style="padding:7px 10px;border-bottom:1px solid #F3F4F6;font-size:11px;font-weight:600">'+a.nombre+'</td>';
+    h+='<td style="padding:7px 10px;border-bottom:1px solid #F3F4F6;font-size:11px;color:#6B7280">'+(a.rol||'-')+'</td>';
+    h+='<td style="padding:7px 10px;border-bottom:1px solid #F3F4F6"><span style="font-size:10px;font-weight:700;color:'+(falla?'#991B1B':'#065F46')+'">'+a.resultado+'</span></td>';
+    h+='</tr>';
+  });
+  el.innerHTML=h+'</tbody>';
+}
+
+function csvCell(v){
+  var s=(v===null||v===undefined)?'':String(v);
+  return '"'+s.replace(/"/g,'""')+'"';
+}
+
+function exportarCSV(tipo){
+  if(!_supData){alert('Espera a que carguen los datos.');return;}
+  var rg=(document.getElementById('supRango')||{}).value||'mes';
+  var filas=[], nombre='';
+  if(tipo==='marcajes'){
+    nombre='marcajes';
+    filas.push(['Fecha y hora','Empleado','Correo','Tipo','Vehiculo','Horas','GPS','Estado seguridad']);
+    (_supData.marcajes||[]).filter(function(m){return rg==='todos'?true:m.enRango;}).forEach(function(m){
+      filas.push([m.fecha,m.nombre,m.correo,m.tipo,m.vehiculo,m.horas,m.gpsOk,m.fpStatus||'OK']);
+    });
+  } else if(tipo==='usuarios'){
+    nombre='usuarios';
+    filas.push(['Nombre','Usuario','Rol','Activo','Decisiones','Decisiones mes','Pendientes','Accesos','Ultimo acceso','Dias sin entrar']);
+    (_supData.directores||[]).forEach(function(u){
+      filas.push([u.nombre,u.email,u.rol,u.activo,u.decisiones,u.decisionesMes,u.pendientes,u.accesos,u.ultimoAcceso,(u.diasSinEntrar===null?'':u.diasSinEntrar)]);
+    });
+  } else {
+    nombre='accesos';
+    filas.push(['Fecha y hora','Usuario','Nombre','Rol','Resultado']);
+    (_supData.accesosLog||[]).forEach(function(a){
+      filas.push([a.fecha,a.usuario,a.nombre,a.rol,a.resultado]);
+    });
+  }
+  var csv='\uFEFF'+filas.map(function(f){return f.map(csvCell).join(';');}).join('\r\n');
+  var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='AMG_'+nombre+'_'+rg+'_'+new Date().toISOString().slice(0,10)+'.csv';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+}
 </script>
 <div id="toast" style="display:none;position:fixed;bottom:24px;right:24px;background:#0A3D47;color:white;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.25)"></div>
 
@@ -1808,6 +1920,30 @@ function renderSupLog(){
   </div>
   <div style="padding:16px;max-width:1100px;margin:0 auto">
     <!-- KPI Cards -->
+    <div style="background:white;border-radius:14px;border:1.5px solid #E5E7EB;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span style="font-size:11px;font-weight:700;color:#0A3D47;text-transform:uppercase;letter-spacing:.4px">Periodo del reporte</span>
+      <select id="supRango" onchange="cambiarRango()" style="padding:7px 12px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:12px;outline:none;background:white">
+        <option value="dia">Hoy</option>
+        <option value="semana">Esta semana</option>
+        <option value="mes" selected>Este mes</option>
+        <option value="trimestre">Este trimestre</option>
+        <option value="ano">Este ano</option>
+        <option value="todos">Historico completo</option>
+        <option value="custom">Rango personalizado</option>
+      </select>
+      <span id="supCustomWrap" style="display:none;gap:6px;align-items:center">
+        <input id="supDesde" type="date" style="padding:6px 10px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:12px;outline:none">
+        <span style="font-size:11px;color:#6B7280">a</span>
+        <input id="supHasta" type="date" style="padding:6px 10px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:12px;outline:none">
+        <button onclick="cargarSupData()" style="padding:7px 12px;border-radius:9px;border:none;background:#0A3D47;color:white;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Aplicar</button>
+      </span>
+      <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">
+        <button onclick="exportarCSV('marcajes')" style="padding:7px 12px;border-radius:9px;border:1.5px solid #BFDBFE;background:#EFF6FF;color:#1E40AF;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Exportar marcajes</button>
+        <button onclick="exportarCSV('usuarios')" style="padding:7px 12px;border-radius:9px;border:1.5px solid #BFDBFE;background:#EFF6FF;color:#1E40AF;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Exportar usuarios</button>
+        <button onclick="exportarCSV('accesos')" style="padding:7px 12px;border-radius:9px;border:1.5px solid #BFDBFE;background:#EFF6FF;color:#1E40AF;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Exportar accesos</button>
+      </div>
+    </div>
+    <div id="supAlertas" style="margin-bottom:14px"></div>
     <div id="supKpis" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:20px"></div>
     <!-- Two columns -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
@@ -1816,7 +1952,7 @@ function renderSupLog(){
         <div id="supSinMarcar" style="font-size:13px;color:#374151"></div>
       </div>
       <div style="background:white;border-radius:14px;padding:1rem;border:1.5px solid #E5E7EB">
-        <div style="font-size:12px;font-weight:700;color:#0A3D47;margin-bottom:10px">&#128100; Actividad directores</div>
+        <div style="font-size:12px;font-weight:700;color:#0A3D47;margin-bottom:10px">&#128100; Actividad de usuarios del sistema</div>
         <div id="supDirectores" style="font-size:13px;color:#374151"></div>
       </div>
     </div>
@@ -1843,6 +1979,10 @@ function renderSupLog(){
       </div>
       <div id="supLogCount" style="padding:8px 16px;font-size:11px;color:#6B7280;border-bottom:1px solid #F3F4F6"></div>
       <div style="overflow-x:auto;max-height:520px"><table id="supLogTable" style="width:100%;border-collapse:collapse;font-size:12px"></table></div>
+    </div>
+    <div style="background:white;border-radius:14px;border:1.5px solid #E5E7EB;overflow:hidden;margin-top:16px;margin-bottom:24px">
+      <div style="padding:12px 16px;border-bottom:1px solid #E5E7EB;font-size:12px;font-weight:700;color:#0A3D47">&#128274; Accesos al sistema</div>
+      <div style="overflow-x:auto;max-height:380px"><table id="supAccTable" style="width:100%;border-collapse:collapse;font-size:12px"></table></div>
     </div>
   </div>
 </div>
