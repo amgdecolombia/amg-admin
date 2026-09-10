@@ -1501,14 +1501,24 @@ function mostrarSupDashboard(){
 
 var _supData = null;
 
+function supError(msg){
+  var k=document.getElementById('supKpis');
+  if(k)k.innerHTML='<div style="grid-column:1/-1;background:#FEF2F2;border:1.5px solid #FECACA;color:#991B1B;border-radius:12px;padding:14px;font-size:13px">No se pudieron cargar los datos: '+msg+'<br><span style="font-size:11px;color:#6B7280">Verifica que el deployment del script este actualizado y vuelve a intentar.</span></div>';
+}
+
 async function cargarSupData(){
+  var k=document.getElementById('supKpis');
+  if(k&&!k.innerHTML.trim())k.innerHTML='<div style="grid-column:1/-1;color:#9CA3AF;padding:12px;font-size:13px">Cargando metricas...</div>';
   try{
-    var r=await fetch(SCRIPT_URL+'?action=getSupervisorData&email='+encodeURIComponent(currentUser.email));
-    var d=JSON.parse(await r.text());
-    if(d.status!=='ok'){console.error('Sup data:',d.msg);return;}
+    var r=await fetch(SCRIPT_URL+'?action=getSupervisorData&email='+encodeURIComponent(currentUser.email)+'&t='+Date.now());
+    var txt=await r.text();
+    var d;
+    try{ d=JSON.parse(txt); }
+    catch(pe){ supError('Respuesta invalida del servidor.'); console.error('raw:',txt.slice(0,300)); return; }
+    if(d.status!=='ok'){ supError(d.msg||'Sin autorizacion.'); return; }
     _supData=d;
     renderSupDashboard(d);
-  }catch(e){console.error('cargarSupData:',e);}
+  }catch(e){ supError(e.message); console.error('cargarSupData:',e); }
 }
 
 function renderSupDashboard(d){
@@ -1547,7 +1557,8 @@ function renderSupDashboard(d){
 
   // Directores
   var dirs=d.directores||[];
-  document.getElementById('supDirectores').innerHTML=dirs.map(function(dir){
+  if(!dirs.length)document.getElementById('supDirectores').innerHTML='<div style="color:#9CA3AF">Sin directores registrados</div>';
+  else document.getElementById('supDirectores').innerHTML=dirs.map(function(dir){
     return '<div style="padding:6px 0;border-bottom:1px solid #F3F4F6">'+
       '<div style="font-weight:600;font-size:12px">'+dir.nombre+'</div>'+
       '<div style="display:flex;gap:10px;margin-top:3px">'+
@@ -1559,6 +1570,7 @@ function renderSupDashboard(d){
 
   // Employee table
   var emps=(d.empleados||[]).sort(function(a,b){return (b.marcajesMes||0)-(a.marcajesMes||0);});
+  if(!emps.length){document.getElementById('supTable').innerHTML='<tbody><tr><td style="padding:16px;color:#9CA3AF;font-size:13px">Sin empleados registrados todavia.</td></tr></tbody>';return;}
   var thead='<thead><tr style="background:#F8FAFC">';
   ['Empleado','Empresa','Area','Hoy','Semana','Mes','Total','Ultimo marcaje','Estado'].forEach(function(h){
     thead+='<th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;border-bottom:1px solid #E5E7EB;white-space:nowrap">'+h+'</th>';
@@ -1584,6 +1596,7 @@ function renderSupDashboard(d){
   tbody+='</tbody>';
 
   document.getElementById('supTable').innerHTML=thead+tbody;
+  renderSupLog();
 }
 
 function filtrarSupTable(){
@@ -1691,6 +1704,42 @@ async function terminarAdminAction(email){
     else alert('Error: '+(d.msg||''));
   }catch(e){alert('Error: '+e.message);}
 }
+
+function renderSupLog(){
+  var el=document.getElementById('supLogTable');
+  var cnt=document.getElementById('supLogCount');
+  if(!el||!_supData)return;
+  var rango=(document.getElementById('logRango')||{}).value||'mes';
+  var q=((document.getElementById('logSearch')||{}).value||'').toLowerCase();
+  var rows=(_supData.marcajes||[]).filter(function(m){
+    if(rango==='hoy'&&!m.hoy)return false;
+    if(rango==='semana'&&!m.semana)return false;
+    if(rango==='mes'&&!m.mes)return false;
+    if(q&&(m.nombre+' '+m.correo).toLowerCase().indexOf(q)<0)return false;
+    return true;
+  });
+  if(cnt)cnt.textContent=rows.length+' marcaje'+(rows.length===1?'':'s')+' en el rango seleccionado';
+  if(!rows.length){el.innerHTML='<tbody><tr><td style="padding:16px;color:#9CA3AF;font-size:13px">Sin marcajes en este rango.</td></tr></tbody>';return;}
+  var h='<thead><tr style="background:#F8FAFC;position:sticky;top:0">';
+  ['Fecha y hora','Empleado','Tipo','Vehiculo','Horas','Ubicacion','Seguridad'].forEach(function(t){
+    h+='<th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;border-bottom:1px solid #E5E7EB;white-space:nowrap">'+t+'</th>';
+  });
+  h+='</tr></thead><tbody>';
+  rows.forEach(function(m){
+    var tipoColor = m.tipo.indexOf('Entrada')>=0 ? '#065F46' : (m.tipo.indexOf('Salida')>=0 ? '#991B1B' : '#1E40AF');
+    h+='<tr style="'+(m.alerta?'background:#FEF2F2':'')+'">';
+    h+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;font-family:monospace;font-size:11px;white-space:nowrap">'+m.fecha+'</td>';
+    h+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6"><div style="font-weight:600;font-size:12px">'+m.nombre+'</div><div style="font-size:10px;color:#9CA3AF">'+m.correo+'</div></td>';
+    h+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6"><span style="font-size:11px;font-weight:700;color:'+tipoColor+'">'+m.tipo+'</span></td>';
+    h+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;font-size:11px;color:#374151">'+(m.vehiculo||'-')+'</td>';
+    h+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;font-size:11px;text-align:center">'+(m.horas||'-')+'</td>';
+    h+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;font-size:11px">'+(m.mapa?'<a href="'+m.mapa+'" target="_blank" style="color:#1E40AF;text-decoration:none;font-weight:600">Ver mapa</a>':(m.gpsOk==='Si'?'GPS ok':'Sin GPS'))+'</td>';
+    h+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6">'+(m.alerta?'<span style="background:#FEF2F2;color:#991B1B;border-radius:99px;padding:2px 8px;font-size:10px;font-weight:700">'+(m.fpStatus||'ALERTA')+'</span>':'<span style="color:#065F46;font-size:11px">OK</span>')+'</td>';
+    h+='</tr>';
+  });
+  h+='</tbody>';
+  el.innerHTML=h;
+}
 </script>
 <div id="toast" style="display:none;position:fixed;bottom:24px;right:24px;background:#0A3D47;color:white;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.25)"></div>
 
@@ -1778,6 +1827,22 @@ async function terminarAdminAction(email){
         <input id="supSearch" type="text" placeholder="Buscar empleado..." onkeyup="filtrarSupTable()" style="padding:6px 12px;border:1.5px solid #E5E7EB;border-radius:8px;font-family:inherit;font-size:12px;outline:none;width:180px">
       </div>
       <div style="overflow-x:auto"><table id="supTable" style="width:100%;border-collapse:collapse;font-size:12px"></table></div>
+    </div>
+    <div style="background:white;border-radius:14px;border:1.5px solid #E5E7EB;overflow:hidden;margin-top:16px">
+      <div style="padding:12px 16px;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div style="font-size:12px;font-weight:700;color:#0A3D47">&#128337; Registro de marcajes</div>
+        <div style="margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <select id="logRango" onchange="renderSupLog()" style="padding:6px 10px;border:1.5px solid #E5E7EB;border-radius:8px;font-family:inherit;font-size:12px;outline:none;background:white">
+            <option value="hoy">Hoy</option>
+            <option value="semana">Esta semana</option>
+            <option value="mes" selected>Este mes</option>
+            <option value="todos">Todos</option>
+          </select>
+          <input id="logSearch" type="text" placeholder="Buscar empleado..." onkeyup="renderSupLog()" style="padding:6px 12px;border:1.5px solid #E5E7EB;border-radius:8px;font-family:inherit;font-size:12px;outline:none;width:170px">
+        </div>
+      </div>
+      <div id="supLogCount" style="padding:8px 16px;font-size:11px;color:#6B7280;border-bottom:1px solid #F3F4F6"></div>
+      <div style="overflow-x:auto;max-height:520px"><table id="supLogTable" style="width:100%;border-collapse:collapse;font-size:12px"></table></div>
     </div>
   </div>
 </div>
