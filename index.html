@@ -399,7 +399,7 @@ body{font-family:'Inter',sans-serif;background:var(--g50);min-height:100vh;}
 
 <script>
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxVokj9DLxbp3QcQdkKP3gZIyMCqicNRqDNj6eLJlA18aR44DsPtMkW7nfeju5BDJpo/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyqrqFeAvyTL3e0qw3mISGrCZr7AJug1xpKQs4WmXIH5kM7ZI_8FKgZ6TNeC7HX2Nhi/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -502,8 +502,8 @@ function startPolling(){
 async function doPoll(){
   if(!currentUser)return;
   try{
-    var r=await fetch(SCRIPT_URL+'?action=poll&email='+encodeURIComponent(currentUser.email),{redirect:'follow'});
-    var d=await r.json();
+    var r=await fetch(SCRIPT_URL+'?action=poll&email='+encodeURIComponent(currentUser.email)+'&t='+Date.now());
+    var d=JSON.parse(await r.text());
     var count=d.count||0;
     var badge=document.getElementById('pendingBadge');
     if(badge)badge.textContent=count+' pendiente'+(count===1?'':'s');
@@ -571,8 +571,8 @@ async function loadPending(){
   loadEl.style.display='block';loadEl.textContent='Cargando solicitudes...';
   listEl.innerHTML='';
   try{
-    var r=await fetch(SCRIPT_URL+'?action=getPending&email='+encodeURIComponent(currentUser.email),{redirect:'follow'});
-    var d=await r.json();
+    var r=await fetch(SCRIPT_URL+'?action=getPending&email='+encodeURIComponent(currentUser.email)+'&t='+Date.now());
+    var d=JSON.parse(await r.text());
     loadEl.style.display='none';
     allPending=d.rows||[];
     var badge=document.getElementById('pendingBadge');
@@ -593,8 +593,8 @@ async function loadHistory(){
   loadEl.style.display='block';loadEl.textContent='Cargando historial...';
   listEl.innerHTML='';
   try{
-    var r=await fetch(SCRIPT_URL+'?action=getHistory&email='+encodeURIComponent(currentUser.email),{redirect:'follow'});
-    var d=await r.json();
+    var r=await fetch(SCRIPT_URL+'?action=getHistory&email='+encodeURIComponent(currentUser.email)+'&t='+Date.now());
+    var d=JSON.parse(await r.text());
     loadEl.style.display='none';
     allHistory=d.rows||[];
     var approved=allHistory.filter(function(x){return x['Estado Director']==='Aprobado';}).length;
@@ -611,8 +611,8 @@ async function loadHistory(){
 
 async function loadStats(){
   try{
-    var r=await fetch(SCRIPT_URL+'?action=getStats&email='+encodeURIComponent(currentUser.email));
-    var d=await r.json();
+    var r=await fetch(SCRIPT_URL+'?action=getStats&email='+encodeURIComponent(currentUser.email)+'&t='+Date.now());
+    var d=JSON.parse(await r.text());
     if(d.status==='ok')renderCharts(d);
   }catch(e){}
 }
@@ -814,8 +814,8 @@ function renderCharts(d){
 // CALENDARIO
 async function loadCalendar(){
   try{
-    var r=await fetch(SCRIPT_URL+'?action=getCalendarData&email='+encodeURIComponent(currentUser.email));
-    var d=await r.json();
+    var r=await fetch(SCRIPT_URL+'?action=getCalendarData&email='+encodeURIComponent(currentUser.email)+'&t='+Date.now());
+    var d=JSON.parse(await r.text());
     calEvents=d.events||[];
     renderCalendar();
   }catch(e){console.log('Cal error:',e);}
@@ -953,8 +953,8 @@ function renderEmpGroup(titulo,color,emps){
 async function loadNovedades(){
   document.getElementById('novHistContent').textContent='Cargando...';
   try{
-    var r=await fetch(SCRIPT_URL+'?action=getNovedades&email='+encodeURIComponent(currentUser.email));
-    var d=await r.json();
+    var r=await fetch(SCRIPT_URL+'?action=getNovedades&email='+encodeURIComponent(currentUser.email)+'&t='+Date.now());
+    var d=JSON.parse(await r.text());
     var rows=d.rows||[];
     if(!rows.length){document.getElementById('novHistContent').innerHTML=emptyState('Sin novedades registradas.');return;}
     var html='<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:#F9FAFB">';
@@ -1053,8 +1053,8 @@ async function ghDecide(rowIndex,decision,idx){
 // ADMINS
 async function loadAdmins(){
   try{
-    var r=await fetch(SCRIPT_URL+'?action=getAdminsLista&email='+encodeURIComponent(currentUser.email));
-    var d=await r.json();
+    var r=await fetch(SCRIPT_URL+'?action=getAdminsLista&email='+encodeURIComponent(currentUser.email)+'&t='+Date.now());
+    var d=JSON.parse(await r.text());
     renderAdmins(d.admins||[]);
   }catch(e){document.getElementById('adminsContent').innerHTML='<p style="color:#991B1B;padding:1rem">Error cargando administradores.</p>';}
 }
@@ -1114,8 +1114,8 @@ async function doReset(){
   var btn = document.getElementById('resetBtn');
   if(btn){btn.textContent='Reseteando...';btn.disabled=true;}
   try{
-    var r = await fetch(SCRIPT_URL+'?action=resetData&email='+encodeURIComponent(currentUser.email),{redirect:'follow'});
-    var d = await r.json();
+    var r = await fetch(SCRIPT_URL+'?action=resetData&email='+encodeURIComponent(currentUser.email)+'&t='+Date.now());
+    var d = JSON.parse(await r.text());
     if(d.status==='ok'){
       alert('Reset completado.\n'+d.msg+'\n\nEl sistema esta listo para produccion.');
       loadPending();
