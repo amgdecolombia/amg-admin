@@ -260,13 +260,24 @@ body{font-family:'Inter',sans-serif;background:var(--g50);min-height:100vh;}
 
     <!-- CALENDARIO -->
     <div class="panel" id="panel-calendario">
-      <div class="cal-legend">
-        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#854F0B"></div>Tiempo Extra</div>
-        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#4C1D95"></div>Festivo</div>
-        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#1E40AF"></div>Compensatorio</div>
-        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#065F46"></div>Vacaciones</div>
-        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#92400E"></div>Pendiente</div>
-        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#991B1B"></div>Rechazado</div>
+      <div class="cal-legend" style="display:block">
+        <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:6px">
+          <span style="font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.4px">Tipo</span>
+          <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#854F0B"></div><b>TE</b>&nbsp;Tiempo Extra</div>
+          <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#4C1D95"></div><b>FT</b>&nbsp;Festivo trabajado</div>
+          <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#1E40AF"></div><b>CO</b>&nbsp;Compensatorio</div>
+          <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#065F46"></div><b>VA</b>&nbsp;Vacaciones</div>
+          <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#374151"></div><b>CM</b>&nbsp;Correccion de marcaje</div>
+          <div class="cal-legend-item"><div class="cal-legend-dot" style="background:#DC2626"></div><b>FN</b>&nbsp;Festivo nacional</div>
+        </div>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center">
+          <span style="font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.4px">Estado</span>
+          <div class="cal-legend-item"><span style="display:inline-block;width:26px;height:14px;border-radius:4px;background:#0A3D47;margin-right:5px"></span>&#10003;&nbsp;Aprobado</div>
+          <div class="cal-legend-item"><span style="display:inline-block;width:26px;height:14px;border-radius:4px;background:#FFF;border:1.5px dashed #0A3D47;margin-right:5px"></span>&#8987;&nbsp;Pendiente</div>
+          <div class="cal-legend-item"><span style="display:inline-block;width:26px;height:14px;border-radius:4px;background:#FFF;border:1.5px dashed #0A3D47;margin-right:5px"></span>&#189;&nbsp;Pre-aprobado</div>
+          <div class="cal-legend-item"><span style="display:inline-block;width:26px;height:14px;border-radius:4px;background:#FFF;border:1.5px dashed #991B1B;margin-right:5px"></span>&#10007;&nbsp;Rechazado</div>
+          <span style="font-size:10px;color:#9CA3AF">El color indica el tipo. El relleno indica el estado.</span>
+        </div>
       </div>
       <div class="cal-nav">
         <button class="cal-btn" onclick="calPrev()">&#8592; Anterior</button>
@@ -406,7 +417,7 @@ body{font-family:'Inter',sans-serif;background:var(--g50);min-height:100vh;}
 <script>var BUILD_VERSION='2026.09.16';
 
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxhyrjtcWR1cGHSOI4lBvRjR0ubEfG8Qf47lePPIOkb4eC-LRgnoKutGPC1bGAT5j8P/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwIg0VFrtKyrUNiYmO5Ad_Qh0B_fmhDLkJdDLWOjmVlq6J9i-d38k7xLt_TecIQouGs/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -452,7 +463,7 @@ async function doLogin(){
       document.getElementById('topbarEmail').textContent=email;
       pintarFrase();
       var masterTabs=['tabNovedades','tabCorrecciones','tabAdmins','tabCalendario','tabEmpleados'];
-      var directorTabs=[];
+      var directorTabs=['tabCalendario'];
       if(role==='master'||role==='supervisor'){
         masterTabs.concat(directorTabs).forEach(function(id){
           var el=document.getElementById(id);
@@ -832,9 +843,29 @@ function toISO(d){
   if(p.length===3&&p[2].length===4)return p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0');
   return d;
 }
+function abrevTipo(t){
+  t=(t||'').toLowerCase();
+  if(t.indexOf('tiempo')>=0)return 'TE';
+  if(t.indexOf('festivo nacional')>=0)return 'FN';
+  if(t.indexOf('festivo')>=0)return 'FT';
+  if(t.indexOf('compensat')>=0)return 'CO';
+  if(t.indexOf('vacacion')>=0)return 'VA';
+  if(t.indexOf('correccion')>=0)return 'CM';
+  return '--';
+}
+function iconoEstado(e){
+  e=(e||'');
+  if(e==='Aprobado')return '&#10003;';
+  if(e==='Rechazado')return '&#10007;';
+  if(e==='Pre-aprobado')return '&#189;';
+  if(e.indexOf('Pendiente')>=0)return '&#8987;';
+  return '';
+}
 function renderCalendar(){
   var meses=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  document.getElementById('calTitle').textContent=meses[calMonth]+' '+calYear;
+  var rolCal=(currentUser.role||'').toLowerCase();
+  document.getElementById('calTitle').textContent=meses[calMonth]+' '+calYear+
+    (rolCal==='director'?'  .  tu equipo':'');
   var grid=document.getElementById('calGrid');
   var html='<div class="cal-hdr">Lun</div><div class="cal-hdr">Mar</div><div class="cal-hdr">Mie</div><div class="cal-hdr">Jue</div><div class="cal-hdr">Vie</div><div class="cal-hdr">Sab</div><div class="cal-hdr">Dom</div>';
   var first=new Date(calYear,calMonth,1);
@@ -852,7 +883,20 @@ function renderCalendar(){
     var hasEvts=dayEvts.length>0;
     html+='<div class="cal-day'+(isToday?' cal-today':'')+(hasEvts?' cal-hasevt':'')+'" data-date="'+dateStr+'" data-day="'+day+'" style="cursor:'+(hasEvts?'pointer':'default')+'">';
     html+='<div class="cal-day-num">'+day+'</div>';
-    dayEvts.slice(0,2).forEach(function(ev){html+='<div class="cal-evt" style="background:'+ev.color+'">'+ev.titulo.split(' - ').slice(-1)[0]+'</div>';});
+    dayEvts.slice(0,2).forEach(function(ev){
+      var abrev=abrevTipo(ev.tipo);
+      var est=(ev.estado||'');
+      var pend=(est.indexOf('Pendiente')>=0||est==='Pre-aprobado');
+      var rech=(est==='Rechazado');
+      var nom=ev.titulo.split(' - ').slice(-1)[0];
+      var estilo=rech
+        ? 'background:#FFFFFF;border:1.5px dashed '+ev.color+';color:'+ev.color+';text-decoration:line-through'
+        : (pend
+           ? 'background:#FFFFFF;border:1.5px dashed '+ev.color+';color:'+ev.color
+           : 'background:'+ev.color+';color:#FFFFFF;border:1.5px solid '+ev.color);
+      html+='<div class="cal-evt" title="'+ev.tipo+' - '+nom+' ('+(est||'Sin estado')+')" style="'+estilo+'">'+
+        '<b>'+abrev+'</b> '+nom+' '+iconoEstado(est)+'</div>';
+    });
     if(dayEvts.length>2)html+='<div style="font-size:9px;color:#9CA3AF;font-weight:600">+'+(dayEvts.length-2)+' mas</div>';
     html+='</div>';
   }
@@ -882,7 +926,7 @@ function showDayDetail(dateStr,day){
     html+='<div style="border-left:3px solid '+ev.color+';padding:8px 10px;border-radius:0 8px 8px 0;background:#F9FAFB;margin-bottom:8px">';
     html+='<div style="font-size:12px;font-weight:700;color:#111827">'+nombre+'</div>';
     if(correo)html+='<div style="font-size:10px;color:#6B7280;margin-top:1px">'+correo+'</div>';
-    html+='<div style="font-size:10px;color:#6B7280;margin-top:1px">'+(tLabels[ev.tipo]||ev.tipo)+'</div>';
+    html+='<div style="margin-top:4px"><span style="display:inline-block;font-size:9px;font-weight:800;padding:2px 7px;border-radius:5px;background:'+ev.color+';color:#FFF;letter-spacing:.4px">'+abrevTipo(ev.tipo)+'</span> <span style="font-size:11px;color:#374151;font-weight:600">'+(tLabels[ev.tipo]||ev.tipo)+'</span></div>';
     html+='<span style="display:inline-block;margin-top:4px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:'+sb+';color:'+sc+'">'+ev.estado+'</span>';
     html+='</div>';
   });
