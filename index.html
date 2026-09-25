@@ -192,9 +192,10 @@ body{font-family:'Inter',sans-serif;background:var(--g50);min-height:100vh;}
     <div class="topbar-left">
       <h2 id="topbarName">Panel<span class="master-badge" id="masterBadge">MASTER ACCESS</span></h2>
       <p id="topbarEmail"></p>
+      <p id="topbarFrase" style="margin:4px 0 0 0;font-size:11px;font-style:italic;color:rgba(255,255,255,.62);max-width:520px;line-height:1.4"></p>
     </div>
     <div class="topbar-right">
-      <span class="pending-badge" id="pendingBadge">Cargando...</span>
+      <span class="pending-badge" id="pendingBadge" onclick="irAPendientes()" title="Ver solicitudes pendientes" style="cursor:pointer">Cargando...</span>
       <button id="pilotoResetBtn" onclick="reiniciarPiloto()" style="display:none;padding:7px 14px;border-radius:9px;border:2px solid #1E40AF;background:rgba(30,64,175,.12);color:#BFDBFE;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;margin-right:6px">&#128260; Reiniciar Piloto</button><button id="resetBtn" onclick="confirmarReset()" style="display:none;padding:7px 14px;border-radius:9px;border:2px solid #991B1B;background:rgba(153,27,27,.15);color:#FECACA;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:.3px">RESET DATOS</button>
       <button class="logout-btn" onclick="doLogout()">Cerrar sesion</button>
     </div>
@@ -212,6 +213,7 @@ body{font-family:'Inter',sans-serif;background:var(--g50);min-height:100vh;}
       <button class="tab active" data-tab="pending" onclick="switchTab('pending')">Pendientes</button>
       <button class="tab" data-tab="stats" onclick="switchTab('stats')">Dashboard</button>
       <button class="tab" data-tab="history" onclick="switchTab('history')">Historial</button>
+<button class="tab" id="tabSeguimiento" onclick="mostrarSupDashboard()" style="background:#FFFBEB;border-color:#FDE68A;color:#92400E;font-weight:700">Seguimiento y horarios</button>
       <button class="tab" data-tab="calendario" id="tabCalendario" onclick="switchTab('calendario')" style="display:none">Calendario</button>
       <button class="tab" data-tab="novedades" id="tabNovedades" onclick="switchTab('novedades')" style="display:none">Novedades Empresa</button>
       <button class="tab" data-tab="correcciones" id="tabCorrecciones" onclick="switchTab('correcciones')" style="display:none">Correcciones</button>
@@ -447,21 +449,12 @@ async function doLogin(){
         mostrarSupDashboard();
         return;
       }
-      setTimeout(function(){
-        var tb=document.getElementById('topbarName');
-        if(tb&&tb.parentNode&&!document.getElementById('btnSeguimiento')){
-          var b=document.createElement('button');
-          b.id='btnSeguimiento';
-          b.textContent='Panel de seguimiento';
-          b.style.cssText='margin-left:12px;padding:6px 14px;border-radius:8px;border:none;background:rgba(255,255,255,.18);color:white;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer';
-          b.onclick=mostrarSupDashboard;
-          tb.parentNode.appendChild(b);
-        }
-      },400);
+      
       document.getElementById('loginWrap').style.display='none';
       document.getElementById('dashboard').style.display='block';
       document.getElementById('topbarName').innerHTML=d.nombre+(role==='master'?'<span class="master-badge" style="display:inline-flex">MASTER</span>':'');
       document.getElementById('topbarEmail').textContent=email;
+      pintarFrase();
       var masterTabs=['tabNovedades','tabCorrecciones','tabAdmins','tabCalendario','tabEmpleados'];
       var directorTabs=[];
       if(role==='master'){
@@ -1512,13 +1505,16 @@ function mostrarSupDashboard(){
   document.getElementById('loginWrap').style.display='none';
   document.getElementById('dashboard').style.display='none';
   document.getElementById('supDashboard').style.display='block';
-  var esSup=((currentUser.role||'').toLowerCase()==='supervisor');
+  pintarFrase();
+  var rolAct=(currentUser.role||'').toLowerCase();
+  var esSup=(rolAct==='supervisor');
+  var esAdmin=(esSup||rolAct==='master');
   ['abrirGestionEmpleados()','reconstruirAccesos()','repararHeaders()'].forEach(function(fn){
     var b=document.querySelector('#supDashboard button[onclick="'+fn+'"]');
     if(b)b.style.display=esSup?'inline-block':'none';
   });
   var bAcc=document.querySelector('#supDashboard button[onclick*="accesos"]');
-  if(bAcc)bAcc.style.display=esSup?'inline-block':'none';
+  if(bAcc)bAcc.style.display=esAdmin?'inline-block':'none';
   if(!esSup&&!document.getElementById('btnVolver')){
     var out=document.querySelector('#supDashboard button[onclick="doLogout()"]');
     if(out&&out.parentNode){
@@ -1587,7 +1583,7 @@ function renderSupDashboard(d){
     {icon:'&#9888;',label:'Jornadas incompletas',val:(res.jornadasIncompletas||0),color:(res.jornadasIncompletas>0?'#991B1B':'#065F46')},
   ];
   var rolV=(currentUser.role||'').toLowerCase();
-  if(rolV!=='supervisor')kpis=kpis.filter(function(k){
+  if(rolV!=='supervisor'&&rolV!=='master')kpis=kpis.filter(function(k){
     return ['Ingresos periodo','Logins fallidos','Sugerencias'].indexOf(k.label)<0;
   });
   document.getElementById('supKpis').innerHTML=kpis.map(function(k){
@@ -1611,7 +1607,8 @@ function renderSupDashboard(d){
 
   // Directores
   var dirs=d.directores||[];
-  if((currentUser.role||'').toLowerCase()!=='supervisor'){
+  var rolCard=(currentUser.role||'').toLowerCase();
+  if(rolCard!=='supervisor'&&rolCard!=='master'){
     var cardU=document.getElementById('supDirectores');
     if(cardU&&cardU.parentNode)cardU.parentNode.style.display='none';
     var cardA=document.getElementById('supAccTable');
@@ -2217,6 +2214,50 @@ function renderListaHorarios(){
   });
   el.innerHTML=h+'</tbody></table></div>';
 }
+
+// ── Frases de liderazgo ─────────────────────────────────────────────────────
+var FRASES_LIDER=[
+ 'El liderazgo no se trata de estar a cargo, sino de cuidar a quienes estan a tu cargo.',
+ 'Un equipo confia en lo que ve todos los dias, no en lo que se le promete una vez.',
+ 'Reconocer a tiempo cuesta poco y cambia mucho.',
+ 'La coherencia entre lo que se pide y lo que se hace es la base del respeto.',
+ 'Escuchar antes de decidir ahorra mas tiempo del que parece.',
+ 'El mejor indicador de un buen lider es el crecimiento de su gente.',
+ 'La claridad es una forma de respeto hacia el equipo.',
+ 'Lo que se mide mejora, lo que se acompana perdura.',
+ 'Un buen proceso libera tiempo para lo que si necesita criterio.',
+ 'La confianza se construye con decisiones consistentes, no con discursos.',
+ 'Acompanar al equipo en el detalle es lo que separa dirigir de liderar.',
+ 'Las personas no recuerdan cada instruccion, recuerdan como fueron tratadas.'
+];
+
+function fraseDelDia(){
+  var d=new Date();
+  var dia=Math.floor((d-new Date(d.getFullYear(),0,0))/86400000);
+  return FRASES_LIDER[(dia+d.getFullYear())%FRASES_LIDER.length];
+}
+
+function pintarFrase(){
+  var el=document.getElementById('topbarFrase');
+  if(el)el.textContent='"'+fraseDelDia()+'"';
+  var el2=document.getElementById('supFrase');
+  if(el2)el2.textContent='"'+fraseDelDia()+'"';
+}
+
+// ── Ir a solicitudes pendientes con un clic ─────────────────────────────────
+function irAPendientes(){
+  try{
+    var sup=document.getElementById('supDashboard');
+    if(sup&&sup.style.display!=='none'){
+      sup.style.display='none';
+      document.getElementById('dashboard').style.display='block';
+    }
+    if(typeof switchTab==='function')switchTab('pending');
+    var lista=document.getElementById('listPending');
+    if(lista&&lista.scrollIntoView)lista.scrollIntoView({behavior:'smooth',block:'start'});
+    else window.scrollTo({top:0,behavior:'smooth'});
+  }catch(e){console.error('irAPendientes:',e);}
+}
 </script>
 <div id="toast" style="display:none;position:fixed;bottom:24px;right:24px;background:#0A3D47;color:white;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.25)"></div>
 
@@ -2276,6 +2317,7 @@ function renderListaHorarios(){
     <div>
       <div style="color:white;font-size:14px;font-weight:700">Dashboard Supervisor</div>
       <div id="supFecha" style="color:rgba(255,255,255,.6);font-size:11px"></div>
+      <div id="supFrase" style="color:rgba(255,255,255,.55);font-size:11px;font-style:italic;margin-top:2px;max-width:560px"></div>
     </div>
     <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
       <button onclick="cargarSupData()" style="padding:7px 14px;border-radius:8px;border:none;background:rgba(255,255,255,.15);color:white;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer">&#8635; Actualizar</button>
