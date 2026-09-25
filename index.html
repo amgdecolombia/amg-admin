@@ -406,7 +406,7 @@ body{font-family:'Inter',sans-serif;background:var(--g50);min-height:100vh;}
 <script>var BUILD_VERSION='2026.09.16';
 
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzVvi7Kmlm08EFJKXlx2yUCvLgh4ZA_WV0JjrmQg5WwTKZ7BDJcRRcRhQoIyPE1IFdP/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxhyrjtcWR1cGHSOI4lBvRjR0ubEfG8Qf47lePPIOkb4eC-LRgnoKutGPC1bGAT5j8P/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -444,20 +444,16 @@ async function doLogin(){
     if(d.status==='ok'){
       var role=(d.role||'').toLowerCase().trim();
       currentUser={email:email,nombre:d.nombre||email,role:role};
-      if(role==='supervisor'){
-        btn.disabled=false;btn.textContent='Ingresar';
-        mostrarSupDashboard();
-        return;
-      }
+
       
       document.getElementById('loginWrap').style.display='none';
       document.getElementById('dashboard').style.display='block';
-      document.getElementById('topbarName').innerHTML=d.nombre+(role==='master'?'<span class="master-badge" style="display:inline-flex">MASTER</span>':'');
+      document.getElementById('topbarName').innerHTML=d.nombre+(role==='master'?'<span class="master-badge" style="display:inline-flex">MASTER</span>':(role==='supervisor'?'<span class="master-badge" style="display:inline-flex;background:#1E40AF">SUPERVISOR</span>':''));
       document.getElementById('topbarEmail').textContent=email;
       pintarFrase();
       var masterTabs=['tabNovedades','tabCorrecciones','tabAdmins','tabCalendario','tabEmpleados'];
       var directorTabs=[];
-      if(role==='master'){
+      if(role==='master'||role==='supervisor'){
         masterTabs.concat(directorTabs).forEach(function(id){
           var el=document.getElementById(id);
           if(el)el.style.display='block';
@@ -471,7 +467,7 @@ async function doLogin(){
       loadPending();
       cargarEmpCache();
       setTimeout(function(){loadHistory();},800);
-      if(role==='master'){
+      if(role==='master'||role==='supervisor'){
         var rb=document.getElementById('resetBtn');if(rb)rb.style.display='inline-block';
         var pb=document.getElementById('pilotoResetBtn');if(pb)pb.style.display='inline-block';
       var sb2=document.getElementById('sugBtn');if(sb2)sb2.style.display='block';
@@ -1514,7 +1510,7 @@ function mostrarSupDashboard(){
     if(b)b.style.display=esSup?'inline-block':'none';
   });
   var bAcc=document.querySelector('#supDashboard button[onclick*="accesos"]');
-  if(bAcc)bAcc.style.display=esAdmin?'inline-block':'none';
+  if(bAcc)bAcc.style.display=esSup?'inline-block':'none';
   if(!esSup&&!document.getElementById('btnVolver')){
     var out=document.querySelector('#supDashboard button[onclick="doLogout()"]');
     if(out&&out.parentNode){
@@ -1563,7 +1559,8 @@ async function cargarSupData(){
 
 function renderSupDashboard(d){
   var res=d.resumen||{};
-  document.getElementById('supFecha').textContent='Ultima actualizacion: '+d.fecha+'  .  Version '+BUILD_VERSION+'  .  Script ...'+SCRIPT_URL.slice(-8,-5);
+  var alc=((currentUser.role||'').toLowerCase()==='director')?'Alcance: tu equipo  .  ':'';
+  document.getElementById('supFecha').textContent=alc+'Ultima actualizacion: '+d.fecha+'  .  Version '+BUILD_VERSION+'  .  Script ...'+SCRIPT_URL.slice(-8,-5);
 
   // KPIs
   var kpis=[
@@ -1583,9 +1580,10 @@ function renderSupDashboard(d){
     {icon:'&#9888;',label:'Jornadas incompletas',val:(res.jornadasIncompletas||0),color:(res.jornadasIncompletas>0?'#991B1B':'#065F46')},
   ];
   var rolV=(currentUser.role||'').toLowerCase();
-  if(rolV!=='supervisor'&&rolV!=='master')kpis=kpis.filter(function(k){
-    return ['Ingresos periodo','Logins fallidos','Sugerencias'].indexOf(k.label)<0;
-  });
+  if(rolV!=='supervisor'){
+    var ocultar=(rolV==='master')?['Ingresos periodo','Logins fallidos']:['Ingresos periodo','Logins fallidos','Sugerencias'];
+    kpis=kpis.filter(function(k){ return ocultar.indexOf(k.label)<0; });
+  }
   document.getElementById('supKpis').innerHTML=kpis.map(function(k){
     return '<div style="background:white;border-radius:12px;padding:14px;border:1.5px solid #E5E7EB;text-align:center">'+
       '<div style="font-size:22px;margin-bottom:4px">'+k.icon+'</div>'+
@@ -1608,7 +1606,7 @@ function renderSupDashboard(d){
   // Directores
   var dirs=d.directores||[];
   var rolCard=(currentUser.role||'').toLowerCase();
-  if(rolCard!=='supervisor'&&rolCard!=='master'){
+  if(rolCard!=='supervisor'){
     var cardU=document.getElementById('supDirectores');
     if(cardU&&cardU.parentNode)cardU.parentNode.style.display='none';
     var cardA=document.getElementById('supAccTable');
@@ -1824,6 +1822,13 @@ function cambiarRango(){
 function renderSupAlertas(d){
   var el=document.getElementById('supAlertas');
   if(!el)return;
+  if((d.resumen||{}).sinEquipo){
+    el.innerHTML='<div style="background:#FFFBEB;border:1.5px solid #FDE68A;color:#92400E;border-radius:12px;padding:12px 14px;font-size:13px">'+
+      'Todavia no tienes colaboradores asignados, por eso el panel aparece vacio. '+
+      'Pidele a Gestion Humana que complete la columna Director Asignado con tu correo, '+
+      'o el panel se ira poblando solo a medida que tu equipo te envie solicitudes.</div>';
+    return;
+  }
   var al=d.alertasUso||[];
   if(!al.length){
     el.innerHTML='<div style="background:#ECFDF5;border:1.5px solid #A7F3D0;color:#065F46;border-radius:12px;padding:12px 14px;font-size:13px;font-weight:600">&#10003; Todo en orden. No hay alertas de uso en este periodo.</div>';
@@ -1919,6 +1924,17 @@ function exportarCSV(tipo){
     (_supData.directores||[]).forEach(function(u){
       filas.push([u.nombre,u.email,(u.rol||'').toUpperCase(),u.activo||'Si',u.decisiones,u.decisionesMes,
                   u.pendientes,u.accesos||0,u.ultimoAcceso,(u.diasSinEntrar===null?'':u.diasSinEntrar)]);
+    });
+  } else if(tipo==='horarios'){
+    titulo='Horario programado vs real';
+    cols=['Fecha','Dia','Empleado','Correo','Entrada prog.','Entrada real','Dif. entrada (min)','Salida prog.','Salida real','Dif. salida (min)','Horas prog.','Horas reales','Dif. horas (min)'];
+    anchos=[80,80,200,210,90,90,110,90,90,110,85,85,105];
+    function hm(m){ if(m===null||m===undefined)return ''; var h2=Math.floor(m/60),mm=m%60; return h2+'h'+(mm?' '+mm+'m':''); }
+    (_supData.cumplimiento||[]).forEach(function(r){
+      filas.push([r.fecha,r.dia,r.nombre,r.correo,r.progEnt||'',r.realEnt||'',
+                  (r.difEnt===null?'':r.difEnt),r.progSal||'',r.realSal||'',
+                  (r.difSal===null?'':r.difSal),hm(r.horasProg),hm(r.horasReal),
+                  (r.difHoras===null?'':r.difHoras)]);
     });
   } else if(tipo==='empleados'){
     titulo='Marcajes por empleado';
@@ -2046,14 +2062,33 @@ function renderSupCumplimiento(){
       '<b style="color:#1E40AF">'+(rc.temprano||0)+'</b> ingresaron antes &#183; '+
       '<b style="color:#92400E">'+(rc.salidaAntes||0)+'</b> salieron antes'+
       ((rc.sinHorario||0)>0?' &#183; <span style="color:#9CA3AF">'+rc.sinHorario+' jornadas sin horario cargado</span>':'');
+    var totR=(rc.minutosReales||0)+(rc.minutosRealesSinHorario||0);
+    if(totR>0){
+      var tp=rc.minutosProg||0;
+      res.innerHTML+='<div style="margin-top:6px">Horas trabajadas en el periodo: <b style="color:#0A3D47">'+
+        Math.floor(totR/60)+'h '+(totR%60)+'m</b>'+
+        (tp>0?' &#183; programadas: <b style="color:#6B7280">'+Math.floor(tp/60)+'h '+(tp%60)+'m</b>':'')+'</div>';
+    }
 
     if(!vis.length){tbl.innerHTML='<tbody><tr><td style="padding:16px;color:#9CA3AF;font-size:13px">Sin jornadas para mostrar. Define horarios con el boton Horarios.</td></tr></tbody>';return;}
 
     var h='<thead><tr style="background:#F8FAFC;position:sticky;top:0">';
-    ['Fecha','Dia','Empleado','Entrada prog.','Entrada real','Dif.','Salida prog.','Salida real','Dif.'].forEach(function(t){
+    ['Fecha','Dia','Empleado','Entrada prog.','Entrada real','Dif.','Salida prog.','Salida real','Dif.','Horas prog.','Horas reales','Dif. horas'].forEach(function(t){
       h+='<th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;border-bottom:1px solid #E5E7EB;white-space:nowrap">'+t+'</th>';
     });
     h+='</tr></thead><tbody>';
+    function hrs(m){
+      if(m===null||m===undefined)return '<span style="color:#D1D5DB">-</span>';
+      var h2=Math.floor(m/60), mm=m%60;
+      return h2+'h'+(mm?' '+mm+'m':'');
+    }
+    function difH(d){
+      if(d===null||d===undefined)return '<span style="color:#D1D5DB">-</span>';
+      if(Math.abs(d)<=10)return '<span style="color:#065F46;font-weight:700">Completa</span>';
+      var c=d>0?'#1E40AF':'#92400E';
+      var h2=Math.floor(Math.abs(d)/60), mm=Math.abs(d)%60;
+      return '<span style="color:'+c+';font-weight:700">'+(d>0?'+':'-')+h2+'h'+(mm?' '+mm+'m':'')+'</span>';
+    }
     function dif(d){
       if(d===null||d===undefined)return '<span style="color:#D1D5DB">-</span>';
       if(Math.abs(d)<=10)return '<span style="color:#065F46;font-weight:700">En horario</span>';
@@ -2071,6 +2106,9 @@ function renderSupCumplimiento(){
       h+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;font-family:monospace;font-size:11px">'+(r.progSal||'-')+'</td>';
       h+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;font-family:monospace;font-size:11px;font-weight:700">'+(r.realSal||'-')+'</td>';
       h+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;font-size:11px">'+dif(r.difSal)+'</td>';
+      h+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;font-family:monospace;font-size:11px">'+hrs(r.horasProg)+'</td>';
+      h+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;font-family:monospace;font-size:11px;font-weight:700">'+hrs(r.horasReal)+'</td>';
+      h+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;font-size:11px">'+difH(r.difHoras)+'</td>';
       h+='</tr>';
     });
     tbl.innerHTML=h+'</tbody>';
@@ -2349,6 +2387,7 @@ function irAPendientes(){
         <span style="font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.4px">Descargar Excel</span>
         <button onclick="exportarCSV('marcajes')" style="padding:7px 12px;border-radius:9px;border:1.5px solid #BFDBFE;background:#EFF6FF;color:#1E40AF;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Marcajes</button>
         <button onclick="exportarCSV('usuarios')" style="padding:7px 12px;border-radius:9px;border:1.5px solid #BFDBFE;background:#EFF6FF;color:#1E40AF;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Usuarios</button>
+        <button onclick="exportarCSV('horarios')" style="padding:7px 12px;border-radius:9px;border:1.5px solid #BFDBFE;background:#EFF6FF;color:#1E40AF;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Horarios</button>
         <button onclick="exportarCSV('empleados')" style="padding:7px 12px;border-radius:9px;border:1.5px solid #BFDBFE;background:#EFF6FF;color:#1E40AF;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Empleados</button>
         <button onclick="exportarCSV('accesos')" style="padding:7px 12px;border-radius:9px;border:1.5px solid #BFDBFE;background:#EFF6FF;color:#1E40AF;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Accesos</button>
         <button onclick="reconstruirAccesos()" style="padding:7px 12px;border-radius:9px;border:1.5px solid #E5E7EB;background:white;color:#374151;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Reconstruir historial</button>
