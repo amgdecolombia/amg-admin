@@ -289,8 +289,8 @@ input:focus,select:focus,textarea:focus{
       <button class="tab active" data-tab="pending" onclick="switchTab('pending')">Pendientes</button>
       <button class="tab" data-tab="stats" onclick="switchTab('stats')">Dashboard</button>
       <button class="tab" data-tab="history" onclick="switchTab('history')">Historial</button>
-<button class="tab" id="tabReporte" onclick="switchTab('reporte')" style="display:none;background:#ECFDF5;border-color:#A7F3D0;color:#065F46;font-weight:700">Reporte ejecutivo</button>
-        <button class="tab" id="tabPendCierre" onclick="switchTab('pendcierre')" style="background:#FFFBEB;border-color:#FDE68A;color:#92400E;font-weight:700">Pendientes de cierre <span id="badgePendCierre" style="display:none;background:#991B1B;color:#fff;border-radius:99px;padding:1px 7px;font-size:10px;margin-left:4px"></span></button>
+<button class="tab" id="tabReporte" data-tab="reporte" onclick="switchTab('reporte')" style="display:none;background:#ECFDF5;border-color:#A7F3D0;color:#065F46;font-weight:700">Reporte ejecutivo</button>
+        <button class="tab" id="tabPendCierre" data-tab="pendcierre" onclick="switchTab('pendcierre')" style="background:#FFFBEB;border-color:#FDE68A;color:#92400E;font-weight:700">Pendientes de cierre <span id="badgePendCierre" style="display:none;background:#991B1B;color:#fff;border-radius:99px;padding:1px 7px;font-size:10px;margin-left:4px"></span></button>
         <button class="tab" id="tabSeguimiento" onclick="mostrarSupDashboard()" style="background:#FFFBEB;border-color:#FDE68A;color:#92400E;font-weight:700">Seguimiento y horarios</button>
       <button class="tab" data-tab="calendario" id="tabCalendario" onclick="switchTab('calendario')" style="display:none">Calendario</button>
       <button class="tab" data-tab="novedades" id="tabNovedades" onclick="switchTab('novedades')" style="display:none">Novedades Empresa</button>
@@ -753,11 +753,14 @@ function showToast(msg){
 
 var ALL_TABS=['pending','stats','history','calendario','novedades','correcciones','empleados','admins'];
 function switchTab(t){
+  try{
   document.querySelectorAll('.tab').forEach(function(b){b.classList.remove('active');});
   document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
-  document.querySelector('.tab[data-tab="'+t+'"]').classList.add('active');
+  var btnTab=document.querySelector('.tab[data-tab="'+t+'"]');
+  if(btnTab)btnTab.classList.add('active');
   if(t==='emp'){var ec=document.getElementById('empContent');if(ec&&ec.innerHTML.trim()==='')loadEmpleados();}
-  document.getElementById('panel-'+t).classList.add('active');
+  var pnl=document.getElementById('panel-'+t);
+  if(pnl)pnl.classList.add('active');
   if(t==='calendario')loadCalendar();
   if(t==='pendcierre')cargarPendientesCierre();
   if(t==='reporte')cargarReporte();
@@ -765,6 +768,7 @@ function switchTab(t){
   if(t==='novedades')loadNovedades();
   if(t==='correcciones')loadCorrecciones();
   if(t==='stats')loadStats();
+  }catch(e){console.error('switchTab:',e);}
 }
 
 async function loadPending(){
