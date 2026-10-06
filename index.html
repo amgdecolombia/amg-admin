@@ -584,7 +584,7 @@ function fetchConTiempo(url, ms){
 var BUILD_VERSION='2026.09.16';
 
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyAKAG3p_kVmQ1Louto4T5Q7tdW_Xk6nnbc81DLY0D55cjFRoLQh2SZwMe4mSN47Bty/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyFFfSLH_hp7wnZ0kFwnHKSeONUlD4ulXf4okGWJ6-aCb49xwrkP0_o8_MPBnSZYyU6/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -2373,6 +2373,15 @@ async function abrirHorarios(){
         '<select id="horEmp" onchange="cargarHorarioEmp()" style="flex:1;min-width:240px;padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:13px;outline:none;background:white"><option value="">Selecciona un empleado...</option></select>'+
         '<button onclick="aplicarLunesViernes()" style="padding:9px 14px;border-radius:9px;border:1.5px solid #E5E7EB;background:white;color:#374151;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Copiar lunes a viernes</button>'+
       '</div>'+
+      '<div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;background:#F8FAFB;border:1.5px solid #E5E7EB;border-radius:10px;padding:10px 12px">'+
+        '<span style="font-size:11px;font-weight:700;color:#374151">Aplicar a:</span>'+
+        '<select id="horAlcance" onchange="cambioAlcanceHorario()" style="padding:8px 11px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:12px;outline:none;background:white">'+
+          '<option value="base">Horario habitual (todas las semanas)</option>'+
+          '<option value="semana">Solo una semana especifica</option>'+
+        '</select>'+
+        '<input id="horSemana" type="date" style="display:none;padding:7px 10px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:12px;outline:none">'+
+        '<span id="horSemanaTxt" style="font-size:11px;color:#6B7280"></span>'+
+      '</div>'+
       '<div id="horGrid" style="display:grid;gap:8px"></div>'+
       '<div id="horMsg" style="display:none;margin-top:10px;padding:8px 12px;border-radius:8px;font-size:12px"></div>'+
       '<button onclick="guardarHorario()" style="margin-top:14px;padding:10px 20px;border-radius:9px;border:none;background:#0A3D47;color:white;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer">Guardar horario</button>'+
@@ -2437,7 +2446,12 @@ function cargarHorarioEmp(){
   var em=document.getElementById('horEmp').value;
   for(var i=0;i<7;i++){limpiarDia(i);}
   if(!em||!_horData)return;
-  var h=(_horData.horarios||[]).filter(function(x){return x.email===em;})[0];
+  var alcSel=(document.getElementById('horAlcance')||{}).value||'base';
+  var semSel=(alcSel==='semana')?lunesDe((document.getElementById('horSemana')||{}).value||''):'';
+  var h=(_horData.horarios||[]).filter(function(x){
+    return x.email===em && (safeSem(x.semana)===semSel);
+  })[0];
+  if(!h&&semSel)h=(_horData.horarios||[]).filter(function(x){return x.email===em&&!safeSem(x.semana);})[0];
   if(!h)return;
   h.dias.forEach(function(d,i){
     if(d.e)document.getElementById('horE'+i).value=d.e;
@@ -2460,7 +2474,9 @@ async function guardarHorario(){
   try{
     var d = await pedirDatos(SCRIPT_URL+'?action=saveHorario&email='+encodeURIComponent(currentUser.email)+
       '&empEmail='+encodeURIComponent(em)+'&empNombre='+encodeURIComponent(nom)+
-      '&horas='+encodeURIComponent(vals.join('|'))+'&t='+Date.now());
+      '&horas='+encodeURIComponent(vals.join('|'))+
+      '&semana='+encodeURIComponent(((document.getElementById('horAlcance')||{}).value==='semana')?lunesDe((document.getElementById('horSemana')||{}).value||''):'')+
+      '&t='+Date.now());
     msg.textContent=d.status==='ok'?d.msg:'Error: '+(d.msg||'');
     msg.style.background=d.status==='ok'?'#ECFDF5':'#FEF2F2';
     msg.style.color=d.status==='ok'?'#065F46':'#991B1B';
@@ -2625,7 +2641,9 @@ function renderPendientesCierre(){
     h+='<td style="padding:8px 10px;border-bottom:1px solid #FEF3C7">'+(vencida
        ? '<span style="background:#FEF2F2;color:#991B1B;border-radius:99px;padding:2px 9px;font-size:10px;font-weight:800">VENCIDA</span>'
        : '<span style="background:#ECFDF5;color:#065F46;border-radius:99px;padding:2px 9px;font-size:10px;font-weight:800">EN PLAZO</span>')+'</td>';
-    h+='<td style="padding:8px 10px;border-bottom:1px solid #FEF3C7"><button onclick="notificarPendiente(window._pendMap[\'p'+ix+'\'])" style="padding:4px 11px;border-radius:7px;border:1.5px solid #FDE68A;background:#FFFBEB;color:#92400E;font-family:inherit;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">Notificar</button></td>';
+    h+='<td style="padding:8px 10px;border-bottom:1px solid #FEF3C7;white-space:nowrap">'+
+       '<button onclick="completarJornada(window._pendMap[\'p'+ix+'\'])" style="padding:4px 11px;border-radius:7px;border:none;background:#065F46;color:#fff;font-family:inherit;font-size:10px;font-weight:700;cursor:pointer;margin-right:4px">Completar</button>'+
+       '<button onclick="notificarPendiente(window._pendMap[\'p'+ix+'\'])" style="padding:4px 11px;border-radius:7px;border:1.5px solid #FDE68A;background:#FFFBEB;color:#92400E;font-family:inherit;font-size:10px;font-weight:700;cursor:pointer">Notificar</button></td>';
     h+='</tr>';
   });
   el.innerHTML=h+'</tbody></table></div>';
@@ -3183,6 +3201,68 @@ function pdfReporteOperativo(tipo){
   w.document.write(html); w.document.close();
   setTimeout(function(){ try{ w.focus(); }catch(e){} },400);
 }
+
+// ── Completar jornada manualmente ───────────────────────────────────────────
+async function completarJornada(r){
+  if(!r)return;
+  var sug = (r.falta==='Salida')
+    ? (r.progSalida||'17:00')
+    : (r.progEntrada||'07:00');
+  var hora=prompt(
+    'Completar jornada de '+r.nombre+'\n'+
+    'Fecha: '+r.fecha+' ('+(r.diaSemana||'')+')\n'+
+    (r.horaEntrada?'Entrada registrada: '+r.horaEntrada+'\n':'')+
+    (r.horaSalida?'Salida registrada: '+r.horaSalida+'\n':'')+
+    ((r.progEntrada||r.progSalida)?'Horario programado: '+(r.progEntrada||'--')+' a '+(r.progSalida||'--')+'\n':'')+
+    '\nIndica la hora real de la '+r.falta.toLowerCase()+' en formato HH:MM',
+    sug);
+  if(!hora)return;
+  if(!/^\d{1,2}:\d{2}$/.test(hora.trim())){alert('Formato invalido. Usa HH:MM, por ejemplo 17:30.');return;}
+  var motivo=prompt('Motivo del registro manual (queda en la trazabilidad):','El colaborador no alcanzo a marcar');
+  if(motivo===null)return;
+  try{
+    var d=await pedirDatos(SCRIPT_URL+'?action=cerrarJornadaManual&email='+encodeURIComponent(currentUser.email)+
+      '&empEmail='+encodeURIComponent(r.correo)+'&fecha='+encodeURIComponent(r.fecha)+
+      '&hora='+encodeURIComponent(hora.trim())+'&tipo='+encodeURIComponent(r.falta)+
+      '&motivo='+encodeURIComponent(motivo));
+    if(d.status==='ok'){
+      showToast(d.msg||'Jornada completada.');
+      await cargarPendientesCierre();
+      cargarSupData();
+    } else showToast(d.msg||'No se pudo completar la jornada.');
+  }catch(e){ showToast('No se pudo completar la jornada.'); }
+}
+
+function lunesDe(fechaStr){
+  if(!fechaStr)return '';
+  var p=fechaStr.split('-');
+  var d=new Date(parseInt(p[0],10),parseInt(p[1],10)-1,parseInt(p[2],10));
+  d.setDate(d.getDate()-((d.getDay()+6)%7));
+  var mm=('0'+(d.getMonth()+1)).slice(-2), dd=('0'+d.getDate()).slice(-2);
+  return d.getFullYear()+'-'+mm+'-'+dd;
+}
+
+function cambioAlcanceHorario(){
+  var alc=(document.getElementById('horAlcance')||{}).value||'base';
+  var inp=document.getElementById('horSemana');
+  var txt=document.getElementById('horSemanaTxt');
+  if(!inp)return;
+  if(alc==='semana'){
+    inp.style.display='inline-block';
+    if(!inp.value){
+      var hoy=new Date();
+      inp.value=hoy.getFullYear()+'-'+('0'+(hoy.getMonth()+1)).slice(-2)+'-'+('0'+hoy.getDate()).slice(-2);
+    }
+    inp.onchange=function(){ if(txt)txt.textContent='Semana del '+lunesDe(inp.value); };
+    if(txt)txt.textContent='Semana del '+lunesDe(inp.value);
+  } else {
+    inp.style.display='none';
+    if(txt)txt.textContent='Se aplica a todas las semanas salvo que cargues una excepcion.';
+  }
+  cargarHorarioEmp();
+}
+
+function safeSem(v){ return (v===null||v===undefined)?'':String(v).trim(); }
 </script>
 <div id="toast" style="display:none;position:fixed;bottom:24px;right:24px;background:#0A3D47;color:white;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.25)"></div>
 
