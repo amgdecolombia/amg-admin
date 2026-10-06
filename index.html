@@ -584,7 +584,7 @@ function fetchConTiempo(url, ms){
 var BUILD_VERSION='2026.09.16';
 
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyFFfSLH_hp7wnZ0kFwnHKSeONUlD4ulXf4okGWJ6-aCb49xwrkP0_o8_MPBnSZYyU6/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxho2iEDGn-mMKraVlso3KpX3eMK-uIioN9pNk_qCpC50-Mxsw554BQcXFCLJJ86qRG/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -2700,10 +2700,14 @@ function renderReporte(d){
   var el=document.getElementById('reporteBody');
   if(!el)return;
   var a=d.adopcion||{}, o=d.operacion||{}, s=d.solicitudes||{}, inc=d.incidencias||{};
+  var avisoAcc = inc.registroDisponible ? '' :
+    '<div style="background:#FFFBEB;border:1.5px solid #FDE68A;color:#92400E;border-radius:12px;padding:12px 14px;font-size:12px;margin-bottom:14px">'+
+    'El registro de accesos aun no tiene datos. Se empieza a llenar con cada ingreso al panel desde que se activo esta funcion. '+
+    'Para recuperar historico de quienes ya venian usando la herramienta, usa el boton Reconstruir historial en el panel de seguimiento.</div>';
   var colAd=a.porcentaje>=80?'#065F46':(a.porcentaje>=50?'#92400E':'#991B1B');
   var colCu=o.cumplimiento>=90?'#065F46':(o.cumplimiento>=70?'#92400E':'#991B1B');
 
-  var h='<div style="background:white;border-radius:14px;border:1.5px solid #E5E7EB;padding:16px;margin-bottom:14px">'+
+  var h=avisoAcc+'<div style="background:white;border-radius:14px;border:1.5px solid #E5E7EB;padding:16px;margin-bottom:14px">'+
     '<div style="font-size:15px;font-weight:800;color:#0A3D47">Reporte de uso y cumplimiento</div>'+
     '<div style="font-size:12px;color:#6B7280;margin-top:3px">Periodo del '+d.periodo.desde+' al '+d.periodo.hasta+'</div></div>';
 
@@ -2744,6 +2748,58 @@ function renderReporte(d){
   });
   h+='</tbody></table></div></div>';
 
+  // Uso de la herramienta por usuario
+  h+='<div style="background:white;border-radius:14px;border:1.5px solid #E5E7EB;overflow:hidden;margin-bottom:14px">'+
+    '<div style="padding:12px 16px;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;gap:10px;flex-wrap:wrap">'+
+      '<div style="font-size:12px;font-weight:700;color:#0A3D47">Uso de la herramienta por usuario</div>'+
+      ((d.incidencias||{}).registroDisponible
+        ? '<span style="font-size:10px;color:#9CA3AF">'+((d.incidencias||{}).registrosHistoricos||0)+' ingresos registrados en total</span>'
+        : '<span style="font-size:10px;color:#92400E;background:#FFFBEB;border-radius:99px;padding:2px 9px;font-weight:700">Registro de accesos aun sin datos</span>')+
+    '</div>'+
+    '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:#F8FAFC">';
+  ['Usuario','Rol','Ingresos periodo','Dias con uso','Total historico','Primer ingreso','Ultimo ingreso','Dias sin entrar','Fallidos'].forEach(function(t){
+    h+='<th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;border-bottom:1px solid #E5E7EB;white-space:nowrap">'+t+'</th>';
+  });
+  h+='</tr></thead><tbody>';
+  (d.uso||[]).forEach(function(u){
+    var nunca=(u.ultimoIngreso==='Nunca ha ingresado');
+    var inactivo=(u.diasSinEntrar!==null&&u.diasSinEntrar>=7);
+    h+='<tr style="'+(nunca?'background:#FEF2F2':'')+'">';
+    h+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6"><div style="font-weight:600">'+u.nombre+'</div><div style="font-size:10px;color:#9CA3AF">'+u.email+'</div></td>';
+    h+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;font-size:11px;color:#6B7280">'+(u.rol==='master'?'Gestion Humana':(u.rol==='supervisor'?'Supervisor':'Director'))+'</td>';
+    h+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;text-align:center;font-weight:700;color:'+(u.ingresosPeriodo>0?'#065F46':'#991B1B')+'">'+u.ingresosPeriodo+'</td>';
+    h+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;text-align:center">'+(u.diasConUso||0)+'</td>';
+    h+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;text-align:center;color:#6B7280">'+(u.ingresosHistorico||0)+(u.inferidos?' <span style="font-size:9px;color:#9CA3AF">('+u.inferidos+' inferidos)</span>':'')+'</td>';
+    h+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;font-family:monospace;font-size:10px;white-space:nowrap">'+u.primerIngreso+'</td>';
+    h+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;font-family:monospace;font-size:10px;white-space:nowrap;color:'+(nunca?'#991B1B':'#1B2A32')+';font-weight:'+(nunca?'700':'400')+'">'+u.ultimoIngreso+'</td>';
+    h+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;text-align:center;font-weight:700;color:'+(nunca||inactivo?'#991B1B':'#065F46')+'">'+(u.diasSinEntrar===null?'-':u.diasSinEntrar)+'</td>';
+    h+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;text-align:center;color:'+(u.fallidosPeriodo>0?'#92400E':'#9CA3AF')+'">'+(u.fallidosPeriodo||0)+'</td>';
+    h+='</tr>';
+  });
+  h+='</tbody></table></div></div>';
+
+  // Bitacora de ingresos
+  if((d.bitacora||[]).length){
+    h+='<div style="background:white;border-radius:14px;border:1.5px solid #E5E7EB;overflow:hidden;margin-bottom:14px">'+
+      '<div style="padding:12px 16px;border-bottom:1px solid #E5E7EB;font-size:12px;font-weight:700;color:#0A3D47">Bitacora de ingresos del periodo ('+d.bitacora.length+')</div>'+
+      '<div style="overflow-x:auto;max-height:320px"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:#F8FAFC;position:sticky;top:0">';
+    ['Fecha y hora','Usuario','Nombre','Rol','Resultado'].forEach(function(t){
+      h+='<th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;border-bottom:1px solid #E5E7EB;white-space:nowrap">'+t+'</th>';
+    });
+    h+='</tr></thead><tbody>';
+    d.bitacora.forEach(function(b){
+      var falla=(b.resultado==='Fallido');
+      h+='<tr style="'+(falla?'background:#FEF2F2':'')+'">'+
+        '<td style="padding:7px 10px;border-bottom:1px solid #F3F4F6;font-family:monospace;font-size:11px;white-space:nowrap">'+b.fecha+'</td>'+
+        '<td style="padding:7px 10px;border-bottom:1px solid #F3F4F6;font-size:11px">'+b.usuario+'</td>'+
+        '<td style="padding:7px 10px;border-bottom:1px solid #F3F4F6;font-size:11px;font-weight:600">'+b.nombre+'</td>'+
+        '<td style="padding:7px 10px;border-bottom:1px solid #F3F4F6;font-size:11px;color:#6B7280">'+(b.rol||'-')+'</td>'+
+        '<td style="padding:7px 10px;border-bottom:1px solid #F3F4F6"><span style="font-size:10px;font-weight:700;color:'+(falla?'#991B1B':(b.resultado==='Inferido'?'#6B7280':'#065F46'))+'">'+b.resultado+'</span></td>'+
+      '</tr>';
+    });
+    h+='</tbody></table></div></div>';
+  }
+
   // Lectura del periodo
   h+='<div style="background:white;border-radius:14px;border:1.5px solid #E5E7EB;padding:16px">'+
      '<div style="font-size:12px;font-weight:700;color:#0A3D47;margin-bottom:8px">Lectura del periodo</div>'+
@@ -2764,6 +2820,8 @@ function textoReporte(d){
   } else {
     p.push('No quedaron solicitudes con mas de tres dias sin resolver, lo que indica un flujo de aprobacion al dia.');
   }
+  var sinUso=(d.uso||[]).filter(function(u){return u.ingresosPeriodo===0;});
+  if(sinUso.length)p.push('Durante el periodo, '+sinUso.length+' usuario(s) del sistema no registraron ningun ingreso: '+sinUso.map(function(u){return u.nombre;}).join(', ')+'.');
   if(inc.alertasDispositivo>0)p.push('Se detectaron '+inc.alertasDispositivo+' marcajes con alerta de dispositivo, que cuentan con evidencia fotografica y quedaron notificados a Gestion Humana.');
   else p.push('No se detectaron marcajes con alerta de dispositivo en el periodo.');
   return p.map(function(x){return '<div style="margin-bottom:7px">'+x+'</div>';}).join('');
@@ -2823,6 +2881,16 @@ function exportarReporte(){
                 (u.tasaRespuesta===null?'':u.tasaRespuesta),(u.horasPromedio===null?'':u.horasPromedio),
                 u.pendientes,u.pendMasDe3]);
   });
+  filas.push(['','']);
+  filas.push(['Usuario','Rol','Ingresos periodo','Dias con uso','Total historico','Primer ingreso','Ultimo ingreso','Dias sin entrar','Fallidos']);
+  (d.uso||[]).forEach(function(u){
+    filas.push([u.nombre,(u.rol==='master'?'Gestion Humana':(u.rol==='supervisor'?'Supervisor':'Director')),
+                u.ingresosPeriodo,u.diasConUso||0,u.ingresosHistorico||0,u.primerIngreso,
+                u.ultimoIngreso,(u.diasSinEntrar===null?'':u.diasSinEntrar),u.fallidosPeriodo||0]);
+  });
+  filas.push(['','']);
+  filas.push(['Fecha y hora','Usuario','Nombre','Rol','Resultado']);
+  (d.bitacora||[]).forEach(function(b){ filas.push([b.fecha,b.usuario,b.nombre,b.rol||'',b.resultado]); });
 
   var h='<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"><style>'+
     'table{border-collapse:collapse;font-family:Calibri,Arial,sans-serif;font-size:11pt}'+
@@ -2891,6 +2959,21 @@ function generarPDFReporte(){
   });
   if(!filasSla)filasSla='<tr><td colspan="7" style="padding:14px;color:#8A959C;text-align:center">Sin solicitudes en el periodo</td></tr>';
 
+  var filasUso='';
+  (d.uso||[]).forEach(function(u,ix){
+    var nunca=(u.ultimoIngreso==='Nunca ha ingresado');
+    var alerta=nunca||(u.diasSinEntrar!==null&&u.diasSinEntrar>=7);
+    filasUso+='<tr style="background:'+(nunca?'#FDF2F2':(ix%2?'#F8FAFB':'#FFFFFF'))+'">'+
+      '<td style="padding:7px 9px;border-bottom:1px solid #EEF2F4"><b>'+u.nombre+'</b><div style="font-size:8px;color:#9AA5AC">'+(u.rol==='master'?'Gestion Humana':(u.rol==='supervisor'?'Supervisor':'Director'))+'</div></td>'+
+      '<td style="padding:7px 9px;border-bottom:1px solid #EEF2F4;text-align:center;font-weight:700;color:'+(u.ingresosPeriodo>0?'#065F46':'#B91C1C')+'">'+u.ingresosPeriodo+'</td>'+
+      '<td style="padding:7px 9px;border-bottom:1px solid #EEF2F4;text-align:center">'+(u.diasConUso||0)+'</td>'+
+      '<td style="padding:7px 9px;border-bottom:1px solid #EEF2F4;text-align:center;color:#6B7280">'+(u.ingresosHistorico||0)+'</td>'+
+      '<td style="padding:7px 9px;border-bottom:1px solid #EEF2F4;font-size:9px'+(nunca?';color:#B91C1C;font-weight:700':'')+'">'+u.ultimoIngreso+'</td>'+
+      '<td style="padding:7px 9px;border-bottom:1px solid #EEF2F4;text-align:center;font-weight:700;color:'+(alerta?'#B91C1C':'#065F46')+'">'+(u.diasSinEntrar===null?'-':u.diasSinEntrar)+'</td>'+
+    '</tr>';
+  });
+  if(!filasUso)filasUso='<tr><td colspan="6" style="padding:14px;color:#8A959C;text-align:center">Sin registros de ingreso</td></tr>';
+
   var narrativa=textoReporte(d).replace(/margin-bottom:7px/g,'margin-bottom:9px;font-size:11px;color:#3C4A52;line-height:1.65');
 
   var html='<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">'+
@@ -2940,6 +3023,13 @@ function generarPDFReporte(){
     filasSla+
   '</table>'+
 
+  '<div class="sec">Uso de la herramienta por usuario</div>'+
+  '<table style="border:1px solid #E3E8EB">'+
+    '<tr><th class="th">Usuario</th><th class="th" style="text-align:center">Ingresos</th>'+
+    '<th class="th" style="text-align:center">Dias con uso</th><th class="th" style="text-align:center">Historico</th>'+
+    '<th class="th">Ultimo ingreso</th><th class="th" style="text-align:center">Dias sin entrar</th></tr>'+
+    filasUso+
+  '</table>'+
   '<div class="sec">Lectura del periodo</div>'+
   '<div class="note">'+narrativa+'</div>'+
 
