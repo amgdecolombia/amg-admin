@@ -588,7 +588,7 @@ function fetchConTiempo(url, ms){
 var BUILD_VERSION='2026.09.16';
 
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbznDr4Nc0H6dXMMlfAE17VwqR7UPkzZb1g-aafkjxThELV5KbcdeYMS6pEGnzUWDOht/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxWOyYEXtGYmy-GPC3Dc6P6qd7UFccbaU63YFRRjAyFSwlOk_tRO309jS3g4AqbRqAN/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -3657,11 +3657,13 @@ function renderCronograma(){
   var emps=_cron.empleados||[];
   if(!emps.length){g.innerHTML='<div style="padding:1rem;color:#9CA3AF">No tienes personas asignadas. Usa Mi equipo o Apoyo temporal.</div>';return;}
 
+  var totEquipo=0, completos=0;
+  emps.forEach(function(e){ var t=totalHorasEmpleado(e.email); totEquipo+=t; if(t===META_SEMANAL)completos++; });
   var opciones=(_cron.catalogo||[]).map(function(c){return c.codigo;});
-  var h='<table style="width:100%;border-collapse:separate;border-spacing:3px;min-width:760px">';
+  var h='<table style="width:100%;border-collapse:separate;border-spacing:3px;min-width:700px">';
   h+='<tr><th style="text-align:left;font-size:10px;color:#6B7280;text-transform:uppercase;padding:4px 8px">Colaborador</th>';
   dias.forEach(function(d){h+='<th style="font-size:11px;color:#374151;font-weight:800;width:11%">'+d+'</th>';});
-  h+='<th style="font-size:10px;color:#6B7280;text-transform:uppercase;width:9%">Horas</th></tr>';
+  h+='<th style="font-size:10px;color:#FFFFFF;text-transform:uppercase;width:76px;position:sticky;right:0;background:#0A3D47;border-radius:6px">Horas</th></tr>';
   emps.forEach(function(e){
     h+='<tr><td style="padding:4px 8px;font-size:12px;font-weight:600;color:#1B2A32;white-space:nowrap">'+e.nombre+
        (e.temporal?' <span style="background:#FFFBEB;color:#92400E;border-radius:99px;padding:1px 7px;font-size:9px;font-weight:800">TEMPORAL</span>':'')+'</td>';
@@ -3678,22 +3680,43 @@ function renderCronograma(){
     var tot=totalHorasEmpleado(e.email);
     var dif=tot-META_SEMANAL;
     var colT=(tot===0)?'#9CA3AF':(dif===0?'#065F46':(Math.abs(dif)<=2?'#92400E':'#991B1B'));
-    h+='<td style="text-align:center;padding:2px">'+
+    h+='<td style="text-align:center;padding:2px;position:sticky;right:0;background:#FFFFFF">'+
        '<div style="border:1.5px solid '+(dif===0?'#A7F3D0':(tot===0?'#E5E7EB':'#FDE68A'))+';border-radius:7px;padding:5px 3px;background:'+(dif===0?'#ECFDF5':(tot===0?'#FFFFFF':'#FFFBEB'))+'">'+
        '<div style="font-size:14px;font-weight:800;color:'+colT+'">'+tot+'h</div>'+
        '<div style="font-size:8.5px;color:'+colT+';font-weight:700">'+(tot===0?'sin asignar':(dif===0?'exacto':(dif>0?'+'+dif+'h':dif+'h')))+'</div>'+
        '</div></td>';
     h+='</tr>';
   });
-  var totEquipo=0, completos=0;
-  emps.forEach(function(e){ var t=totalHorasEmpleado(e.email); totEquipo+=t; if(t===META_SEMANAL)completos++; });
   h+='<tr><td style="padding:7px 8px;font-size:11px;font-weight:800;color:#0A3D47">Total del equipo</td>'+
      '<td colspan="7" style="padding:7px 8px;font-size:11px;color:#6B7280">'+
        completos+' de '+emps.length+' colaboradores con las '+META_SEMANAL+' horas exactas</td>'+
-     '<td style="text-align:center;padding:2px"><div style="border:1.5px solid #0A3D47;border-radius:7px;padding:5px 3px;background:#0A3D47">'+
+     '<td style="text-align:center;padding:2px;position:sticky;right:0;background:#FFFFFF"><div style="border:1.5px solid #0A3D47;border-radius:7px;padding:5px 3px;background:#0A3D47">'+
        '<div style="font-size:14px;font-weight:800;color:#FFFFFF">'+totEquipo+'h</div>'+
        '<div style="font-size:8.5px;color:rgba(255,255,255,.75);font-weight:700">programadas</div></div></td></tr>';
-  g.innerHTML=h+'</table>';
+  // Resumen siempre visible, se actualiza con cada cambio
+  var resumen='<div style="background:#F8FAFB;border:1.5px solid #E5E7EB;border-radius:11px;padding:11px 13px;margin-bottom:11px">'+
+    '<div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:8px">'+
+      '<span style="font-size:10px;font-weight:800;color:#0A3D47;text-transform:uppercase;letter-spacing:.5px">Horas programadas</span>'+
+      '<span style="font-size:10px;color:#6B7280">meta de '+META_SEMANAL+'h por colaborador</span>'+
+      '<span style="margin-left:auto;font-size:11px;font-weight:800;color:'+(completos===emps.length?'#065F46':'#92400E')+'">'+
+        completos+' de '+emps.length+' en meta  .  '+totEquipo+'h en total</span>'+
+    '</div><div style="display:flex;gap:7px;flex-wrap:wrap">';
+  emps.forEach(function(e){
+    var t=totalHorasEmpleado(e.email), df=t-META_SEMANAL;
+    var cc=(t===0)?'#9CA3AF':(df===0?'#065F46':(Math.abs(df)<=2?'#92400E':'#991B1B'));
+    var bg=(t===0)?'#FFFFFF':(df===0?'#ECFDF5':'#FFFBEB');
+    var bd=(t===0)?'#E5E7EB':(df===0?'#A7F3D0':'#FDE68A');
+    resumen+='<div style="background:'+bg+';border:1.5px solid '+bd+';border-radius:9px;padding:6px 10px;min-width:118px">'+
+      '<div style="font-size:9.5px;color:#4B5563;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px">'+
+        e.nombre.split(' ').slice(0,2).join(' ')+'</div>'+
+      '<div style="display:flex;align-items:baseline;gap:5px">'+
+        '<span style="font-size:17px;font-weight:800;color:'+cc+'">'+t+'h</span>'+
+        '<span style="font-size:9.5px;font-weight:700;color:'+cc+'">'+(t===0?'sin asignar':(df===0?'exacto':(df>0?'+'+df:''+df)))+'</span>'+
+      '</div></div>';
+  });
+  resumen+='</div></div>';
+
+  g.innerHTML=resumen+h+'</table>';
 
   var l=document.getElementById('cronLeyenda');
   if(l)l.innerHTML=(_cron.catalogo||[]).map(function(c){
