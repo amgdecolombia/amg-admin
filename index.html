@@ -588,7 +588,7 @@ function fetchConTiempo(url, ms){
 var BUILD_VERSION='2026.09.16';
 
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxUHh8GH6wnug2BfqPtgaUEURXnFXUactlFClcMpE-GcCEkLX38T6027Yq_IVblrv3A/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbznDr4Nc0H6dXMMlfAE17VwqR7UPkzZb1g-aafkjxThELV5KbcdeYMS6pEGnzUWDOht/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -897,24 +897,42 @@ function buildReqCard(row,idx){
   var fechaIni=row['Fecha Extra']||row['Fecha Festivo']||row['Fecha Compensatorio']||row['Fecha Marcaje']||row['Fecha Inicio']||'';
   var fechaFin=row['Fecha Fin']||'';
   var diasHab=row['Dias Habiles']||'';
-  // Comparativo de jornada: lo que realmente marco contra lo que solicita
+  // Comparativo de jornada: lo real contra lo solicitado
   var rEnt=row['_realEntrada']||'', rSal=row['_realSalida']||'';
-  var sEnt=row['Hora Correcta']&&String(row['Tipo Marcaje']||'').indexOf('Entrada')>=0 ? row['Hora Correcta'] : (horaI||'');
-  var sSal=row['Hora Correcta']&&String(row['Tipo Marcaje']||'').indexOf('Salida')>=0 ? row['Hora Correcta'] : (horaF||'');
+  var sEnt=row['_solEntrada']||'', sSal=row['_solSalida']||'';
+  var etiq=row['_etiquetaSol']||'';
   if(rEnt||rSal||sEnt||sSal){
     var celda=function(lbl,val,color,vacio){
-      return '<div style="flex:1;min-width:110px;background:#FFFFFF;border:1.5px solid #E5E7EB;border-radius:9px;padding:8px 10px">'+
+      return '<div style="flex:1;min-width:120px;background:#FFFFFF;border:1.5px solid #E5E7EB;border-radius:9px;padding:8px 10px">'+
         '<div style="font-size:9px;font-weight:800;color:#8A959C;text-transform:uppercase;letter-spacing:.5px">'+lbl+'</div>'+
-        '<div style="font-size:15px;font-weight:700;font-family:monospace;color:'+(val?color:'#D1D5DB')+'">'+(val||vacio)+'</div></div>';
+        '<div style="font-size:16px;font-weight:700;font-family:monospace;color:'+(val?color:'#D1D5DB')+'">'+(val||vacio)+'</div></div>';
     };
     html+='<div style="background:#F8FAFB;border:1.5px solid #E5E7EB;border-radius:11px;padding:10px;margin:10px 0">'+
-      '<div style="font-size:10px;font-weight:800;color:#0A3D47;text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px">Jornada del '+(row['_fechaRef']||fechaIni||'')+'</div>'+
+      '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:7px">'+
+        '<span style="font-size:10px;font-weight:800;color:#0A3D47;text-transform:uppercase;letter-spacing:.5px">Jornada del '+(row['_fechaRef']||fechaIni||'')+'</span>'+
+        (etiq?'<span style="font-size:9.5px;font-weight:700;color:#1E40AF;background:#EFF6FF;border-radius:99px;padding:2px 9px">'+etiq+'</span>':'')+
+      '</div>'+
       '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
         celda('Entrada real',rEnt,'#065F46','sin marcar')+
         celda('Entrada solicitada',sEnt,'#1E40AF','no aplica')+
         celda('Salida real',rSal,'#065F46','sin marcar')+
         celda('Salida solicitada',sSal,'#1E40AF','no aplica')+
       '</div></div>';
+  }
+  // Detalle especifico del tipo de solicitud
+  var det=row['_detalle']||[];
+  if(det.length){
+    html+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">';
+    det.forEach(function(x){
+      var dest=!!x.destacar;
+      html+='<div style="'+(x.ancho?'flex-basis:100%;':'flex:1;min-width:140px;')+
+        'background:'+(dest?'#EFF6FF':'#FFFFFF')+';border:1.5px solid '+(dest?'#BFDBFE':'#E5E7EB')+
+        ';border-radius:9px;padding:8px 11px">'+
+        '<div style="font-size:9px;font-weight:800;color:#8A959C;text-transform:uppercase;letter-spacing:.5px">'+x.l+'</div>'+
+        '<div style="font-size:'+(x.ancho?'12':'14')+'px;font-weight:'+(dest?'800':'600')+';color:'+(dest?'#1E40AF':'#1B2A32')+
+        ';line-height:1.4;margin-top:2px">'+x.v+'</div></div>';
+    });
+    html+='</div>';
   }
   html+='<div class="req-details">';
   html+='<div class="req-detail"><div class="rd-lbl">Empleado</div><div class="rd-val" style="font-size:11px">'+correo+'</div></div>';
@@ -3604,6 +3622,28 @@ function turnoDe(email,ix){
   return reg?(reg.dias[ix]||''):'';
 }
 
+var META_SEMANAL=42; // horas objetivo por semana
+
+function horasTurnoCliente(cod,dia){
+  var c=(cod||'').trim();
+  if(!c)return 0;
+  if(c==='T Dia'||c==='T Dia/Rec')return 10;              // 07:00 a 17:00
+  if(c==='T Noche'||c==='T Noche/Lab')return 10;          // 19:00 a 05:00
+  if(c==='T Dia/Lab'){                                     // jornada ordinaria
+    if(dia<=3)return 9;                                    // lunes a jueves 07:00 a 16:00
+    if(dia===4)return 6;                                   // viernes 07:00 a 13:00
+    if(dia===5)return 4;                                   // sabado 08:00 a 12:00
+    return 0;                                              // domingo
+  }
+  return 0; // descanso, disponible, incapacidad, vacaciones, permiso
+}
+
+function totalHorasEmpleado(email){
+  var t=0;
+  for(var i=0;i<7;i++)t+=horasTurnoCliente(turnoDe(email,i),i);
+  return t;
+}
+
 function colorTurno(cod){
   var c=(_cron.catalogo||[]).filter(function(x){return x.codigo===cod;})[0];
   return c?{bg:c.color,fg:c.texto}:{bg:'#FFFFFF',fg:'#9CA3AF'};
@@ -3620,8 +3660,8 @@ function renderCronograma(){
   var opciones=(_cron.catalogo||[]).map(function(c){return c.codigo;});
   var h='<table style="width:100%;border-collapse:separate;border-spacing:3px;min-width:760px">';
   h+='<tr><th style="text-align:left;font-size:10px;color:#6B7280;text-transform:uppercase;padding:4px 8px">Colaborador</th>';
-  dias.forEach(function(d){h+='<th style="font-size:11px;color:#374151;font-weight:800;width:12%">'+d+'</th>';});
-  h+='</tr>';
+  dias.forEach(function(d){h+='<th style="font-size:11px;color:#374151;font-weight:800;width:11%">'+d+'</th>';});
+  h+='<th style="font-size:10px;color:#6B7280;text-transform:uppercase;width:9%">Horas</th></tr>';
   emps.forEach(function(e){
     h+='<tr><td style="padding:4px 8px;font-size:12px;font-weight:600;color:#1B2A32;white-space:nowrap">'+e.nombre+
        (e.temporal?' <span style="background:#FFFBEB;color:#92400E;border-radius:99px;padding:1px 7px;font-size:9px;font-weight:800">TEMPORAL</span>':'')+'</td>';
@@ -3635,8 +3675,24 @@ function renderCronograma(){
         opciones.map(function(o){return '<option value="'+o+'"'+(o===cod?' selected':'')+'>'+o+'</option>';}).join('')+
         '</select></td>';
     }
+    var tot=totalHorasEmpleado(e.email);
+    var dif=tot-META_SEMANAL;
+    var colT=(tot===0)?'#9CA3AF':(dif===0?'#065F46':(Math.abs(dif)<=2?'#92400E':'#991B1B'));
+    h+='<td style="text-align:center;padding:2px">'+
+       '<div style="border:1.5px solid '+(dif===0?'#A7F3D0':(tot===0?'#E5E7EB':'#FDE68A'))+';border-radius:7px;padding:5px 3px;background:'+(dif===0?'#ECFDF5':(tot===0?'#FFFFFF':'#FFFBEB'))+'">'+
+       '<div style="font-size:14px;font-weight:800;color:'+colT+'">'+tot+'h</div>'+
+       '<div style="font-size:8.5px;color:'+colT+';font-weight:700">'+(tot===0?'sin asignar':(dif===0?'exacto':(dif>0?'+'+dif+'h':dif+'h')))+'</div>'+
+       '</div></td>';
     h+='</tr>';
   });
+  var totEquipo=0, completos=0;
+  emps.forEach(function(e){ var t=totalHorasEmpleado(e.email); totEquipo+=t; if(t===META_SEMANAL)completos++; });
+  h+='<tr><td style="padding:7px 8px;font-size:11px;font-weight:800;color:#0A3D47">Total del equipo</td>'+
+     '<td colspan="7" style="padding:7px 8px;font-size:11px;color:#6B7280">'+
+       completos+' de '+emps.length+' colaboradores con las '+META_SEMANAL+' horas exactas</td>'+
+     '<td style="text-align:center;padding:2px"><div style="border:1.5px solid #0A3D47;border-radius:7px;padding:5px 3px;background:#0A3D47">'+
+       '<div style="font-size:14px;font-weight:800;color:#FFFFFF">'+totEquipo+'h</div>'+
+       '<div style="font-size:8.5px;color:rgba(255,255,255,.75);font-weight:700">programadas</div></div></td></tr>';
   g.innerHTML=h+'</table>';
 
   var l=document.getElementById('cronLeyenda');
@@ -3644,7 +3700,10 @@ function renderCronograma(){
     return '<span style="display:inline-flex;align-items:center;gap:5px;font-size:10px;color:#4B5563">'+
       '<span style="width:15px;height:15px;border-radius:4px;background:'+c.color+';border:1px solid #E5E7EB"></span>'+
       '<b>'+c.codigo+'</b> '+c.desc+'</span>';
-  }).join('');
+  }).join('')+
+    '<span style="display:inline-flex;align-items:center;gap:5px;font-size:10px;color:#4B5563;margin-left:6px">'+
+    '<span style="width:15px;height:15px;border-radius:4px;background:#ECFDF5;border:1.5px solid #A7F3D0"></span>'+
+    '<b>'+META_SEMANAL+'h</b> meta semanal por colaborador</span>';
 }
 
 function setTurno(email,ix,val){
