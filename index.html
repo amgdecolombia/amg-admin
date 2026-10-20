@@ -588,7 +588,7 @@ function fetchConTiempo(url, ms){
 var BUILD_VERSION='2026.09.16';
 
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxWOyYEXtGYmy-GPC3Dc6P6qd7UFccbaU63YFRRjAyFSwlOk_tRO309jS3g4AqbRqAN/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzxo4_5py6bY4071aZSGHNMycv6Lv_1VsqeZbyWO2YQ2Yws-zjWg-QDc_xWUmFcScDh/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -3565,6 +3565,7 @@ async function abrirCronograma(){
     inner.innerHTML='<div style="background:#0A3D47;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">'+
       '<span style="color:white;font-size:14px;font-weight:700">Cronograma de turnos</span>'+
       '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'+
+        '<button onclick="abrirVistaMes()" style="padding:7px 13px;border-radius:8px;border:none;background:rgba(255,255,255,.28);color:white;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Ver mes completo</button>'+
         '<button onclick="abrirImportar()" style="padding:7px 13px;border-radius:8px;border:none;background:rgba(255,255,255,.2);color:white;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Importar desde Excel</button>'+
         '<button onclick="abrirTemporal()" style="padding:7px 13px;border-radius:8px;border:none;background:rgba(255,255,255,.2);color:white;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Apoyo temporal</button>'+
         '<button id="cronClose" style="border:none;background:rgba(255,255,255,.2);color:white;border-radius:8px;padding:7px 13px;cursor:pointer;font-family:inherit;font-size:12px">Cerrar</button>'+
@@ -3619,23 +3620,28 @@ function turnoDe(email,ix){
   var k=email+'|'+ix;
   if(_cronEdit[k]!==undefined)return _cronEdit[k];
   var reg=(_cron.turnos||[]).filter(function(t){return t.email===email&&t.semana===_cronSemana;})[0];
-  return reg?(reg.dias[ix]||''):'';
+  return reg?normTurnoCliente(reg.dias[ix]||''):'';
 }
 
 var META_SEMANAL=42; // horas objetivo por semana
 
 function horasTurnoCliente(cod,dia){
-  var c=(cod||'').trim();
-  if(!c)return 0;
-  if(c==='T Dia'||c==='T Dia/Rec')return 10;              // 07:00 a 17:00
-  if(c==='T Noche'||c==='T Noche/Lab')return 10;          // 19:00 a 05:00
-  if(c==='T Dia/Lab'){                                     // jornada ordinaria
-    if(dia<=3)return 9;                                    // lunes a jueves 07:00 a 16:00
-    if(dia===4)return 6;                                   // viernes 07:00 a 13:00
-    if(dia===5)return 4;                                   // sabado 08:00 a 12:00
-    return 0;                                              // domingo
-  }
-  return 0; // descanso, disponible, incapacidad, vacaciones, permiso
+  var c=normTurnoCliente(cod);
+  var H={
+    'T Dia':      {def:['07:00','17:00'], alm:1},
+    'T Noche':    {def:['19:00','05:00'], alm:1},
+    'J Ordinaria':{0:['07:00','16:00'],1:['07:00','16:00'],2:['07:00','16:00'],3:['07:00','16:00'],
+                   4:['07:00','13:00'],5:['08:00','12:00'],6:null, alm:1}
+  }[c];
+  if(!H)return 0;
+  var r=H.def||H[dia];
+  if(!r)return 0;
+  var f=function(v){var p=v.split(':');return parseInt(p[0],10)*60+parseInt(p[1],10);};
+  var b=f(r[1])-f(r[0]);
+  if(b<0)b+=1440;
+  var n=b;
+  if(H.alm&&b>360)n=b-60;     // hora de almuerzo solo en jornadas de mas de 6 horas
+  return Math.round((n/60)*100)/100;
 }
 
 function totalHorasEmpleado(email){
@@ -3814,16 +3820,16 @@ function normTurnoCliente(t){
   if(!s)return '';
   var l=s.toLowerCase()
     .replace(/[íì]/g,'i').replace(/[áà]/g,'a').replace(/[éè]/g,'e')
-    .replace(/[óò]/g,'o').replace(/[úù]/g,'u');
+    .replace(/[óò]/g,'o').replace(/[úù]/g,'u').replace(/\s+/g,' ');
   if(l.indexOf('descans')>=0)return 'Descanso';
-  if(l.indexOf('incapac')>=0)return 'Incapacitado';
+  if(l.indexOf('incapac')>=0)return 'Incapacidad';
   if(l.indexOf('vacacion')>=0)return 'Vacaciones';
   if(l.indexOf('permiso')>=0)return 'Permiso';
-  if(l.indexOf('disponible')>=0)return (s.indexOf('*')>=0)?'Disponible *':'Disponible';
-  if(l.indexOf('noche')>=0)return (l.indexOf('lab')>=0)?'T Noche/Lab':'T Noche';
+  if(l.indexOf('disponible')>=0)return 'Descanso';
+  if(l.indexOf('ordinaria')>=0)return 'J Ordinaria';
+  if(l.indexOf('noche')>=0)return 'T Noche';
   if(l.indexOf('dia')>=0){
-    if(l.indexOf('lab')>=0)return 'T Dia/Lab';
-    if(l.indexOf('rec')>=0)return 'T Dia/Rec';
+    if(l.indexOf('lab')>=0)return 'J Ordinaria';
     return 'T Dia';
   }
   return '';
@@ -3831,74 +3837,105 @@ function normTurnoCliente(t){
 
 function parsearImport(txt){
   var lineas=(txt||'').split(/\r?\n/).filter(function(l){return l.trim();});
-  var filas=[], noReconocidos=[];
+  var filas=[], pendientes=[];
   var emps=(_cron&&_cron.empleados)||[];
   lineas.forEach(function(ln){
     var celdas=ln.split('\t').map(function(c){return c.trim();});
     if(celdas.length<2)celdas=ln.split(/\s{2,}|,|;/).map(function(c){return c.trim();});
     var nombreCel=celdas.filter(function(c){return c;})[0]||'';
-    if(/^(l|m|j|v|s|d)$/i.test(nombreCel))return;              // fila de dias
-    if(/^semana/i.test(nombreCel))return;                       // titulo
-    var persona=emps.filter(function(e){
-      var n=e.nombre.toLowerCase(), b=nombreCel.toLowerCase();
-      if(!b)return false;
-      return n.indexOf(b)>=0 || b.indexOf(n)>=0 ||
-             n.split(' ')[0]===b.split(' ')[0];
-    })[0];
+    if(/^(l|m|j|v|s|d)$/i.test(nombreCel))return;
+    if(/^semana/i.test(nombreCel))return;
     var turnos=celdas.slice(1).map(normTurnoCliente).filter(function(x,i){return i<7;});
     while(turnos.length<7)turnos.push('');
     if(!turnos.some(function(t){return t;}))return;
-    if(persona)filas.push({email:persona.email, nombre:persona.nombre, dias:turnos});
-    else if(nombreCel)noReconocidos.push(nombreCel);
+    var persona=buscarPersona(nombreCel,emps);
+    if(persona)filas.push({email:persona.email, nombre:persona.nombre, dias:turnos, origen:nombreCel});
+    else pendientes.push({origen:nombreCel, dias:turnos});
   });
-  return {filas:filas, noReconocidos:noReconocidos};
+  return {filas:filas, pendientes:pendientes};
 }
 
 function previsualizarImport(){
   var r=parsearImport(document.getElementById('impTexto').value);
+  window._impPend=r.pendientes;
   var p=document.getElementById('impPrev');
-  if(!r.filas.length){
+  if(!r.filas.length&&!r.pendientes.length){
     p.innerHTML='<div style="padding:12px;background:#FEF2F2;border:1.5px solid #FECACA;border-radius:10px;color:#991B1B;font-size:12px">No se reconocio ninguna fila. Verifica que pegaste el bloque con los nombres y los turnos.</div>';
     return;
   }
-  var h='<div style="border:1.5px solid #E5E7EB;border-radius:10px;overflow:hidden">'+
-    '<div style="background:#ECFDF5;padding:9px 12px;font-size:12px;color:#065F46;font-weight:700">Se reconocieron '+r.filas.length+' colaborador(es)</div>'+
-    '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:11px">'+
-    '<tr style="background:#F8FAFC"><th style="text-align:left;padding:7px 9px;font-size:10px;color:#6B7280">Colaborador</th>';
-  ['L','M','M','J','V','S','D'].forEach(function(d){h+='<th style="padding:7px 5px;font-size:10px;color:#6B7280">'+d+'</th>';});
-  h+='</tr>';
-  r.filas.forEach(function(f){
-    h+='<tr><td style="padding:6px 9px;border-top:1px solid #F3F4F6;font-weight:600">'+f.nombre+'</td>';
-    f.dias.forEach(function(t){
-      var col=colorTurno(t);
-      h+='<td style="padding:5px 4px;border-top:1px solid #F3F4F6;text-align:center"><span style="display:inline-block;padding:3px 6px;border-radius:5px;background:'+(t?col.bg:'#FFF')+';color:'+(col.fg||'#1B2A32')+';font-size:9.5px;font-weight:700">'+(t||'—')+'</span></td>';
+  var emps=(_cron&&_cron.empleados)||[];
+  var h='';
+  if(r.filas.length){
+    h+='<div style="border:1.5px solid #E5E7EB;border-radius:10px;overflow:hidden;margin-bottom:10px">'+
+      '<div style="background:#ECFDF5;padding:9px 12px;font-size:12px;color:#065F46;font-weight:700">Reconocidos: '+r.filas.length+'</div>'+
+      '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:11px">'+
+      '<tr style="background:#F8FAFC"><th style="text-align:left;padding:7px 9px;font-size:10px;color:#6B7280">Colaborador</th>';
+    ['L','M','M','J','V','S','D'].forEach(function(d){h+='<th style="padding:7px 5px;font-size:10px;color:#6B7280">'+d+'</th>';});
+    h+='<th style="padding:7px 5px;font-size:10px;color:#6B7280">Horas</th></tr>';
+    r.filas.forEach(function(f){
+      var tot=0; f.dias.forEach(function(t,i){tot+=horasTurnoCliente(t,i);});
+      h+='<tr><td style="padding:6px 9px;border-top:1px solid #F3F4F6;font-weight:600">'+f.nombre+
+         (f.origen&&limpiarNombre(f.origen)!==limpiarNombre(f.nombre)?'<div style="font-size:9px;color:#9CA3AF">en tu Excel: '+f.origen+'</div>':'')+'</td>';
+      f.dias.forEach(function(t){
+        var col=colorTurno(t);
+        h+='<td style="padding:5px 4px;border-top:1px solid #F3F4F6;text-align:center"><span style="display:inline-block;padding:3px 6px;border-radius:5px;background:'+(t?col.bg:'#FFF')+';color:'+(col.fg||'#1B2A32')+';font-size:9.5px;font-weight:700">'+(t||'&mdash;')+'</span></td>';
+      });
+      h+='<td style="padding:6px 5px;border-top:1px solid #F3F4F6;text-align:center;font-weight:800;color:'+(tot===META_SEMANAL?'#065F46':'#92400E')+'">'+tot+'h</td></tr>';
     });
-    h+='</tr>';
-  });
-  h+='</table></div></div>';
-  if(r.noReconocidos.length)
-    h+='<div style="margin-top:9px;padding:10px 12px;background:#FFFBEB;border:1.5px solid #FDE68A;border-radius:10px;color:#92400E;font-size:11.5px">'+
-       'No se encontraron en tu equipo: '+r.noReconocidos.join(', ')+'. Agregalos con Mi equipo o Apoyo temporal y vuelve a importar.</div>';
+    h+='</table></div></div>';
+  }
+  if(r.pendientes.length){
+    h+='<div style="border:1.5px solid #FDE68A;border-radius:10px;overflow:hidden">'+
+      '<div style="background:#FFFBEB;padding:9px 12px;font-size:12px;color:#92400E;font-weight:700">'+
+        'Sin reconocer: '+r.pendientes.length+'. Indica a quien corresponde cada uno y se importaran igual.</div>'+
+      '<div style="padding:10px 12px">';
+    r.pendientes.forEach(function(pd,ix){
+      h+='<div style="display:flex;gap:9px;align-items:center;margin-bottom:8px;flex-wrap:wrap">'+
+        '<span style="font-size:12px;font-weight:700;color:#1B2A32;min-width:150px">'+pd.origen+'</span>'+
+        '<span style="font-size:11px;color:#9CA3AF">'+pd.dias.filter(function(x){return x;}).length+' turnos</span>'+
+        '<select id="impMap'+ix+'" style="flex:1;min-width:210px;padding:7px 10px;border:1.5px solid #E5E7EB;border-radius:8px;font-family:inherit;font-size:12px;outline:none;background:white">'+
+          '<option value="">Selecciona el colaborador...</option>'+
+          emps.map(function(e){return '<option value="'+e.email+'">'+e.nombre+'</option>';}).join('')+
+        '</select></div>';
+    });
+    h+='</div></div>';
+  }
   p.innerHTML=h;
 }
 
 async function aplicarImport(){
   var r=parsearImport(document.getElementById('impTexto').value);
+  var emps=(_cron&&_cron.empleados)||[];
+  var filas=r.filas.slice();
+  // Incorporar los que el lider asigno manualmente en la previsualizacion
+  (window._impPend||[]).forEach(function(pd,ix){
+    var sel=document.getElementById('impMap'+ix);
+    if(sel&&sel.value){
+      var e=emps.filter(function(x){return x.email===sel.value;})[0];
+      if(e)filas.push({email:e.email, nombre:e.nombre, dias:pd.dias});
+    }
+  });
   var msg=document.getElementById('impMsg');
-  if(!r.filas.length){msg.textContent='No hay filas reconocidas para importar.';msg.style.background='#FEF2F2';msg.style.color='#991B1B';msg.style.display='block';return;}
+  if(!filas.length){
+    msg.textContent='No hay filas para importar. Usa Previsualizar y asigna los nombres que no se reconocieron.';
+    msg.style.background='#FEF2F2';msg.style.color='#991B1B';msg.style.display='block';return;
+  }
+  var sinAsignar=(window._impPend||[]).length-(filas.length-r.filas.length);
   var sem=lunesISO(document.getElementById('impSemana').value);
-  msg.textContent='Importando...';msg.style.background='#F8FAFC';msg.style.color='#374151';msg.style.display='block';
+  msg.textContent='Importando '+filas.length+' colaborador(es)...';
+  msg.style.background='#F8FAFC';msg.style.color='#374151';msg.style.display='block';
   try{
     var d=await pedirDatos(SCRIPT_URL+'?action=saveTurnos&email='+encodeURIComponent(currentUser.email)+
-      '&semana='+encodeURIComponent(sem)+'&filas='+encodeURIComponent(JSON.stringify(r.filas)));
-    msg.textContent=d.status==='ok'?d.msg:'No se pudo importar.';
-    msg.style.background=d.status==='ok'?'#ECFDF5':'#FEF2F2';
-    msg.style.color=d.status==='ok'?'#065F46':'#991B1B';
+      '&semana='+encodeURIComponent(sem)+'&filas='+encodeURIComponent(JSON.stringify(filas)));
     if(d.status==='ok'){
+      msg.textContent=d.msg+(sinAsignar>0?'. Quedaron '+sinAsignar+' sin asignar.':'');
+      msg.style.background='#ECFDF5';msg.style.color='#065F46';
       document.getElementById('cronFecha').value=sem;
       _cronSemana=sem; _cronEdit={};
       await cargarCronograma();
-      setTimeout(function(){document.getElementById('impModal').style.display='none';},1400);
+      if(sinAsignar<=0)setTimeout(function(){document.getElementById('impModal').style.display='none';},1500);
+    } else {
+      msg.textContent='No se pudo importar.';msg.style.background='#FEF2F2';msg.style.color='#991B1B';
     }
   }catch(e){ msg.textContent='No se pudo importar.';msg.style.background='#FEF2F2';msg.style.color='#991B1B'; }
 }
@@ -3977,6 +4014,174 @@ async function guardarTemporal(quitar){
     msg.style.color=d.status==='ok'?'#065F46':'#991B1B';
     if(d.status==='ok'){ await cargarCronograma(); cargarListaTemporal(); }
   }catch(e){ msg.textContent='No se pudo guardar.';msg.style.background='#FEF2F2';msg.style.color='#991B1B'; }
+}
+
+// ── Reconocimiento de nombres del Excel ─────────────────────────────────────
+function limpiarNombre(s){
+  return (s||'').toLowerCase()
+    .replace(/[áàä]/g,'a').replace(/[éèë]/g,'e').replace(/[íìï]/g,'i')
+    .replace(/[óòö]/g,'o').replace(/[úùü]/g,'u').replace(/ñ/g,'n')
+    .replace(/[^a-z\s]/g,' ').replace(/\s+/g,' ').trim();
+}
+
+// Variantes frecuentes del mismo nombre
+var ALIAS_NOMBRE={maicol:'michael',maikol:'michael',michel:'michael',
+  olguin:'holguin',holguin:'olguin',gonzales:'gonzalez',rodriguez:'rodriguez'};
+
+function tokensNombre(s){
+  return limpiarNombre(s).split(' ')
+    .filter(function(t){return t.length>=3;})
+    .map(function(t){return ALIAS_NOMBRE[t]||t;});
+}
+
+function buscarPersona(texto,emps){
+  if(!texto)return null;
+  var tb=tokensNombre(texto);
+  if(!tb.length)return null;
+  var mejor=null, mejorPts=0;
+  emps.forEach(function(e){
+    var te=tokensNombre(e.nombre);
+    var pts=0;
+    tb.forEach(function(t){
+      te.forEach(function(x){
+        if(t===x)pts+=2;
+        else if(t.length>=4&&x.length>=4&&(x.indexOf(t)===0||t.indexOf(x)===0))pts+=1;
+      });
+    });
+    if(pts>mejorPts){mejorPts=pts;mejor=e;}
+  });
+  return mejorPts>=2?mejor:null;
+}
+
+// ── Vista mensual del cronograma ────────────────────────────────────────────
+async function abrirVistaMes(){
+  var m=document.getElementById('mesModal');
+  if(!m){
+    m=document.createElement('div');
+    m.id='mesModal';
+    m.style.cssText='display:flex;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.78);z-index:10001;align-items:flex-start;justify-content:center;overflow-y:auto;padding:14px';
+    var inner=document.createElement('div');
+    inner.style.cssText='background:white;border-radius:18px;width:100%;max-width:1200px;margin:auto;overflow:hidden';
+    inner.innerHTML='<div style="background:#0A3D47;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">'+
+      '<span style="color:white;font-size:14px;font-weight:700">Cronograma del mes</span>'+
+      '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'+
+        '<button onclick="moverMes(-1)" style="padding:7px 12px;border-radius:8px;border:none;background:rgba(255,255,255,.2);color:white;font-family:inherit;font-size:12px;cursor:pointer">&#8592;</button>'+
+        '<span id="mesTitulo" style="color:white;font-size:13px;font-weight:700;min-width:140px;text-align:center"></span>'+
+        '<button onclick="moverMes(1)" style="padding:7px 12px;border-radius:8px;border:none;background:rgba(255,255,255,.2);color:white;font-family:inherit;font-size:12px;cursor:pointer">&#8594;</button>'+
+        '<button onclick="pdfCronogramaMes()" style="padding:7px 13px;border-radius:8px;border:none;background:rgba(255,255,255,.28);color:white;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Descargar PDF</button>'+
+        '<button id="mesClose" style="border:none;background:rgba(255,255,255,.2);color:white;border-radius:8px;padding:7px 13px;cursor:pointer;font-family:inherit;font-size:12px">Cerrar</button>'+
+      '</div></div>'+
+      '<div style="padding:1.1rem"><div id="mesBody">Cargando...</div></div>';
+    m.appendChild(inner);
+    document.body.appendChild(m);
+    document.getElementById('mesClose').onclick=function(){m.style.display='none';};
+    window._mesRef=new Date(_cronSemana+'T00:00:00');
+  } else { m.style.display='flex'; }
+  if(!_cron){ await cargarCronograma(); }
+  renderVistaMes();
+}
+
+function moverMes(n){
+  var d=window._mesRef||new Date();
+  window._mesRef=new Date(d.getFullYear(), d.getMonth()+n, 1);
+  renderVistaMes();
+}
+
+function semanasDelMes(ref){
+  var ini=new Date(ref.getFullYear(), ref.getMonth(), 1);
+  var fin=new Date(ref.getFullYear(), ref.getMonth()+1, 0);
+  var cur=new Date(ini); cur.setDate(cur.getDate()-((cur.getDay()+6)%7));
+  var out=[];
+  while(cur<=fin){
+    out.push(cur.getFullYear()+'-'+('0'+(cur.getMonth()+1)).slice(-2)+'-'+('0'+cur.getDate()).slice(-2));
+    cur=new Date(cur.getTime()+7*86400000);
+  }
+  return out;
+}
+
+function renderVistaMes(){
+  var el=document.getElementById('mesBody');
+  if(!el||!_cron)return;
+  var ref=window._mesRef||new Date();
+  var meses=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('mesTitulo').textContent=meses[ref.getMonth()]+' '+ref.getFullYear();
+
+  var sems=semanasDelMes(ref);
+  var emps=_cron.empleados||[];
+  if(!emps.length){el.innerHTML='<div style="padding:1rem;color:#9CA3AF">No tienes colaboradores asignados.</div>';return;}
+
+  var conDatos=sems.filter(function(s){
+    return (_cron.turnos||[]).some(function(t){return t.semana===s;});
+  });
+  if(!conDatos.length){
+    el.innerHTML='<div style="padding:1.2rem;background:#FFFBEB;border:1.5px solid #FDE68A;border-radius:11px;color:#92400E;font-size:13px">'+
+      'Todavia no hay cronograma cargado para '+meses[ref.getMonth()]+'. Cargalo semana por semana o usa Importar desde Excel.</div>';
+    return;
+  }
+
+  var dias=['L','M','M','J','V','S','D'];
+  var h='';
+  var totalMes={};
+  sems.forEach(function(sem){
+    var reg=(_cron.turnos||[]).filter(function(t){return t.semana===sem;});
+    if(!reg.length)return;
+    var d1=new Date(sem+'T00:00:00'), d2=new Date(d1.getTime()+6*86400000);
+    var mm=['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+    h+='<div style="margin-bottom:16px">'+
+      '<div style="font-size:12px;font-weight:800;color:#0A3D47;margin-bottom:6px">Semana '+d1.getDate()+' '+mm[d1.getMonth()]+' - '+d2.getDate()+' '+mm[d2.getMonth()]+'</div>'+
+      '<div style="overflow-x:auto"><table style="width:100%;border-collapse:separate;border-spacing:2px;min-width:700px">'+
+      '<tr><th style="text-align:left;font-size:9px;color:#6B7280;text-transform:uppercase;padding:3px 7px">Colaborador</th>';
+    dias.forEach(function(d){h+='<th style="font-size:10px;color:#374151;font-weight:800">'+d+'</th>';});
+    h+='<th style="font-size:9px;color:#6B7280;text-transform:uppercase;width:62px">Horas</th></tr>';
+    emps.forEach(function(e){
+      var r=reg.filter(function(t){return t.email===e.email;})[0];
+      var tot=0;
+      h+='<tr><td style="padding:3px 7px;font-size:11px;font-weight:600;color:#1B2A32;white-space:nowrap">'+e.nombre+'</td>';
+      for(var i=0;i<7;i++){
+        var cod=r?normTurnoCliente(r.dias[i]||''):'';
+        tot+=horasTurnoCliente(cod,i);
+        var col=colorTurno(cod);
+        h+='<td style="text-align:center;padding:0"><div style="padding:5px 3px;border-radius:5px;background:'+(cod?col.bg:'#FAFAFA')+';color:'+(col.fg||'#1B2A32')+';font-size:9.5px;font-weight:700;border:1px solid #EEF2F4">'+(cod||'&mdash;')+'</div></td>';
+      }
+      totalMes[e.email]=(totalMes[e.email]||0)+tot;
+      h+='<td style="text-align:center;padding:0"><div style="padding:5px 3px;border-radius:5px;font-size:11px;font-weight:800;color:'+(tot===META_SEMANAL?'#065F46':(tot===0?'#D1D5DB':'#92400E'))+'">'+tot+'h</div></td></tr>';
+    });
+    h+='</table></div></div>';
+  });
+
+  // Consolidado del mes
+  h+='<div style="background:#F8FAFB;border:1.5px solid #E5E7EB;border-radius:11px;padding:12px 14px">'+
+    '<div style="font-size:11px;font-weight:800;color:#0A3D47;text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px">Total del mes por colaborador</div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap">';
+  emps.forEach(function(e){
+    var t=totalMes[e.email]||0;
+    h+='<div style="background:#FFFFFF;border:1.5px solid #E5E7EB;border-radius:9px;padding:7px 11px;min-width:130px">'+
+      '<div style="font-size:9.5px;color:#4B5563;font-weight:600">'+e.nombre.split(' ').slice(0,2).join(' ')+'</div>'+
+      '<div style="font-size:17px;font-weight:800;color:'+(t>0?'#0A3D47':'#D1D5DB')+'">'+t+'h</div></div>';
+  });
+  el.innerHTML=h+'</div></div>';
+}
+
+function pdfCronogramaMes(){
+  var cuerpo=document.getElementById('mesBody');
+  if(!cuerpo){showToast('Genera primero la vista del mes.');return;}
+  var w=window.open('','_blank','width=1100,height=800');
+  if(!w){alert('Permite las ventanas emergentes para generar el PDF.');return;}
+  var titulo=document.getElementById('mesTitulo').textContent;
+  var logoEl=document.getElementById('amg-logo-b64');
+  var logo=logoEl?logoEl.src:'';
+  w.document.write('<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Cronograma '+xEsc(titulo)+'</title>'+
+   '<style>@page{size:A4 landscape;margin:10mm}body{font-family:Inter,Arial,sans-serif;margin:0;color:#1B2A32}'+
+   '.hd{background:linear-gradient(135deg,#0A3D47,#065F46);color:#fff;border-radius:10px;padding:13px 16px;margin-bottom:12px}'+
+   'table{page-break-inside:avoid}@media print{.noprint{display:none}}</style></head><body>'+
+   '<div class="noprint" style="position:fixed;top:10px;right:12px;z-index:99"><button onclick="window.print()" '+
+   'style="padding:9px 18px;border-radius:9px;border:none;background:#0A3D47;color:#fff;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer">Guardar como PDF</button></div>'+
+   '<div class="hd"><table style="width:100%"><tr>'+(logo?'<td style="width:95px"><img src="'+logo+'" style="height:28px"></td>':'')+
+   '<td><div style="font-size:16px;font-weight:800">Cronograma de turnos</div>'+
+   '<div style="font-size:11px;opacity:.85">'+xEsc(titulo)+' &#183; '+xEsc(currentUser.nombre||'')+'</div></td></tr></table></div>'+
+   cuerpo.innerHTML+'</body></html>');
+  w.document.close();
+  setTimeout(function(){try{w.focus();}catch(e){}},400);
 }
 </script>
 <div id="toast" style="display:none;position:fixed;bottom:24px;right:24px;background:#0A3D47;color:white;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.25)"></div>
