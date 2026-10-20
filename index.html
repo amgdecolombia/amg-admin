@@ -588,7 +588,7 @@ function fetchConTiempo(url, ms){
 var BUILD_VERSION='2026.09.16';
 
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzxo4_5py6bY4071aZSGHNMycv6Lv_1VsqeZbyWO2YQ2Yws-zjWg-QDc_xWUmFcScDh/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzEBFEEySH3j2SE3RXGaTdSNvsgLY785iMd1IhwVzQpryoDW3HgyLDc3UPgy-aR4NRQ/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -3620,13 +3620,30 @@ function turnoDe(email,ix){
   var k=email+'|'+ix;
   if(_cronEdit[k]!==undefined)return _cronEdit[k];
   var reg=(_cron.turnos||[]).filter(function(t){return t.email===email&&t.semana===_cronSemana;})[0];
-  return reg?normTurnoCliente(reg.dias[ix]||''):'';
+  if(!reg)return '';
+  var pv=partirTurnoCli(reg.dias[ix]||'');
+  return unirTurnoCli(normTurnoCliente(pv.codigo), pv.almuerzo);
 }
 
 var META_SEMANAL=42; // horas objetivo por semana
 
-function horasTurnoCliente(cod,dia){
+function partirTurnoCli(v){
+  var s=(v||'').trim(), marca='', ix=s.indexOf('|');
+  if(ix>0){marca=s.substring(ix+1).toUpperCase().trim();s=s.substring(0,ix).trim();}
+  return {codigo:s, almuerzo:(marca==='SA'?'no':(marca==='CA'?'si':'auto'))};
+}
+function unirTurnoCli(base,alm){
+  if(!base)return '';
+  return alm==='no'?(base+'|SA'):alm==='si'?(base+'|CA'):base;
+}
+function tieneHoras(cod){
   var c=normTurnoCliente(cod);
+  return c==='T Dia'||c==='T Noche'||c==='J Ordinaria';
+}
+
+function horasTurnoCliente(cod,dia){
+  var pt=partirTurnoCli(cod);
+  var c=normTurnoCliente(pt.codigo);
   var H={
     'T Dia':      {def:['07:00','17:00'], alm:1},
     'T Noche':    {def:['19:00','05:00'], alm:1},
@@ -3639,8 +3656,8 @@ function horasTurnoCliente(cod,dia){
   var f=function(v){var p=v.split(':');return parseInt(p[0],10)*60+parseInt(p[1],10);};
   var b=f(r[1])-f(r[0]);
   if(b<0)b+=1440;
-  var n=b;
-  if(H.alm&&b>360)n=b-60;     // hora de almuerzo solo en jornadas de mas de 6 horas
+  var descuenta=(pt.almuerzo==='no')?false:(pt.almuerzo==='si')?true:(H.alm&&b>360);
+  var n=descuenta?b-60:b;
   return Math.round((n/60)*100)/100;
 }
 
@@ -3675,13 +3692,24 @@ function renderCronograma(){
        (e.temporal?' <span style="background:#FFFBEB;color:#92400E;border-radius:99px;padding:1px 7px;font-size:9px;font-weight:800">TEMPORAL</span>':'')+'</td>';
     for(var i=0;i<7;i++){
       var cod=turnoDe(e.email,i);
-      var col=colorTurno(cod);
+      var pc=partirTurnoCli(cod);
+      var base=pc.codigo;
+      var col=colorTurno(base);
       h+='<td style="padding:0">'+
         '<select onchange="setTurno(\''+e.email+'\','+i+',this.value)" '+
         'style="width:100%;padding:7px 4px;border:1.5px solid #E5E7EB;border-radius:7px;font-family:inherit;font-size:10.5px;font-weight:700;text-align:center;cursor:pointer;outline:none;background:'+col.bg+';color:'+(col.fg||'#1B2A32')+'">'+
         '<option value="">&mdash;</option>'+
-        opciones.map(function(o){return '<option value="'+o+'"'+(o===cod?' selected':'')+'>'+o+'</option>';}).join('')+
-        '</select></td>';
+        opciones.map(function(o){return '<option value="'+o+'"'+(o===base?' selected':'')+'>'+o+'</option>';}).join('')+
+        '</select>'+
+        (tieneHoras(base)
+          ? '<select onchange="setAlmuerzo(\''+e.email+'\','+i+',this.value)" title="Almuerzo" '+
+            'style="width:100%;margin-top:2px;padding:3px 2px;border:1px solid #E5E7EB;border-radius:5px;font-family:inherit;font-size:9px;font-weight:700;text-align:center;cursor:pointer;outline:none;background:#FFFFFF;color:#6B7280">'+
+            '<option value="auto"'+(pc.almuerzo==='auto'?' selected':'')+'>almuerzo auto</option>'+
+            '<option value="si"'+(pc.almuerzo==='si'?' selected':'')+'>con almuerzo</option>'+
+            '<option value="no"'+(pc.almuerzo==='no'?' selected':'')+'>sin almuerzo</option>'+
+            '</select>'
+          : '')+
+        '</td>';
     }
     var tot=totalHorasEmpleado(e.email);
     var dif=tot-META_SEMANAL;
@@ -3732,11 +3760,20 @@ function renderCronograma(){
   }).join('')+
     '<span style="display:inline-flex;align-items:center;gap:5px;font-size:10px;color:#4B5563;margin-left:6px">'+
     '<span style="width:15px;height:15px;border-radius:4px;background:#ECFDF5;border:1.5px solid #A7F3D0"></span>'+
-    '<b>'+META_SEMANAL+'h</b> meta semanal por colaborador</span>';
+    '<b>'+META_SEMANAL+'h</b> meta semanal por colaborador</span>'+
+    '<span style="display:inline-flex;align-items:center;gap:5px;font-size:10px;color:#6B7280;margin-left:6px">'+
+    'Almuerzo auto: descuenta 1 hora en jornadas de mas de 6 horas. Puedes forzarlo por dia.</span>';
 }
 
 function setTurno(email,ix,val){
-  _cronEdit[email+'|'+ix]=val;
+  var actual=partirTurnoCli(turnoDe(email,ix));
+  _cronEdit[email+'|'+ix]=unirTurnoCli(val, tieneHoras(val)?actual.almuerzo:'auto');
+  renderCronograma();
+}
+
+function setAlmuerzo(email,ix,alm){
+  var actual=partirTurnoCli(turnoDe(email,ix));
+  _cronEdit[email+'|'+ix]=unirTurnoCli(actual.codigo, alm);
   renderCronograma();
 }
 
@@ -4138,10 +4175,13 @@ function renderVistaMes(){
       var tot=0;
       h+='<tr><td style="padding:3px 7px;font-size:11px;font-weight:600;color:#1B2A32;white-space:nowrap">'+e.nombre+'</td>';
       for(var i=0;i<7;i++){
-        var cod=r?normTurnoCliente(r.dias[i]||''):'';
-        tot+=horasTurnoCliente(cod,i);
+        var codRaw=r?(r.dias[i]||''):'';
+        var pm=partirTurnoCli(codRaw);
+        var cod=normTurnoCliente(pm.codigo);
+        tot+=horasTurnoCliente(codRaw,i);
         var col=colorTurno(cod);
-        h+='<td style="text-align:center;padding:0"><div style="padding:5px 3px;border-radius:5px;background:'+(cod?col.bg:'#FAFAFA')+';color:'+(col.fg||'#1B2A32')+';font-size:9.5px;font-weight:700;border:1px solid #EEF2F4">'+(cod||'&mdash;')+'</div></td>';
+        h+='<td style="text-align:center;padding:0"><div style="padding:5px 3px;border-radius:5px;background:'+(cod?col.bg:'#FAFAFA')+';color:'+(col.fg||'#1B2A32')+';font-size:9.5px;font-weight:700;border:1px solid #EEF2F4">'+(cod||'&mdash;')+
+          (pm.almuerzo==='no'?'<div style="font-size:7.5px;font-weight:700;opacity:.8">sin almuerzo</div>':'')+'</div></td>';
       }
       totalMes[e.email]=(totalMes[e.email]||0)+tot;
       h+='<td style="text-align:center;padding:0"><div style="padding:5px 3px;border-radius:5px;font-size:11px;font-weight:800;color:'+(tot===META_SEMANAL?'#065F46':(tot===0?'#D1D5DB':'#92400E'))+'">'+tot+'h</div></td></tr>';
