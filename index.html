@@ -237,6 +237,25 @@ input:focus,select:focus,textarea:focus{
   .tab{padding:7px 12px;font-size:12px}
 }
 
+
+.nom-sub{padding:8px 15px;border-radius:9px;border:1.5px solid #E2E8F0;background:#FFFFFF;color:#475569;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;transition:all .15s}
+.nom-sub:hover{border-color:#0F172A;color:#0F172A}
+.nom-sub.on{background:#0F172A;border-color:#0F172A;color:#FFFFFF}
+.nom-card{background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;padding:20px;margin-bottom:14px}
+.nom-lbl{font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px}
+.nom-in{width:100%;height:42px;padding:0 13px;border:1px solid #E2E8F0;border-radius:8px;font-family:inherit;font-size:14px;outline:none;background:#FFFFFF;box-sizing:border-box;transition:border .15s,box-shadow .15s}
+.nom-in:focus{border-color:#0F172A;box-shadow:0 0 0 3px rgba(15,23,42,.09)}
+.nom-num{font-family:"Fira Code",ui-monospace,Menlo,monospace;font-variant-numeric:tabular-nums}
+.nom-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.nom-tbl th{text-align:left;padding:10px 12px;font-size:10.5px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.5px;background:#F8FAFC;border-bottom:1px solid #E2E8F0;white-space:nowrap}
+.nom-tbl td{padding:11px 12px;border-bottom:1px solid #F1F5F9;vertical-align:middle}
+.nom-tbl tr:hover td{background:#F8FAFC}
+.nom-btn{height:42px;padding:0 20px;border-radius:8px;border:none;background:#0F172A;color:#FFFFFF;font-family:inherit;font-size:13.5px;font-weight:700;cursor:pointer}
+.nom-btn:hover{background:#020617}
+.nom-btn.sec{background:#FFFFFF;color:#0F172A;border:1px solid #0F172A}
+.nom-btn.sec:hover{background:#F1F5F9}
+.nom-btn.ok{background:#059669}
+.nom-btn.ok:hover{background:#047857}
 </style>
 </head>
 <body>
@@ -289,7 +308,8 @@ input:focus,select:focus,textarea:focus{
       <button class="tab active" data-tab="pending" onclick="switchTab('pending')">Pendientes</button>
       <button class="tab" data-tab="stats" onclick="switchTab('stats')">Dashboard</button>
       <button class="tab" data-tab="history" onclick="switchTab('history')">Historial</button>
-<button class="tab" id="tabReporte" data-tab="reporte" onclick="switchTab('reporte')" style="display:none;background:#ECFDF5;border-color:#A7F3D0;color:#065F46;font-weight:700">Reporte ejecutivo</button>
+<button class="tab" id="tabNomina" data-tab="nomina" onclick="switchTab('nomina')" style="display:none;background:#F0FDF4;border-color:#86EFAC;color:#14532D;font-weight:700">Nomina y jornadas</button>
+        <button class="tab" id="tabReporte" data-tab="reporte" onclick="switchTab('reporte')" style="display:none;background:#ECFDF5;border-color:#A7F3D0;color:#065F46;font-weight:700">Reporte ejecutivo</button>
         <button class="tab" id="tabPendCierre" data-tab="pendcierre" onclick="switchTab('pendcierre')" style="background:#FFFBEB;border-color:#FDE68A;color:#92400E;font-weight:700">Pendientes de cierre <span id="badgePendCierre" style="display:none;background:#991B1B;color:#fff;border-radius:99px;padding:1px 7px;font-size:10px;margin-left:4px"></span></button>
         <button class="tab" id="tabSeguimiento" onclick="mostrarSupDashboard()" style="background:#FFFBEB;border-color:#FDE68A;color:#92400E;font-weight:700">Seguimiento y horarios</button>
       <button class="tab" data-tab="calendario" id="tabCalendario" onclick="switchTab('calendario')" style="display:none">Calendario</button>
@@ -337,6 +357,15 @@ input:focus,select:focus,textarea:focus{
     </div>
 
     <!-- CALENDARIO -->
+    <div class="panel" id="panel-nomina">
+      <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap" id="nomSubTabs">
+        <button onclick="nomVista('liquidar')" id="nomBtn-liquidar" class="nom-sub">Liquidar horas extras</button>
+        <button onclick="nomVista('salarios')" id="nomBtn-salarios" class="nom-sub">Salarios</button>
+        <button onclick="nomVista('jornadas')" id="nomBtn-jornadas" class="nom-sub">Jornadas por area</button>
+        <button onclick="nomVista('historial')" id="nomBtn-historial" class="nom-sub">Historial</button>
+      </div>
+      <div id="nomBody" style="color:#9CA3AF;font-size:13px">Cargando...</div>
+    </div>
     <div class="panel" id="panel-reporte">
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
         <select id="repPeriodo" onchange="cargarReporte()" style="padding:8px 12px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:13px;outline:none;background:white">
@@ -588,7 +617,7 @@ function fetchConTiempo(url, ms){
 var BUILD_VERSION='2026.09.16';
 
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxDthZQLoos79Xde-hu4lqaL-cYJVluqlzT6F4lJpiXWH7SYBYJsnL9Jd9Q4jqdQ6jC/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyWcQjE3xq7zlXC-kyFWzDdsrJFFaxnzgvk2qsNy42lhDNxmxNcMKZDGu3iPrAC7eIn/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -665,6 +694,9 @@ async function doLogin(){
       setTimeout(function(){cargarPendientesCierre();},1600);
       if(role==='supervisor'){
         var tr=document.getElementById('tabReporte');if(tr)tr.style.display='inline-block';
+      }
+      if(role==='master'||role==='supervisor'){
+        var tn=document.getElementById('tabNomina');if(tn)tn.style.display='inline-block';
       }
       if(role==='master'||role==='supervisor'){
         var rb=document.getElementById('resetBtn');if(rb)rb.style.display='inline-block';
@@ -768,6 +800,7 @@ function switchTab(t){
   if(t==='calendario')loadCalendar();
   if(t==='pendcierre')cargarPendientesCierre();
   if(t==='reporte')cargarReporte();
+  if(t==='nomina')nomVista(window._nomVista||'liquidar');
   if(t==='stats'||t==='dashboard')loadStats();
   if(t==='novedades')loadNovedades();
   if(t==='correcciones')loadCorrecciones();
@@ -2195,12 +2228,16 @@ function exportarCSV(tipo){
   var titulo='', cols=[], filas=[], anchos=[];
 
   if(tipo==='marcajes'){
-    titulo='Registro de marcajes';
-    cols=['Fecha y hora','Empleado','Correo','Empresa','Area','Tipo','Vehiculo','Horas','GPS','Seguridad'];
-    anchos=[130,210,210,150,70,130,150,60,60,150];
-    (_supData.marcajes||[]).filter(function(m){return rg==='todos'?true:m.enRango;}).forEach(function(m){
-      filas.push([m.fecha,m.nombre,m.correo,m.empresa,m.area,m.tipo,m.vehiculo||'',m.horas||'',
-                  (m.gpsOk==='Si'?'Si':'No'),(m.fpStatus||'OK')]);
+    titulo='Registro de jornadas';
+    cols=['Fecha','Dia','Empleado','Correo','Empresa','Area','Entrada','Salida','Horas','Turno','Vehiculo','Ubicacion entrada','Ubicacion salida','Estado'];
+    anchos=[80,80,190,200,140,60,65,65,55,95,140,150,150,110];
+    (_supData.jornadas||[]).forEach(function(j){
+      filas.push([j.fecha,j.dia,j.nombre,j.correo,j.empresa,j.area,
+                  j.entrada||'sin marcar',j.salida||'sin marcar',
+                  (j.horas!==null&&j.horas!==undefined)?j.horas:'',
+                  j.turno||'',j.vehiculo||'',
+                  j.mapaEntrada||'',j.mapaSalida||'',
+                  j.alerta?(j.fpStatus||'ALERTA'):j.estado]);
     });
   } else if(tipo==='usuarios'){
     titulo='Actividad de usuarios del sistema';
@@ -2277,7 +2314,9 @@ function exportarCSV(tipo){
       if(ri%2===1)cls.push('z');
       if(typeof v==='number')cls.push('c');
       if(alerta&&ci===f.length-1)cls.push('al');
-      h+='<td'+(cls.length?' class="'+cls.join(' ')+'"':'')+'>'+xEsc(v)+'</td>';
+      var sv2=String(v===null||v===undefined?'':v);
+      h+='<td'+(cls.length?' class="'+cls.join(' ')+'"':'')+'>'+
+         ((sv2.indexOf('http')===0)?('<a href="'+sv2+'">Ver ubicacion</a>'):xEsc(sv2))+'</td>';
     });
     h+='</tr>';
   });
@@ -3277,13 +3316,17 @@ function datosReporte(tipo){
   var rg=(document.getElementById('supRango')||{}).value||'mes';
   var d=_supData||{};
   if(tipo==='marcajes'){
-    return { titulo:'Registro de marcajes',
-      cols:['Fecha y hora','Empleado','Empresa','Area','Tipo','Vehiculo','Horas','GPS','Seguridad'],
-      anchos:['14%','20%','13%','7%','12%','13%','6%','6%','9%'],
-      filas:(d.marcajes||[]).filter(function(m){return rg==='todos'?true:m.enRango;}).map(function(m){
-        return [m.fecha,m.nombre+'\n'+m.correo,m.empresa,m.area,m.tipo,m.vehiculo||'-',m.horas||'-',
-                (m.gpsOk==='Si'?'Si':'No'),(m.fpStatus||'OK')];
-      }), alertaCol:8, alertaOk:'OK' };
+    return { titulo:'Registro de jornadas',
+      cols:['Fecha','Dia','Empleado','Empresa','Area','Entrada','Salida','Horas','Turno','Vehiculo','Ubicacion','Estado'],
+      anchos:['8%','8%','17%','11%','6%','7%','7%','6%','9%','11%','6%','9%'],
+      filas:(d.jornadas||[]).map(function(j){
+        return [j.fecha, j.dia, j.nombre+'\n'+j.correo, j.empresa, j.area,
+                j.entrada||'sin marcar', j.salida||'sin marcar',
+                (j.horas!==null&&j.horas!==undefined)?(j.horas+' h'):'-',
+                j.turno||'-', j.vehiculo||'-',
+                ((j.mapaEntrada||j.mapaSalida)?('<<LINK>>'+(j.mapaEntrada||'')+'||'+(j.mapaSalida||'')):'-'),
+                j.alerta?(j.fpStatus||'ALERTA'):j.estado];
+      }), alertaCol:11, alertaOk:'Completa' };
   }
   if(tipo==='empleados'){
     return { titulo:'Marcajes por empleado',
@@ -3346,9 +3389,16 @@ function pdfReporteOperativo(tipo){
     f.forEach(function(v,ci){
       var txt=String(v===null||v===undefined?'':v);
       var partes=txt.split('\n');
-      var cel=partes.length>1
-        ? '<b>'+xEsc(partes[0])+'</b><div style="font-size:7.5px;color:#9AA5AC">'+xEsc(partes[1])+'</div>'
-        : xEsc(txt);
+      var cel;
+      if(txt.indexOf('<<LINK>>')===0){
+        var ls=txt.substring(8).split('||');
+        var tz=[];
+        if(ls[0])tz.push('<a href="'+ls[0]+'" style="color:#0A58CA;text-decoration:underline">Entrada</a>');
+        if(ls[1])tz.push('<a href="'+ls[1]+'" style="color:#0A58CA;text-decoration:underline">Salida</a>');
+        cel=tz.join(' &#183; ')||'-';
+      } else if(partes.length>1){
+        cel='<b>'+xEsc(partes[0])+'</b><div style="font-size:7.5px;color:#9AA5AC">'+xEsc(partes[1])+'</div>';
+      } else { cel=xEsc(txt); }
       var estilo='padding:6px 8px;border-bottom:1px solid #EEF2F4;font-size:9px;vertical-align:top';
       if(alerta&&ci===cfg.alertaCol)estilo+=';color:#B91C1C;font-weight:700';
       tbody+='<td style="'+estilo+'">'+cel+'</td>';
@@ -4263,6 +4313,414 @@ function irAMes(clave){
   var p=clave.split('-');
   window._mesRef=new Date(parseInt(p[0],10), parseInt(p[1],10)-1, 1);
   renderVistaMes();
+}
+
+// ═══ NOMINA Y JORNADAS (Gestion Humana y Supervisor) ═══════════════════════
+var _nom={salarios:null, empleados:[], liq:null, jornadas:null};
+
+function pesos(n){
+  var v=Math.round(Number(n)||0);
+  return '$ '+v.toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+}
+function hrs(n){ var v=Number(n)||0; return (Math.round(v*100)/100).toString().replace('.',','); }
+
+function nomVista(v){
+  window._nomVista=v;
+  ['liquidar','salarios','jornadas','historial'].forEach(function(k){
+    var b=document.getElementById('nomBtn-'+k);
+    if(b)b.className='nom-sub'+(k===v?' on':'');
+  });
+  if(v==='liquidar')nomLiquidar();
+  else if(v==='salarios')nomSalarios();
+  else if(v==='jornadas')nomJornadas();
+  else nomHistorial();
+}
+
+async function nomCargarSalarios(){
+  var d=await pedirDatos(SCRIPT_URL+'?action=getSalarios&email='+encodeURIComponent(currentUser.email));
+  if(d.status!=='ok')throw new Error('salarios');
+  _nom.salarios=d.salarios||[]; _nom.empleados=d.empleados||[];
+}
+
+// ── Vista: Liquidar ─────────────────────────────────────────────────────────
+async function nomLiquidar(){
+  var el=document.getElementById('nomBody');
+  el.innerHTML='<div class="nom-card" style="color:#64748B">Cargando...</div>';
+  try{ await nomCargarSalarios(); }catch(e){ el.innerHTML='<div class="nom-card" style="color:#B91C1C">No pudimos cargar la informacion.</div>'; return; }
+
+  var hoy=new Date();
+  var ini=new Date(hoy.getFullYear(),hoy.getMonth(),1);
+  var f=function(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);};
+  var opts=_nom.empleados.map(function(e){
+    var s=_nom.salarios.filter(function(x){return x.email===e.email;})[0];
+    return '<option value="'+e.email+'" data-sal="'+(s?s.salario:'')+'">'+e.nombre+(s?'':' (sin salario)')+'</option>';
+  }).join('');
+
+  el.innerHTML=
+   '<div class="nom-card">'+
+     '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">'+
+       '<div style="font-size:18px;font-weight:800;color:#0F172A">Liquidacion de horas extras y recargos</div>'+
+       '<span style="font-size:11px;font-weight:700;color:#059669;background:#ECFDF5;border-radius:4px;padding:3px 9px;text-transform:uppercase;letter-spacing:.5px">Ley 2026</span>'+
+     '</div>'+
+     '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;align-items:end">'+
+       '<div style="grid-column:span 2;min-width:240px"><label class="nom-lbl">Colaborador</label>'+
+         '<select id="liqEmp" class="nom-in" onchange="nomSalarioSel()"><option value="">Selecciona...</option>'+opts+'</select></div>'+
+       '<div><label class="nom-lbl">Desde</label><input id="liqDesde" type="date" class="nom-in" value="'+f(ini)+'"></div>'+
+       '<div><label class="nom-lbl">Hasta</label><input id="liqHasta" type="date" class="nom-in" value="'+f(hoy)+'"></div>'+
+       '<div><label class="nom-lbl">Salario mensual</label><input id="liqSal" type="text" inputmode="numeric" class="nom-in nom-num" placeholder="0" oninput="nomFormatoSal(this)"></div>'+
+       '<div><button class="nom-btn" style="width:100%" onclick="nomCalcular()">Calcular</button></div>'+
+     '</div>'+
+     '<div style="margin-top:12px;font-size:12px;color:#64748B;line-height:1.6">'+
+       'Se calcula sobre los marcajes reales del periodo. Valor hora ordinaria = salario / 210 (jornada de 42 horas). '+
+       'Nocturno de 7:00 p. m. a 6:00 a. m. Recargo dominical y festivo del 90%. Almuerzo de 1 hora en jornadas de mas de 6 horas.'+
+     '</div>'+
+   '</div>'+
+   '<div id="liqRes"></div>';
+}
+
+function nomSalarioSel(){
+  var s=document.getElementById('liqEmp');
+  var o=s.options[s.selectedIndex];
+  var v=o?o.getAttribute('data-sal'):'';
+  var inp=document.getElementById('liqSal');
+  inp.value=v?pesos(v).replace('$ ',''):'';
+}
+function nomFormatoSal(inp){
+  var n=inp.value.replace(/[^0-9]/g,'');
+  inp.value=n?n.replace(/\B(?=(\d{3})+(?!\d))/g,'.'):'';
+}
+
+async function nomCalcular(){
+  var emp=document.getElementById('liqEmp').value;
+  var desde=document.getElementById('liqDesde').value, hasta=document.getElementById('liqHasta').value;
+  var sal=(document.getElementById('liqSal').value||'').replace(/[^0-9]/g,'');
+  var out=document.getElementById('liqRes');
+  if(!emp){out.innerHTML='<div class="nom-card" style="color:#B91C1C">Selecciona un colaborador.</div>';return;}
+  if(!sal){out.innerHTML='<div class="nom-card" style="color:#B91C1C">Indica el salario mensual.</div>';return;}
+  if(desde>hasta){out.innerHTML='<div class="nom-card" style="color:#B91C1C">La fecha inicial no puede ser mayor que la final.</div>';return;}
+  out.innerHTML='<div class="nom-card" style="color:#64748B">Calculando sobre los marcajes del periodo...</div>';
+  try{
+    var d=await pedirDatos(SCRIPT_URL+'?action=getLiquidacion&email='+encodeURIComponent(currentUser.email)+
+      '&empEmail='+encodeURIComponent(emp)+'&desde='+desde+'&hasta='+hasta+'&salario='+sal);
+    if(d.status!=='ok'){out.innerHTML='<div class="nom-card" style="color:#B91C1C">'+(d.msg||'No se pudo calcular.')+'</div>';return;}
+    var sel=document.getElementById('liqEmp');
+    d._nombre=sel.options[sel.selectedIndex].text.replace(' (sin salario)','');
+    d._email=emp; d._desde=desde; d._hasta=hasta;
+    _nom.liq=d;
+    nomRenderLiq(d);
+  }catch(e){ out.innerHTML='<div class="nom-card" style="color:#B91C1C">No se pudo calcular. Intenta de nuevo.</div>'; }
+}
+
+function nomRenderLiq(d){
+  var out=document.getElementById('liqRes');
+  var conHoras=(d.conceptos||[]).filter(function(c){return c.horas>0;});
+  var maxT=Math.max.apply(null,(d.conceptos||[]).map(function(c){return c.total;}).concat([1]));
+
+  var h='';
+  // KPIs
+  h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:14px">';
+  [['Total a liquidar',pesos(d.total),'#059669'],
+   ['Horas extra',hrs(d.horasExtra)+' h','#0F172A'],
+   ['Valor hora ordinaria',pesos(d.valorHoraOrdinaria),'#0F172A'],
+   ['Jornadas en el periodo',(d.jornadas||[]).length,'#0F172A']].forEach(function(k){
+    h+='<div class="nom-card" style="margin:0;padding:16px">'+
+      '<div class="nom-lbl" style="margin:0">'+k[0]+'</div>'+
+      '<div class="nom-num" style="font-size:24px;font-weight:700;color:'+k[2]+';margin-top:6px">'+k[1]+'</div></div>';
+  });
+  h+='</div>';
+
+  if(d.sinSalida>0){
+    h+='<div style="background:#FFFBEB;border:1px solid #FDE68A;border-left:4px solid #EAB308;border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:13px;color:#854D0E">'+
+      d.sinSalida+' jornada(s) del periodo no tienen salida registrada y no se incluyeron en el calculo. '+
+      'Revisalas en Pendientes de cierre antes de cerrar la liquidacion.</div>';
+  }
+
+  // Tabla de conceptos
+  h+='<div class="nom-card" style="padding:0;overflow:hidden">'+
+    '<div style="padding:16px 20px;border-bottom:1px solid #E2E8F0;display:flex;align-items:center;gap:10px;flex-wrap:wrap">'+
+      '<div style="font-size:15px;font-weight:800;color:#0F172A">'+xEsc(d._nombre)+'</div>'+
+      '<span style="font-size:12px;color:#64748B">Del '+d._desde+' al '+d._hasta+' &#183; Salario '+pesos(d.salario)+'</span>'+
+    '</div><div style="overflow-x:auto"><table class="nom-tbl"><thead><tr>'+
+    '<th>Concepto</th><th>Horario</th><th>Recargo</th><th style="text-align:right">Valor hora</th>'+
+    '<th style="text-align:right">Cantidad</th><th style="text-align:right">Total</th><th style="width:22%"></th></tr></thead><tbody>';
+  (d.conceptos||[]).forEach(function(c){
+    var act=c.horas>0;
+    h+='<tr style="'+(act?'':'opacity:.45')+'">'+
+      '<td style="font-weight:600;color:#0F172A">'+c.nombre+'</td>'+
+      '<td style="font-size:12px;color:#64748B;white-space:nowrap">'+c.rango+'</td>'+
+      '<td style="font-size:12px;color:#475569">'+c.pct+'</td>'+
+      '<td class="nom-num" style="text-align:right">'+pesos(c.valorHora)+'</td>'+
+      '<td class="nom-num" style="text-align:right;font-weight:700">'+hrs(c.horas)+'</td>'+
+      '<td class="nom-num" style="text-align:right;font-weight:700;color:'+(act?'#0F172A':'#94A3B8')+'">'+pesos(c.total)+'</td>'+
+      '<td><div style="background:#F1F5F9;border-radius:99px;height:8px;overflow:hidden">'+
+        '<div style="width:'+(c.total/maxT*100).toFixed(1)+'%;height:8px;background:#059669;border-radius:99px"></div></div></td>'+
+    '</tr>';
+  });
+  h+='<tr style="background:#F8FAFC"><td colspan="4" style="font-weight:800;color:#0F172A">Total horas extras y recargos</td>'+
+     '<td class="nom-num" style="text-align:right;font-weight:800">'+hrs((d.conceptos||[]).reduce(function(s,c){return s+c.horas;},0))+'</td>'+
+     '<td class="nom-num" style="text-align:right;font-weight:800;color:#059669;font-size:15px">'+pesos(d.total)+'</td><td></td></tr>';
+  h+='</tbody></table></div></div>';
+
+  // Detalle por jornada
+  h+='<div class="nom-card" style="padding:0;overflow:hidden">'+
+    '<div style="padding:16px 20px;border-bottom:1px solid #E2E8F0;font-size:15px;font-weight:800;color:#0F172A">Relacion de jornadas</div>'+
+    '<div style="overflow-x:auto;max-height:420px"><table class="nom-tbl"><thead><tr>'+
+    '<th>Fecha</th><th>Dia</th><th>Entrada</th><th>Salida</th><th style="text-align:right">Trabajadas</th>'+
+    '<th style="text-align:right">HED</th><th style="text-align:right">HEN</th><th style="text-align:right">RN</th>'+
+    '<th style="text-align:right">Dom/Fest</th><th>Estado</th></tr></thead><tbody>';
+  (d.jornadas||[]).forEach(function(j){
+    var m=j.min||{};
+    var dom=((m.rdd||0)+(m.rnd||0)+(m.hedd||0)+(m.hend||0))/60;
+    var esp=j.festivo||j.dominical;
+    h+='<tr style="'+(j.salida?'':'background:#FFFBEB')+'">'+
+      '<td class="nom-num" style="white-space:nowrap">'+j.fecha+'</td>'+
+      '<td style="white-space:nowrap">'+j.dia+(j.festivo?'<div style="font-size:10px;color:#7C3AED;font-weight:700">'+j.festivo+'</div>':'')+'</td>'+
+      '<td class="nom-num">'+(j.entrada||'-')+'</td>'+
+      '<td class="nom-num">'+(j.salida||'<span style="color:#B45309">sin salida</span>')+(j.cruzaDia?'<span style="font-size:10px;color:#64748B"> +1</span>':'')+'</td>'+
+      '<td class="nom-num" style="text-align:right">'+(j.trabajadas!==undefined?hrs(j.trabajadas):'-')+'</td>'+
+      '<td class="nom-num" style="text-align:right">'+(m.hed?hrs(m.hed/60):'')+'</td>'+
+      '<td class="nom-num" style="text-align:right">'+(m.hen?hrs(m.hen/60):'')+'</td>'+
+      '<td class="nom-num" style="text-align:right">'+(m.rn?hrs(m.rn/60):'')+'</td>'+
+      '<td class="nom-num" style="text-align:right;color:'+(esp?'#7C3AED':'#0F172A')+'">'+(dom?hrs(dom):'')+'</td>'+
+      '<td style="font-size:11.5px;font-weight:700;color:'+(j.salida?'#059669':'#B45309')+'">'+j.estado+'</td>'+
+    '</tr>';
+  });
+  if(!(d.jornadas||[]).length)h+='<tr><td colspan="10" style="text-align:center;color:#64748B;padding:20px">No hay marcajes en el periodo.</td></tr>';
+  h+='</tbody></table></div></div>';
+
+  // Acciones
+  h+='<div class="nom-card"><label class="nom-lbl">Observaciones</label>'+
+    '<input id="liqObs" class="nom-in" placeholder="Opcional: novedades, ajustes o aclaraciones">'+
+    '<div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">'+
+      '<button class="nom-btn ok" onclick="nomGuardarLiq()">Guardar como soporte</button>'+
+      '<button class="nom-btn sec" onclick="nomPDFLiq()">Descargar PDF</button>'+
+    '</div><div id="liqMsg" style="margin-top:10px;font-size:13px"></div></div>';
+
+  out.innerHTML=h;
+}
+
+async function nomGuardarLiq(){
+  var d=_nom.liq; if(!d)return;
+  var msg=document.getElementById('liqMsg');
+  msg.style.color='#64748B'; msg.textContent='Guardando...';
+  var c={}; (d.conceptos||[]).forEach(function(x){c[x.id]=x.horas;});
+  try{
+    var r=await pedirDatos(SCRIPT_URL+'?action=guardarLiquidacion&email='+encodeURIComponent(currentUser.email)+
+      '&empEmail='+encodeURIComponent(d._email)+'&nombre='+encodeURIComponent(d._nombre)+
+      '&desde='+d._desde+'&hasta='+d._hasta+'&salario='+d.salario+'&valorHora='+d.valorHoraOrdinaria+
+      '&total='+d.total+'&conceptos='+encodeURIComponent(JSON.stringify(c))+
+      '&obs='+encodeURIComponent((document.getElementById('liqObs')||{}).value||''));
+    msg.style.color=r.status==='ok'?'#059669':'#B91C1C';
+    msg.textContent=r.status==='ok'?r.msg:'No se pudo guardar.';
+  }catch(e){ msg.style.color='#B91C1C'; msg.textContent='No se pudo guardar.'; }
+}
+
+// ── Vista: Salarios ─────────────────────────────────────────────────────────
+async function nomSalarios(){
+  var el=document.getElementById('nomBody');
+  el.innerHTML='<div class="nom-card" style="color:#64748B">Cargando...</div>';
+  try{ await nomCargarSalarios(); }catch(e){ el.innerHTML='<div class="nom-card" style="color:#B91C1C">No pudimos cargar los salarios.</div>'; return; }
+  var mapa={}; _nom.salarios.forEach(function(s){mapa[s.email]=s;});
+  var con=_nom.empleados.filter(function(e){return mapa[e.email];}).length;
+
+  var h='<div class="nom-card">'+
+    '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px">'+
+      '<div style="font-size:18px;font-weight:800;color:#0F172A">Salarios</div>'+
+      '<span style="font-size:12px;color:#64748B">'+con+' de '+_nom.empleados.length+' colaboradores con salario registrado</span>'+
+    '</div>'+
+    '<div style="font-size:12px;color:#64748B;margin-bottom:14px">Informacion confidencial. Solo la ven Gestion Humana y el supervisor del sistema.</div>'+
+    '<details style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:12px 14px;margin-bottom:14px">'+
+      '<summary style="cursor:pointer;font-size:13px;font-weight:700;color:#0F172A">Importar desde el Excel de empleados por area</summary>'+
+      '<div style="font-size:12px;color:#64748B;margin:10px 0">Copia desde tu archivo las columnas AREA, NOMBRE, CARGO y SUELDO (con o sin encabezado) y pegalas aqui.</div>'+
+      '<textarea id="salPaste" style="width:100%;height:120px;padding:10px;border:1px solid #E2E8F0;border-radius:8px;font-family:ui-monospace,monospace;font-size:11.5px;box-sizing:border-box"></textarea>'+
+      '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">'+
+        '<button class="nom-btn sec" onclick="nomPrevSal()">Previsualizar</button>'+
+        '<button class="nom-btn" onclick="nomImportSal()">Importar</button></div>'+
+      '<div id="salPrev" style="margin-top:12px"></div>'+
+    '</details>'+
+    '<div style="overflow-x:auto"><table class="nom-tbl"><thead><tr>'+
+    '<th>Colaborador</th><th>Area</th><th>Cargo</th><th style="text-align:right">Salario</th><th style="text-align:right">Valor hora</th><th></th></tr></thead><tbody>';
+  _nom.empleados.forEach(function(e,ix){
+    var s=mapa[e.email];
+    h+='<tr><td style="font-weight:600;color:#0F172A">'+e.nombre+'<div style="font-size:11px;color:#94A3B8">'+e.email+'</div></td>'+
+      '<td style="font-size:12.5px;color:#475569">'+((s&&s.area)||e.area||'-')+'</td>'+
+      '<td style="font-size:12.5px;color:#475569">'+((s&&s.cargo)||'-')+'</td>'+
+      '<td style="text-align:right"><input id="salIn'+ix+'" class="nom-in nom-num" style="height:36px;width:150px;text-align:right" value="'+(s?pesos(s.salario).replace('$ ',''):'')+'" oninput="nomFormatoSal(this)" placeholder="sin registrar"></td>'+
+      '<td class="nom-num" style="text-align:right;color:#475569">'+(s?pesos(s.salario/210):'-')+'</td>'+
+      '<td><button class="nom-btn sec" style="height:34px;padding:0 12px;font-size:12px" onclick="nomGuardarSal('+ix+')">Guardar</button></td></tr>';
+  });
+  h+='</tbody></table></div><div id="salMsg" style="margin-top:10px;font-size:13px"></div></div>';
+  el.innerHTML=h;
+}
+
+async function nomGuardarSal(ix){
+  var e=_nom.empleados[ix];
+  var v=(document.getElementById('salIn'+ix).value||'').replace(/[^0-9]/g,'');
+  var msg=document.getElementById('salMsg');
+  if(!v){msg.style.color='#B91C1C';msg.textContent='Indica un salario valido.';return;}
+  var prev=_nom.salarios.filter(function(x){return x.email===e.email;})[0]||{};
+  try{
+    var r=await pedirDatos(SCRIPT_URL+'?action=saveSalarios&email='+encodeURIComponent(currentUser.email)+
+      '&filas='+encodeURIComponent(JSON.stringify([{email:e.email,nombre:e.nombre,area:prev.area||e.area,cargo:prev.cargo||'',salario:v}])));
+    msg.style.color=r.status==='ok'?'#059669':'#B91C1C';
+    msg.textContent=r.status==='ok'?('Salario de '+e.nombre+' guardado.'):'No se pudo guardar.';
+    if(r.status==='ok')nomSalarios();
+  }catch(x){ msg.style.color='#B91C1C'; msg.textContent='No se pudo guardar.'; }
+}
+
+function nomParseSal(){
+  var txt=(document.getElementById('salPaste').value||'');
+  var res=[], nores=[];
+  txt.split(/\r?\n/).forEach(function(ln){
+    var c=ln.split('\t').map(function(x){return x.trim();}).filter(function(x){return x!=='';});
+    if(c.length<2)return;
+    var sal='', nom='', area='', cargo='';
+    for(var i=c.length-1;i>=0;i--){ var n=c[i].replace(/[^0-9]/g,''); if(n.length>=6){sal=n;break;} }
+    if(!sal)return;
+    var textos=c.filter(function(x){return x.replace(/[^0-9]/g,'').length<6 && !/^\d+$/.test(x);});
+    var p=null, pIdx=-1;
+    textos.forEach(function(t,k){ if(!p){ var f=buscarPersona(t,_nom.empleados); if(f){p=f;pIdx=k;} } });
+    if(pIdx>0)area=textos[pIdx-1];
+    if(pIdx>=0&&textos[pIdx+1])cargo=textos[pIdx+1];
+    if(p)res.push({email:p.email,nombre:p.nombre,area:area,cargo:cargo,salario:sal});
+    else nores.push(textos.join(' '));
+  });
+  return {res:res,nores:nores};
+}
+
+function nomPrevSal(){
+  var r=nomParseSal(), el=document.getElementById('salPrev');
+  if(!r.res.length&&!r.nores.length){el.innerHTML='<div style="color:#B91C1C;font-size:13px">No se reconocio informacion. Verifica lo que pegaste.</div>';return;}
+  var h='<div style="font-size:13px;font-weight:700;color:#059669;margin-bottom:6px">Reconocidos: '+r.res.length+'</div>';
+  r.res.forEach(function(x){ h+='<div style="font-size:12.5px;padding:3px 0">'+x.nombre+' &#183; <span class="nom-num">'+pesos(x.salario)+'</span>'+(x.cargo?' &#183; <span style="color:#64748B">'+x.cargo+'</span>':'')+'</div>'; });
+  if(r.nores.length)h+='<div style="font-size:12.5px;color:#B45309;margin-top:8px">No estan en la base de empleados: '+r.nores.join(' | ')+'</div>';
+  el.innerHTML=h;
+}
+
+async function nomImportSal(){
+  var r=nomParseSal(), el=document.getElementById('salPrev');
+  if(!r.res.length){el.innerHTML='<div style="color:#B91C1C;font-size:13px">No hay filas reconocidas para importar.</div>';return;}
+  el.innerHTML='<div style="color:#64748B;font-size:13px">Importando...</div>';
+  try{
+    var d=await pedirDatos(SCRIPT_URL+'?action=saveSalarios&email='+encodeURIComponent(currentUser.email)+
+      '&filas='+encodeURIComponent(JSON.stringify(r.res)));
+    if(d.status==='ok'){ nomSalarios(); }
+    else el.innerHTML='<div style="color:#B91C1C;font-size:13px">No se pudo importar.</div>';
+  }catch(e){ el.innerHTML='<div style="color:#B91C1C;font-size:13px">No se pudo importar.</div>'; }
+}
+
+// ── Vista: Jornadas por area ────────────────────────────────────────────────
+async function nomJornadas(){
+  var el=document.getElementById('nomBody');
+  el.innerHTML='<div class="nom-card" style="color:#64748B">Cargando...</div>';
+  try{
+    if(!_nom.jornadas){
+      var d=await pedirDatos(SCRIPT_URL+'?action=getJornadasArea&email='+encodeURIComponent(currentUser.email));
+      if(d.status!=='ok')throw 0;
+      _nom.jornadas=d;
+    }
+  }catch(e){ el.innerHTML='<div class="nom-card" style="color:#B91C1C">No pudimos cargar las jornadas.</div>'; return; }
+  var j=_nom.jornadas;
+  var h='<div class="nom-card"><div style="font-size:18px;font-weight:800;color:#0F172A;margin-bottom:4px">Jornada laboral por area</div>'+
+    '<div style="font-size:12.5px;color:#64748B">AMG de Colombia e Inmovimento &#183; Segundo semestre 2026 &#183; Jornada maxima legal de 42 horas semanales</div></div>';
+  h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px">';
+  (j.jornadas||[]).forEach(function(a){
+    h+='<div class="nom-card" style="margin:0;border-top:4px solid '+a.color+'">'+
+      '<div style="font-size:15px;font-weight:800;color:#0F172A">'+a.area+'</div>'+
+      '<div style="font-size:11px;font-weight:700;color:'+a.color+';text-transform:uppercase;letter-spacing:.5px;margin:3px 0 12px">'+a.semanal+'</div>'+
+      (a.nota?'<div style="font-size:12px;color:#475569;background:#F8FAFC;border-radius:6px;padding:8px 10px;margin-bottom:12px">'+a.nota+'</div>':'')+
+      '<table style="width:100%;border-collapse:collapse;font-size:13px">';
+    a.reglas.forEach(function(r){
+      h+='<tr><td style="padding:7px 0;color:#475569;border-bottom:1px solid #F1F5F9">'+r.dias+'</td>'+
+        '<td class="nom-num" style="padding:7px 0;font-weight:700;color:#0F172A;text-align:right;border-bottom:1px solid #F1F5F9">'+r.horario+'</td></tr>'+
+        '<tr><td style="padding:2px 0 8px;font-size:11.5px;color:#94A3B8">Almuerzo</td>'+
+        '<td style="padding:2px 0 8px;font-size:11.5px;color:#64748B;text-align:right">'+r.almuerzo+'</td></tr>';
+    });
+    h+='</table></div>';
+  });
+  h+='</div>';
+
+  h+='<div class="nom-card" style="margin-top:14px"><div style="font-size:15px;font-weight:800;color:#0F172A;margin-bottom:12px">Factores de liquidacion vigentes</div>'+
+    '<div style="overflow-x:auto"><table class="nom-tbl"><thead><tr><th>Concepto</th><th>Horario</th><th>Recargo</th><th style="text-align:right">Factor sobre la hora</th></tr></thead><tbody>';
+  (j.conceptos||[]).forEach(function(c){
+    h+='<tr><td style="font-weight:600">'+c.nombre+'</td><td style="font-size:12px;color:#64748B">'+c.rango+'</td>'+
+      '<td style="font-size:12px">'+c.pct+'</td><td class="nom-num" style="text-align:right;font-weight:700">'+c.factor.toFixed(2).replace('.',',')+'</td></tr>';
+  });
+  h+='</tbody></table></div><div style="font-size:12px;color:#64748B;margin-top:10px">Valor hora ordinaria = salario mensual / '+j.divisor+'.</div></div>';
+  el.innerHTML=h;
+}
+
+// ── Vista: Historial ────────────────────────────────────────────────────────
+async function nomHistorial(){
+  var el=document.getElementById('nomBody');
+  el.innerHTML='<div class="nom-card" style="color:#64748B">Cargando...</div>';
+  try{
+    var d=await pedirDatos(SCRIPT_URL+'?action=getLiquidaciones&email='+encodeURIComponent(currentUser.email));
+    if(d.status!=='ok')throw 0;
+    var h='<div class="nom-card" style="padding:0;overflow:hidden"><div style="padding:16px 20px;border-bottom:1px solid #E2E8F0;font-size:15px;font-weight:800;color:#0F172A">Liquidaciones guardadas</div>'+
+      '<div style="overflow-x:auto"><table class="nom-tbl"><thead><tr><th>Fecha</th><th>Colaborador</th><th>Periodo</th><th style="text-align:right">Total</th><th>Liquidado por</th></tr></thead><tbody>';
+    (d.historial||[]).forEach(function(x){
+      h+='<tr><td class="nom-num" style="font-size:12px">'+x.fecha+'</td><td style="font-weight:600">'+x.nombre+'</td>'+
+        '<td style="font-size:12.5px;color:#475569">'+x.desde+' al '+x.hasta+'</td>'+
+        '<td class="nom-num" style="text-align:right;font-weight:700;color:#059669">'+pesos(x.total)+'</td>'+
+        '<td style="font-size:12.5px;color:#475569">'+x.por+'</td></tr>';
+    });
+    if(!(d.historial||[]).length)h+='<tr><td colspan="5" style="text-align:center;color:#64748B;padding:22px">Aun no hay liquidaciones guardadas.</td></tr>';
+    el.innerHTML=h+'</tbody></table></div></div>';
+  }catch(e){ el.innerHTML='<div class="nom-card" style="color:#B91C1C">No pudimos cargar el historial.</div>'; }
+}
+
+// ── PDF de la liquidacion ───────────────────────────────────────────────────
+function nomPDFLiq(){
+  var d=_nom.liq; if(!d)return;
+  var w=window.open('','_blank','width=1000,height=820');
+  if(!w){alert('Permite las ventanas emergentes para generar el PDF.');return;}
+  var logoEl=document.getElementById('amg-logo-b64'); var logo=logoEl?logoEl.src:'';
+  var filas='';
+  (d.conceptos||[]).forEach(function(c,i){
+    filas+='<tr style="background:'+(i%2?'#F8FAFC':'#FFFFFF')+';'+(c.horas>0?'':'color:#94A3B8')+'">'+
+      '<td style="padding:7px 9px">'+c.nombre+'</td><td style="padding:7px 9px;font-size:9px">'+c.pct+'</td>'+
+      '<td style="padding:7px 9px;text-align:right">'+pesos(c.valorHora)+'</td>'+
+      '<td style="padding:7px 9px;text-align:right">'+hrs(c.horas)+'</td>'+
+      '<td style="padding:7px 9px;text-align:right;font-weight:700">'+pesos(c.total)+'</td></tr>';
+  });
+  var jor='';
+  (d.jornadas||[]).forEach(function(j,i){
+    var m=j.min||{}, dom=((m.rdd||0)+(m.rnd||0)+(m.hedd||0)+(m.hend||0))/60;
+    jor+='<tr style="background:'+(i%2?'#F8FAFB':'#FFFFFF')+'"><td style="padding:5px 7px">'+j.fecha+'</td><td style="padding:5px 7px">'+j.dia+(j.festivo?' ('+j.festivo+')':'')+'</td>'+
+      '<td style="padding:5px 7px">'+(j.entrada||'-')+'</td><td style="padding:5px 7px">'+(j.salida||'sin salida')+'</td>'+
+      '<td style="padding:5px 7px;text-align:right">'+(j.trabajadas!==undefined?hrs(j.trabajadas):'-')+'</td>'+
+      '<td style="padding:5px 7px;text-align:right">'+(m.hed?hrs(m.hed/60):'')+'</td><td style="padding:5px 7px;text-align:right">'+(m.hen?hrs(m.hen/60):'')+'</td>'+
+      '<td style="padding:5px 7px;text-align:right">'+(m.rn?hrs(m.rn/60):'')+'</td><td style="padding:5px 7px;text-align:right">'+(dom?hrs(dom):'')+'</td></tr>';
+  });
+  w.document.write('<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Liquidacion '+xEsc(d._nombre)+'</title><style>'+
+    '@page{size:A4;margin:13mm}body{font-family:Inter,Arial,sans-serif;color:#0F172A;margin:0;font-size:11px}'+
+    'table{width:100%;border-collapse:collapse}th{background:#0F172A;color:#fff;font-size:8.5px;text-transform:uppercase;letter-spacing:.4px;padding:7px 9px;text-align:left}'+
+    '.sec{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;margin:16px 0 7px;padding-bottom:4px;border-bottom:2px solid #0F172A}'+
+    '.k{border:1px solid #E2E8F0;border-radius:8px;padding:10px 12px}.k b{display:block;font-size:17px;margin-top:3px}'+
+    '@media print{.np{display:none}}</style></head><body>'+
+    '<div class="np" style="position:fixed;top:10px;right:12px"><button onclick="window.print()" style="padding:9px 18px;border-radius:8px;border:none;background:#0F172A;color:#fff;font-size:13px;font-weight:700;cursor:pointer">Guardar como PDF</button></div>'+
+    '<table style="background:#0F172A;color:#fff;border-radius:10px"><tr>'+(logo?'<td style="padding:14px 16px;width:100px"><img src="'+logo+'" style="height:30px"></td>':'')+
+    '<td style="padding:14px 16px"><div style="font-size:16px;font-weight:800">Liquidacion de horas extras y recargos</div>'+
+    '<div style="font-size:10px;opacity:.8;margin-top:3px">AMG de Colombia SAS &#183; Legislacion laboral colombiana vigente 2026</div></td></tr></table>'+
+    '<div class="sec">Datos del colaborador</div>'+
+    '<table><tr><td style="padding:3px 0;width:22%;color:#64748B">Colaborador</td><td style="font-weight:700">'+xEsc(d._nombre)+'</td>'+
+    '<td style="width:18%;color:#64748B">Periodo</td><td style="font-weight:700">'+d._desde+' al '+d._hasta+'</td></tr>'+
+    '<tr><td style="padding:3px 0;color:#64748B">Salario mensual</td><td style="font-weight:700">'+pesos(d.salario)+'</td>'+
+    '<td style="color:#64748B">Valor hora ordinaria</td><td style="font-weight:700">'+pesos(d.valorHoraOrdinaria)+' (salario / 210)</td></tr></table>'+
+    '<div class="sec">Resumen</div><table><tr>'+
+    '<td style="width:33%;padding-right:6px"><div class="k">Total a liquidar<b style="color:#059669">'+pesos(d.total)+'</b></div></td>'+
+    '<td style="width:33%;padding-right:6px"><div class="k">Horas extra<b>'+hrs(d.horasExtra)+' h</b></div></td>'+
+    '<td style="width:33%"><div class="k">Jornadas liquidadas<b>'+(d.jornadas||[]).filter(function(x){return x.salida;}).length+'</b></div></td></tr></table>'+
+    '<div class="sec">Conceptos</div><table><tr><th>Concepto</th><th>Recargo</th><th style="text-align:right">Valor hora</th><th style="text-align:right">Cantidad</th><th style="text-align:right">Total</th></tr>'+filas+
+    '<tr style="background:#0F172A;color:#fff;font-weight:800"><td colspan="4" style="padding:8px 9px">TOTAL HORAS EXTRAS Y RECARGOS</td><td style="padding:8px 9px;text-align:right">'+pesos(d.total)+'</td></tr></table>'+
+    '<div class="sec">Relacion de jornadas</div><table><tr><th>Fecha</th><th>Dia</th><th>Entrada</th><th>Salida</th><th style="text-align:right">Trab.</th><th style="text-align:right">HED</th><th style="text-align:right">HEN</th><th style="text-align:right">RN</th><th style="text-align:right">Dom/Fest</th></tr>'+jor+'</table>'+
+    (((document.getElementById('liqObs')||{}).value)?'<div class="sec">Observaciones</div><div>'+xEsc(document.getElementById('liqObs').value)+'</div>':'')+
+    '<table style="margin-top:46px"><tr><td style="width:45%;border-top:1px solid #0F172A;padding-top:5px;font-size:9.5px">Elaboro: '+xEsc(currentUser.nombre||'')+'</td><td style="width:10%"></td>'+
+    '<td style="width:45%;border-top:1px solid #0F172A;padding-top:5px;font-size:9.5px">Recibido: '+xEsc(d._nombre)+'</td></tr></table>'+
+    '<div style="margin-top:18px;font-size:8.5px;color:#94A3B8;text-align:center">Generado el '+new Date().toLocaleString('es-CO')+' a partir de los marcajes registrados en el sistema</div>'+
+    '</body></html>');
+  w.document.close();
 }
 </script>
 <div id="toast" style="display:none;position:fixed;bottom:24px;right:24px;background:#0A3D47;color:white;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.25)"></div>
