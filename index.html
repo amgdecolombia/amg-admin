@@ -386,8 +386,9 @@ input:focus,select:focus,textarea:focus{
           <div style="font-size:13px;font-weight:700;color:#92400E">Jornadas pendientes de cierre</div>
           <div style="font-size:11px;color:#92400E;margin-top:3px">Permanecen aqui hasta que se completen. Ninguna suma horas mientras siga abierta.</div>
           <div style="font-size:11px;color:#6B7280;margin-top:6px;line-height:1.5">
-            <b style="color:#065F46">Registrar marcaje</b>: tu completas la hora que falto y la jornada queda cerrada de inmediato.<br>
-            <b style="color:#92400E">Avisar al empleado</b>: le llega un correo con el detalle para que el solicite la correccion.
+            <b style="color:#065F46">Registrar marcaje</b>: completas la hora que falto y la jornada queda cerrada de inmediato.<br>
+            <b style="color:#1E40AF">Validar</b>: la marca fue un error o la jornada ya esta bien; se cierra sin crear marcajes nuevos.<br>
+            <b style="color:#92400E">Avisar al empleado</b>: le llega un correo con el detalle para que el envie la correccion.
           </div>
         </div>
         <div style="padding:10px 16px;border-bottom:1px solid #FEF3C7;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
@@ -617,7 +618,7 @@ function fetchConTiempo(url, ms){
 var BUILD_VERSION='2026.09.16';
 
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzHgKXg7rjSjOcL-P7SnoZbwwR0lKexiG5vKwEir-h4YSASQrDjSGSgTRBi-TeWg-7W/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwnENVY5gDSGf3n69_3qsDYnvIu6pRhHlyrCOdhv9F--dq5ywu4FnKXKp5dWzl0igfy/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -916,7 +917,8 @@ function buildReqCard(row,idx){
   var festAcum=row['Festivos Acum Mes']||'';
   var isMaster=currentUser.role==='master';
   var colorTipo={'Tiempo Extra':'#854F0B','Festivos Trabajados':'#4C1D95','Dias Compensatorios':'#1E40AF',
-    'Solicitudes de Vacaciones':'#065F46','Correcciones de Marcaje':'#374151'}[tab]||'#0A3D47';
+    'Solicitudes de Vacaciones':'#065F46','Correcciones de Marcaje':'#374151',
+    'Solicitudes de Permiso':'#7C3AED'}[tab]||'#0A3D47';
   var html='<div class="req-card" id="card-'+idx+'" style="border-left:5px solid '+colorTipo+'">';
   html+='<div class="req-top"><div>';
   html+='<div class="req-name">'+nombre+'</div>';
@@ -930,6 +932,12 @@ function buildReqCard(row,idx){
   var fechaIni=row['Fecha Extra']||row['Fecha Festivo']||row['Fecha Compensatorio']||row['Fecha Marcaje']||row['Fecha Inicio']||'';
   var fechaFin=row['Fecha Fin']||'';
   var diasHab=row['Dias Habiles']||'';
+  // Etapa del flujo de aprobacion
+  if(row['_etapa']==='Gestion Humana'){
+    html+='<div style="background:#EFF6FF;border:1.5px solid #BFDBFE;border-left:4px solid #1E40AF;border-radius:8px;padding:9px 12px;margin:8px 0;font-size:12px;color:#1E3A8A">'+
+      '<b>Pre-aprobada por el jefe directo.</b> Pendiente de la aprobacion final de Gestion Humana.'+
+      (row['Obs Director']?'<div style="margin-top:3px;color:#475569">Observacion del director: '+xEsc(row['Obs Director'])+'</div>':'')+'</div>';
+  }
   // Comparativo de jornada: lo real contra lo solicitado
   var rEnt=row['_realEntrada']||'', rSal=row['_realSalida']||'';
   var sEnt=row['_solEntrada']||'', sSal=row['_solSalida']||'';
@@ -2716,7 +2724,8 @@ function renderPendientesCierre(){
     window._pendMap=window._pendMap||{};
     window._pendMap['p'+ix]=r;
     h+='<tr style="'+(vencida?'background:#FEF2F2':'')+'">';
-    h+='<td style="padding:8px 10px;border-bottom:1px solid #FEF3C7"><div style="font-weight:600">'+r.nombre+'</div><div style="font-size:10px;color:#9CA3AF">'+r.correo+'</div></td>';
+    h+='<td style="padding:8px 10px;border-bottom:1px solid #FEF3C7"><div style="font-weight:600">'+r.nombre+'</div><div style="font-size:10px;color:#9CA3AF">'+r.correo+'</div>'+
+       (r.motivo?'<div style="font-size:10.5px;color:#92400E;margin-top:3px;max-width:260px">'+xEsc(r.motivo)+'</div>':'')+'</td>';
     h+='<td style="padding:8px 10px;border-bottom:1px solid #FEF3C7;font-family:monospace;font-size:11px;white-space:nowrap">'+r.fecha+'</td>';
     h+='<td style="padding:8px 10px;border-bottom:1px solid #FEF3C7;font-size:11px;color:#6B7280">'+(r.diaSemana||'')+'</td>';
     h+='<td style="padding:8px 10px;border-bottom:1px solid #FEF3C7;font-family:monospace;font-size:11px">'+(r.horaEntrada||'<span style="color:#D1D5DB">sin registro</span>')+'</td>';
@@ -2728,8 +2737,9 @@ function renderPendientesCierre(){
        ? '<span style="background:#FEF2F2;color:#991B1B;border-radius:99px;padding:2px 9px;font-size:10px;font-weight:800">VENCIDA</span>'
        : '<span style="background:#ECFDF5;color:#065F46;border-radius:99px;padding:2px 9px;font-size:10px;font-weight:800">EN PLAZO</span>')+'</td>';
     h+='<td style="padding:8px 10px;border-bottom:1px solid #FEF3C7;white-space:nowrap">'+
-       '<button onclick="completarJornada(window._pendMap[\'p'+ix+'\'])" style="padding:4px 11px;border-radius:7px;border:none;background:#065F46;color:#fff;font-family:inherit;font-size:10px;font-weight:700;cursor:pointer;margin-right:4px">&#10003; Registrar marcaje</button>'+
-       '<button onclick="notificarPendiente(window._pendMap[\'p'+ix+'\'])" style="padding:4px 11px;border-radius:7px;border:1.5px solid #FDE68A;background:#FFFBEB;color:#92400E;font-family:inherit;font-size:10px;font-weight:700;cursor:pointer">&#9993; Avisar al empleado</button></td>';
+       '<button onclick="completarJornada(window._pendMap[\'p'+ix+'\'])" style="padding:4px 10px;border-radius:7px;border:none;background:#065F46;color:#fff;font-family:inherit;font-size:10px;font-weight:700;cursor:pointer;margin-right:4px">&#10003; Registrar marcaje</button>'+
+       '<button onclick="validarPendiente(window._pendMap[\'p'+ix+'\'])" style="padding:4px 10px;border-radius:7px;border:1.5px solid #BFDBFE;background:#EFF6FF;color:#1E40AF;font-family:inherit;font-size:10px;font-weight:700;cursor:pointer;margin-right:4px">Validar</button>'+
+       '<button onclick="notificarPendiente(window._pendMap[\'p'+ix+'\'])" style="padding:4px 10px;border-radius:7px;border:1.5px solid #FDE68A;background:#FFFBEB;color:#92400E;font-family:inherit;font-size:10px;font-weight:700;cursor:pointer">&#9993; Avisar al empleado</button></td>';
     h+='</tr>';
   });
   el.innerHTML=h+'</tbody></table></div>';
@@ -2737,16 +2747,24 @@ function renderPendientesCierre(){
 
 async function notificarPendiente(r){
   if(!r)return;
-  try{
-    var url=SCRIPT_URL+'?action=notificarPendiente&email='+encodeURIComponent(currentUser.email)+
-      '&empEmail='+encodeURIComponent(r.correo)+'&nombre='+encodeURIComponent(r.nombre)+
-      '&fecha='+encodeURIComponent(r.fecha)+'&falta='+encodeURIComponent(r.falta)+
-      '&horaEntrada='+encodeURIComponent(r.horaEntrada||'')+'&horaSalida='+encodeURIComponent(r.horaSalida||'')+
-      '&progEntrada='+encodeURIComponent(r.progEntrada||'')+'&progSalida='+encodeURIComponent(r.progSalida||'')+
-      '&dias='+encodeURIComponent(r.diasAbierta);
-    var d=await pedirDatos(url);
-    showToast(d.status==='ok'?(d.msg||'Recordatorio enviado.'):'No se pudo enviar el recordatorio.');
-  }catch(e){ showToast('No se pudo enviar el recordatorio.'); }
+  var url=SCRIPT_URL+'?action=notificarPendiente&email='+encodeURIComponent(currentUser.email)+
+    '&empEmail='+encodeURIComponent(r.correo)+'&nombre='+encodeURIComponent(r.nombre)+
+    '&fecha='+encodeURIComponent(r.fecha)+'&dia='+encodeURIComponent(r.diaSemana||'')+
+    '&falta='+encodeURIComponent(r.falta)+
+    '&horaEntrada='+encodeURIComponent(r.horaEntrada||'')+'&horaSalida='+encodeURIComponent(r.horaSalida||'')+
+    '&progEntrada='+encodeURIComponent(r.progEntrada||'')+'&progSalida='+encodeURIComponent(r.progSalida||'')+
+    '&dias='+encodeURIComponent(r.diasAbierta)+'&motivo='+encodeURIComponent(r.motivo||'');
+  for(var intento=1;intento<=3;intento++){
+    try{
+      var d=await pedirDatos(url);
+      if(d.status==='ok'){ showToast(d.msg||('Aviso enviado a '+r.nombre+'.')); return true; }
+      showToast(d.msg||'Revisa los datos del colaborador.'); return false;
+    }catch(e){
+      if(intento<3){ await new Promise(function(res){setTimeout(res,1500*intento);}); continue; }
+      showToast('Estamos reintentando el aviso a '+r.nombre+'. Revisa tu conexion si no se confirma en un momento.');
+      return false;
+    }
+  }
 }
 
 async function notificarTodasPendientes(){
@@ -2754,7 +2772,7 @@ async function notificarTodasPendientes(){
   if(!confirm('Se enviara un recordatorio a '+_pendCierre.length+' colaborador(es) con el detalle de su jornada sin cerrar. Continuar?'))return;
   var ok=0;
   for(var i=0;i<_pendCierre.length;i++){
-    try{ await notificarPendiente(_pendCierre[i]); ok++; }catch(e){}
+    try{ if(await notificarPendiente(_pendCierre[i]))ok++; }catch(e){}
   }
   showToast('Recordatorios enviados: '+ok);
 }
@@ -3448,7 +3466,9 @@ async function completarJornada(r){
     (r.horaEntrada?'Entrada registrada: '+r.horaEntrada+'\n':'')+
     (r.horaSalida?'Salida registrada: '+r.horaSalida+'\n':'')+
     ((r.progEntrada||r.progSalida)?'Horario programado: '+(r.progEntrada||'--')+' a '+(r.progSalida||'--')+'\n':'')+
-    '\nIndica la hora real de la '+r.falta.toLowerCase()+' en formato HH:MM',
+    (r.motivo?'\n'+r.motivo+'\n':'')+
+    '\nIndica la hora real de la '+r.falta.toLowerCase()+' en formato HH:MM'+
+    (r.falta==='Salida'?'\n(Si fue un turno nocturno, el sistema la ubica en el dia siguiente automaticamente)':''),
     sug);
   if(!hora)return;
   if(!/^\d{1,2}:\d{2}$/.test(hora.trim())){alert('Formato invalido. Usa HH:MM, por ejemplo 17:30.');return;}
@@ -3458,6 +3478,7 @@ async function completarJornada(r){
     var d=await pedirDatos(SCRIPT_URL+'?action=cerrarJornadaManual&email='+encodeURIComponent(currentUser.email)+
       '&empEmail='+encodeURIComponent(r.correo)+'&fecha='+encodeURIComponent(r.fecha)+
       '&hora='+encodeURIComponent(hora.trim())+'&tipo='+encodeURIComponent(r.falta)+
+      '&marcaRef='+encodeURIComponent(r.marcaRef||'')+
       '&motivo='+encodeURIComponent(motivo));
     if(d.status==='ok'){
       showToast(d.msg||'Jornada completada.');
@@ -4744,6 +4765,27 @@ function nomPDFLiq(){
     '<div style="margin-top:18px;font-size:8.5px;color:#94A3B8;text-align:center">Generado el '+new Date().toLocaleString('es-CO')+' a partir de los marcajes registrados en el sistema</div>'+
     '</body></html>');
   w.document.close();
+}
+
+async function validarPendiente(r){
+  if(!r)return;
+  var op=prompt(
+    'Validar jornada de '+r.nombre+' del '+r.fecha+'\n'+(r.motivo||'')+'\n\n'+
+    'Escribe 1 si la marca fue un error o un doble toque (se descarta)\n'+
+    'Escribe 2 si la jornada esta correcta tal como quedo','1');
+  if(op===null)return;
+  op=(op||'').trim();
+  if(op!=='1'&&op!=='2'){alert('Escribe 1 o 2.');return;}
+  var motivo=prompt('Motivo (queda en la trazabilidad):', op==='1'?'Marca registrada por error':'Jornada revisada, esta correcta');
+  if(motivo===null)return;
+  try{
+    var d=await pedirDatos(SCRIPT_URL+'?action=resolverPendiente&email='+encodeURIComponent(currentUser.email)+
+      '&empEmail='+encodeURIComponent(r.correo)+'&marcaRef='+encodeURIComponent(r.marcaRef||'')+
+      '&falta='+encodeURIComponent(r.falta)+'&accion='+(op==='1'?'error':'valida')+
+      '&motivo='+encodeURIComponent(motivo));
+    showToast(d.status==='ok'?d.msg:(d.msg||'Revisa la informacion e intenta de nuevo.'));
+    if(d.status==='ok'){ await cargarPendientesCierre(); }
+  }catch(e){ showToast('Revisa tu conexion e intenta de nuevo.'); }
 }
 </script>
 <div id="toast" style="display:none;position:fixed;bottom:24px;right:24px;background:#0A3D47;color:white;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.25)"></div>
