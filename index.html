@@ -618,7 +618,7 @@ function fetchConTiempo(url, ms){
 var BUILD_VERSION='2026.09.16';
 
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwnENVY5gDSGf3n69_3qsDYnvIu6pRhHlyrCOdhv9F--dq5ywu4FnKXKp5dWzl0igfy/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxk34mUQLaygDPeMcc7tZ7og0pz7rv0VpZsEuheh_2k20R2V0k-qA5OmZHpsiQ75poP/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -970,8 +970,14 @@ function buildReqCard(row,idx){
         'background:'+(dest?'#EFF6FF':'#FFFFFF')+';border:1.5px solid '+(dest?'#BFDBFE':'#E5E7EB')+
         ';border-radius:9px;padding:8px 11px">'+
         '<div style="font-size:9px;font-weight:800;color:#8A959C;text-transform:uppercase;letter-spacing:.5px">'+x.l+'</div>'+
-        '<div style="font-size:'+(x.ancho?'12':'14')+'px;font-weight:'+(dest?'800':'600')+';color:'+(dest?'#1E40AF':'#1B2A32')+
-        ';line-height:1.4;margin-top:2px">'+x.v+'</div></div>';
+        (x.soporte
+          ? '<div style="display:flex;align-items:center;gap:10px;margin-top:5px;flex-wrap:wrap">'+
+              '<span style="font-size:12.5px;font-weight:600;color:#5B21B6">&#128206; '+xEsc(x.v)+'</span>'+
+              '<button onclick="verSoporte(\''+x.soporte+'\')" style="padding:6px 13px;border-radius:7px;border:none;background:#7C3AED;color:#fff;font-family:inherit;font-size:11.5px;font-weight:700;cursor:pointer">Ver soporte</button>'+
+            '</div>'
+          : '<div style="font-size:'+(x.ancho?'12':'14')+'px;font-weight:'+(dest?'800':'600')+';color:'+(dest?'#1E40AF':(x.l==='Soporte adjunto'?'#9CA3AF':'#1B2A32'))+
+            ';line-height:1.4;margin-top:2px">'+x.v+'</div>')+
+        '</div>';
     });
     html+='</div>';
   }
@@ -4786,6 +4792,21 @@ async function validarPendiente(r){
     showToast(d.status==='ok'?d.msg:(d.msg||'Revisa la informacion e intenta de nuevo.'));
     if(d.status==='ok'){ await cargarPendientesCierre(); }
   }catch(e){ showToast('Revisa tu conexion e intenta de nuevo.'); }
+}
+
+// ── Ver el soporte adjunto de un permiso ────────────────────────────────────
+async function verSoporte(id){
+  var w=window.open('','_blank');
+  if(w){ w.document.write('<p style="font-family:Arial;padding:24px;color:#475569">Cargando soporte...</p>'); }
+  try{
+    var d=await pedirDatos(SCRIPT_URL+'?action=getSoporte&email='+encodeURIComponent(currentUser.email)+'&id='+encodeURIComponent(id));
+    if(d.status!=='ok'){ if(w)w.close(); showToast(d.msg||'No pudimos abrir el soporte.'); return; }
+    var bin=atob(d.b64), arr=new Uint8Array(bin.length);
+    for(var i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
+    var url=URL.createObjectURL(new Blob([arr],{type:d.mime}));
+    if(w){ w.location.href=url; }
+    else { var a=document.createElement('a'); a.href=url; a.download=d.nombre||'soporte'; document.body.appendChild(a); a.click(); a.remove(); }
+  }catch(e){ if(w)w.close(); showToast('No pudimos abrir el soporte. Intenta de nuevo.'); }
 }
 </script>
 <div id="toast" style="display:none;position:fixed;bottom:24px;right:24px;background:#0A3D47;color:white;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.25)"></div>
