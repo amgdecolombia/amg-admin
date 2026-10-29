@@ -617,7 +617,7 @@ function fetchConTiempo(url, ms){
 var BUILD_VERSION='2026.09.16';
 
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyWcQjE3xq7zlXC-kyFWzDdsrJFFaxnzgvk2qsNy42lhDNxmxNcMKZDGu3iPrAC7eIn/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzHgKXg7rjSjOcL-P7SnoZbwwR0lKexiG5vKwEir-h4YSASQrDjSGSgTRBi-TeWg-7W/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -3739,7 +3739,7 @@ function renderCronograma(){
   h+='<th style="font-size:10px;color:#FFFFFF;text-transform:uppercase;width:76px;position:sticky;right:0;background:#0A3D47;border-radius:6px">Horas</th></tr>';
   emps.forEach(function(e){
     h+='<tr><td style="padding:4px 8px;font-size:12px;font-weight:600;color:#1B2A32;white-space:nowrap">'+e.nombre+
-       (e.temporal?' <span style="background:#FFFBEB;color:#92400E;border-radius:99px;padding:1px 7px;font-size:9px;font-weight:800">TEMPORAL</span>':'')+'</td>';
+       (e.temporal?' <span title="'+(e.temporal.rangos||[]).map(function(r){return r.desde+' a '+r.hasta;}).join(', ')+'" style="background:#FFFBEB;color:#92400E;border-radius:99px;padding:1px 7px;font-size:9px;font-weight:800">APOYO TEMPORAL</span>':'')+'</td>';
     for(var i=0;i<7;i++){
       var cod=turnoDe(e.email,i);
       var pc=partirTurnoCli(cod);
@@ -3897,9 +3897,15 @@ function abrirImportar(){
     document.getElementById('impClose').onclick=function(){m.style.display='none';};
     var inp=document.getElementById('impSemana');
     inp.value=_cronSemana||lunesISO(new Date());
-    inp.onchange=function(){document.getElementById('impSemanaTxt').textContent=rangoSemana(lunesISO(inp.value));};
+    inp.onchange=function(){
+      document.getElementById('impSemanaTxt').textContent=rangoSemana(lunesISO(inp.value));
+      var mm=document.getElementById('impMsg'); if(mm){mm.style.display='none';mm.innerHTML='';}
+      var pv=document.getElementById('impPrev'); if(pv)pv.innerHTML='';
+    };
     document.getElementById('impSemanaTxt').textContent=rangoSemana(lunesISO(inp.value));
   } else { m.style.display='flex'; }
+  var mm2=document.getElementById('impMsg'); if(mm2){mm2.style.display='none';mm2.innerHTML='';}
+  var pv2=document.getElementById('impPrev'); if(pv2)pv2.innerHTML='';
 }
 
 function normTurnoCliente(t){
@@ -3943,6 +3949,7 @@ function parsearImport(txt){
 }
 
 function previsualizarImport(){
+  var mPrev=document.getElementById('impMsg'); if(mPrev){mPrev.style.display='none';mPrev.innerHTML='';}
   var r=parsearImport(document.getElementById('impTexto').value);
   window._impPend=r.pendientes;
   var p=document.getElementById('impPrev');
@@ -4016,6 +4023,11 @@ async function aplicarImport(){
       '&semana='+encodeURIComponent(sem)+'&filas='+encodeURIComponent(JSON.stringify(filas)));
     if(d.status==='ok'){
       var okN=(d.guardados!==undefined)?d.guardados:filas.length;
+      if(okN===0){
+        msg.innerHTML='<b>No se pudo confirmar el guardado.</b> Intenta de nuevo; si persiste, avisanos indicando la semana que estabas importando.';
+        msg.style.background='#FEF2F2';msg.style.color='#991B1B';msg.style.display='block';
+        return;
+      }
       msg.innerHTML='<b>'+okN+' de '+filas.length+' horarios guardados y verificados</b> para la semana del '+sem+
         (d.nombres&&d.nombres.length?'<div style="font-size:11px;margin-top:4px">'+d.nombres.join(', ')+'</div>':'')+
         (sinAsignar>0?'<div style="font-size:11px;margin-top:4px;color:#92400E">Quedaron '+sinAsignar+' sin asignar.</div>':'')+
@@ -4080,13 +4092,23 @@ async function cargarListaTemporal(){
       }).join('');
     var act=(_cron&&_cron.empleados||[]).filter(function(e){return e.temporal;});
     var l=document.getElementById('tmpLista');
-    if(l)l.innerHTML=act.length
-      ? '<div style="font-size:11px;font-weight:800;color:#92400E;text-transform:uppercase;letter-spacing:.4px;margin-bottom:7px">Apoyos vigentes</div>'+
-        act.map(function(e){
-          return '<div style="padding:8px 11px;background:#FFFBEB;border:1.5px solid #FDE68A;border-radius:9px;margin-bottom:6px;font-size:12px">'+
-            '<b>'+e.nombre+'</b><div style="font-size:10.5px;color:#92400E">Del '+e.temporal.desde+' al '+e.temporal.hasta+'</div></div>';
-        }).join('')
-      : '<div style="font-size:12px;color:#9CA3AF">Sin apoyos temporales vigentes.</div>';
+    if(l){
+      if(!act.length){ l.innerHTML='<div style="font-size:12px;color:#9CA3AF">Aun no has registrado apoyos temporales.</div>'; }
+      else{
+        var colE={Vigente:['#ECFDF5','#065F46'],Programado:['#EFF6FF','#1E40AF'],Finalizado:['#F3F4F6','#4B5563']};
+        l.innerHTML='<div style="font-size:11px;font-weight:800;color:#92400E;text-transform:uppercase;letter-spacing:.4px;margin-bottom:7px">Apoyos registrados</div>'+
+          act.map(function(e){
+            return '<div style="padding:9px 11px;background:#FFFBEB;border:1.5px solid #FDE68A;border-radius:9px;margin-bottom:6px">'+
+              '<div style="font-size:12.5px;font-weight:700;color:#1B2A32">'+e.nombre+'</div>'+
+              (e.temporal.rangos||[]).map(function(r){
+                var c=colE[r.estado]||colE.Finalizado;
+                return '<div style="display:flex;align-items:center;gap:7px;margin-top:4px;font-size:11px;color:#4B5563">'+
+                  'Del '+r.desde+' al '+r.hasta+
+                  '<span style="background:'+c[0]+';color:'+c[1]+';border-radius:99px;padding:1px 8px;font-size:9.5px;font-weight:800">'+r.estado.toUpperCase()+'</span></div>';
+              }).join('')+'</div>';
+          }).join('');
+      }
+    }
   }catch(e){}
 }
 
@@ -4170,7 +4192,8 @@ async function abrirVistaMes(){
   } else { m.style.display='flex'; }
   await cargarCronograma();
   // Abrir en el mes que realmente tiene cronograma cargado
-  var sems=((_cron&&_cron.turnos)||[]).map(function(t){return t.semana;}).filter(function(x){return x;}).sort();
+  var sems=((_cron&&_cron.turnos)||[]).map(function(t){return t.semana;})
+    .filter(function(x){return /^\d{4}-\d{2}-\d{2}$/.test(x||'');}).sort();
   if(sems.length){
     var ult=sems[sems.length-1];
     window._mesRef=new Date(ult+'T00:00:00');
@@ -4211,7 +4234,7 @@ function renderVistaMes(){
   // Meses que si tienen cronograma, para no buscar a ciegas
   var mesesConDatos={};
   ((_cron.turnos)||[]).forEach(function(t){
-    if(!t.semana)return;
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(t.semana||''))return;
     var d=new Date(t.semana+'T00:00:00');
     mesesConDatos[d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)]=true;
   });
