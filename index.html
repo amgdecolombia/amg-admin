@@ -399,6 +399,7 @@ input:focus,select:focus,textarea:focus{
           <option value="7" selected>Ultimos 7 dias</option>
           <option value="14">Ultimos 14 dias</option>
           <option value="30">Ultimos 30 dias</option>
+          <option value="mes">Mes en curso</option>
         </select>
         <button onclick="cargarReporte()" style="padding:8px 14px;border-radius:9px;border:1.5px solid #E5E7EB;background:white;color:#374151;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Actualizar</button>
         <button onclick="generarPDFReporte()" style="padding:8px 14px;border-radius:9px;border:none;background:#0A3D47;color:white;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Descargar PDF</button>
@@ -645,7 +646,7 @@ function fetchConTiempo(url, ms){
 var BUILD_VERSION='2026.09.16';
 
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzpTp-js8TL-sZeAvjGByCsh-LkDlTCmp4JgLFSWMYGHAm6ID7X1Ccn8xCAHbmDUKNR/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwTKQgTJU2B4WLZBYllgjRFN7RoSMI7jcSQLpzlfSddFogcU9Mil1prKKjuqSKXM2r2/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -2889,7 +2890,7 @@ function renderReporte(d){
 
   // Graficas de analisis
   var an=analisisReporte(d);
-  h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin-bottom:16px">';
+  h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:14px;margin-bottom:16px">';
   h+='<div style="background:white;border-radius:14px;border:1.5px solid #E5E7EB;padding:16px">'+
      '<div style="font-size:12px;font-weight:700;color:#0A3D47;margin-bottom:12px">Indicadores clave</div>'+
      '<div style="display:flex;gap:18px;justify-content:space-around;flex-wrap:wrap;text-align:center">'+
@@ -2899,8 +2900,18 @@ function renderReporte(d){
   h+='<div style="background:white;border-radius:14px;border:1.5px solid #E5E7EB;padding:16px">'+
      '<div style="font-size:12px;font-weight:700;color:#0A3D47;margin-bottom:10px">Marcajes por dia</div>'+
      svgLinea(an.tendencia,'#0A3D47',520,160)+'</div>';
+  var etqPer=({'7':'ultimos 7 dias','14':'ultimas 2 semanas','30':'ultimos 30 dias','mes':'mes en curso'})[String((d.periodo||{}).dias)]||'el periodo';
+  var totH=(d.horasColaboradores||[]).reduce(function(s,e){return s+(e.horas||0);},0);
+  h+='<div style="background:white;border-radius:14px;border:1.5px solid #E5E7EB;padding:16px;grid-column:1/-1">'+
+     '<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:10px">'+
+       '<div style="font-size:12px;font-weight:700;color:#0A3D47">Horas trabajadas por colaborador</div>'+
+       '<div style="font-size:11px;color:#64748B">'+etqPer+' &#183; '+fmtNum(totH)+' h en total, descontando almuerzo</div></div>'+
+     svgBarras(an.horasEmp,'#0F766E',900)+'</div>';
   h+='<div style="background:white;border-radius:14px;border:1.5px solid #E5E7EB;padding:16px">'+
-     '<div style="font-size:12px;font-weight:700;color:#0A3D47;margin-bottom:10px">Empleados mas activos</div>'+
+     '<div style="font-size:12px;font-weight:700;color:#0A3D47;margin-bottom:10px">Horas trabajadas por dia</div>'+
+     svgLinea(an.horasDia,'#0F766E',520,160)+'</div>';
+  h+='<div style="background:white;border-radius:14px;border:1.5px solid #E5E7EB;padding:16px">'+
+     '<div style="font-size:12px;font-weight:700;color:#0A3D47;margin-bottom:10px">Empleados mas activos (marcajes)</div>'+
      svgBarras(an.topEmp,'#065F46',520)+'</div>';
   h+='<div style="background:white;border-radius:14px;border:1.5px solid #E5E7EB;padding:16px">'+
      '<div style="font-size:12px;font-weight:700;color:#0A3D47;margin-bottom:10px">Ingresos al sistema por usuario</div>'+
@@ -2950,6 +2961,8 @@ function renderReporte(d){
   });
   h+='</tr></thead><tbody>';
   (d.uso||[]).forEach(function(u){
+    u.email=u.email||''; u.primerIngreso=u.primerIngreso||'-'; u.ultimoIngreso=u.ultimoIngreso||'-';
+    if(u.diasSinEntrar===undefined)u.diasSinEntrar=null; u.diasConUso=u.diasConUso||0; u.ingresosHistorico=u.ingresosHistorico||0;
     var nunca=(u.ultimoIngreso==='Nunca ha ingresado');
     var inactivo=(u.diasSinEntrar!==null&&u.diasSinEntrar>=7);
     h+='<tr style="'+(nunca?'background:#FEF2F2':'')+'">';
@@ -3208,6 +3221,7 @@ function generarPDFReporte(){
   '</tr></table>'+
 
   '<div class="sec">Panorama de la aplicacion</div>'+seccionesEjecutivas(d,'pdf')+
+  detallePDFSolicitudes(d)+
   '<div class="sec">Analisis visual</div>'+
   '<table><tr>'+
     '<td style="width:34%;padding:0 8px 0 0;vertical-align:top">'+
@@ -3223,6 +3237,9 @@ function generarPDFReporte(){
   '<div style="border:1px solid #E3E8EB;border-radius:10px;padding:12px;margin-top:10px">'+
     '<div style="font-size:10px;font-weight:800;color:#0A3D47;text-transform:uppercase;margin-bottom:8px">Marcajes por dia</div>'+
     svgLinea(anP.tendencia,'#0A3D47',700,150)+'</div>'+
+  '<div style="border:1px solid #E3E8EB;border-radius:10px;padding:12px;margin-top:10px;page-break-inside:avoid">'+
+    '<div style="font-size:10px;font-weight:800;color:#0A3D47;text-transform:uppercase;margin-bottom:8px">Horas trabajadas por colaborador</div>'+
+    svgBarras(anP.horasEmp,'#0F766E',700)+'</div>'+
   '<table style="margin-top:10px"><tr>'+
     '<td style="width:50%;padding-right:6px;vertical-align:top"><div style="border:1px solid #E3E8EB;border-radius:10px;padding:12px">'+
       '<div style="font-size:10px;font-weight:800;color:#0A3D47;text-transform:uppercase;margin-bottom:8px">Empleados mas activos</div>'+
@@ -3605,14 +3622,15 @@ function svgBarras(datos,color,ancho){
   if(!datos.length)return '<div style="color:#9CA3AF;font-size:12px;padding:12px">Sin datos en el periodo</div>';
   var max=Math.max.apply(null,datos.map(function(d){return d.valor;}))||1;
   var altoFila=26, alto=datos.length*altoFila+10;
-  var etiqueta=170, barra=ancho-etiqueta-60;
-  var s='<svg width="'+ancho+'" height="'+alto+'" viewBox="0 0 '+ancho+' '+alto+'">';
+  var etiqueta=Math.round(ancho*0.36), espacioValor=62, barra=ancho-etiqueta-espacioValor;
+  var s='<svg viewBox="0 0 '+ancho+' '+alto+'" style="width:100%;height:auto;display:block;overflow:visible" preserveAspectRatio="xMinYMin meet">';
   datos.forEach(function(d,i){
     var y=i*altoFila+6, w=Math.max(2,(d.valor/max)*barra);
     var col=d.color||color;
-    s+='<text x="0" y="'+(y+13)+'" font-family="Inter,Arial" font-size="11" fill="#3C4A52">'+xEsc(d.etiqueta.substring(0,26))+'</text>';
-    s+='<rect x="'+etiqueta+'" y="'+y+'" width="'+w+'" height="17" rx="4" fill="'+col+'"/>';
-    s+='<text x="'+(etiqueta+w+7)+'" y="'+(y+13)+'" font-family="Inter,Arial" font-size="11" font-weight="700" fill="'+col+'">'+d.valor+(d.sufijo||'')+'</text>';
+    var etq=String(d.etiqueta||''); if(etq.length>30)etq=etq.substring(0,29)+'\u2026';
+    s+='<text x="0" y="'+(y+13)+'" font-family="Inter,Arial" font-size="11" fill="#3C4A52">'+xEsc(etq)+'</text>';
+    s+='<rect x="'+etiqueta+'" y="'+y+'" width="'+w.toFixed(1)+'" height="17" rx="4" fill="'+col+'"/>';
+    s+='<text x="'+(etiqueta+w+6).toFixed(1)+'" y="'+(y+13)+'" font-family="Inter,Arial" font-size="11" font-weight="700" fill="'+col+'">'+String(d.valor).replace('.',',')+(d.sufijo||'')+'</text>';
   });
   return s+'</svg>';
 }
@@ -3626,7 +3644,7 @@ function svgLinea(puntos,color,ancho,alto){
   var coords=puntos.map(function(p,i){ return {x:padL+i*paso, y:10+h-(p.valor/max)*h, v:p.valor, l:p.etiqueta}; });
   var linea=coords.map(function(c,i){return (i?'L':'M')+c.x.toFixed(1)+' '+c.y.toFixed(1);}).join(' ');
   var area=linea+' L'+coords[coords.length-1].x.toFixed(1)+' '+(10+h)+' L'+coords[0].x.toFixed(1)+' '+(10+h)+' Z';
-  var s='<svg width="'+ancho+'" height="'+alto+'" viewBox="0 0 '+ancho+' '+alto+'">';
+  var s='<svg viewBox="0 0 '+ancho+' '+alto+'" style="width:100%;height:auto;display:block" preserveAspectRatio="xMinYMin meet">';
   [0,0.5,1].forEach(function(f){
     var y=10+h-f*h;
     s+='<line x1="'+padL+'" y1="'+y+'" x2="'+(padL+w)+'" y2="'+y+'" stroke="#EEF2F4" stroke-width="1"/>';
@@ -3643,38 +3661,23 @@ function svgLinea(puntos,color,ancho,alto){
 }
 
 function analisisReporte(d){
-  var a=d.adopcion||{}, o=d.operacion||{}, s=d.solicitudes||{};
-  // Tendencia diaria de marcajes
-  var porFecha={};
-  (_supData&&_supData.marcajes||[]).forEach(function(m){
-    if(!m.fecha)return;
-    var f=m.fecha.split(' ')[0];
-    porFecha[f]=(porFecha[f]||0)+1;
+  var tendencia=(d.tendenciaDiaria||[]).map(function(t){
+    var p=t.fecha.split('-'); return {etiqueta:p[2]+'/'+p[1], valor:t.marcajes, horas:t.horas, personas:t.personas};
   });
-  var tendencia=Object.keys(porFecha).sort(function(x,y){
-    var px=x.split('/'), py=y.split('/');
-    return new Date(px[2],px[1]-1,px[0]) - new Date(py[2],py[1]-1,py[0]);
-  }).slice(-14).map(function(f){ return {etiqueta:f.substring(0,5), valor:porFecha[f]}; });
-
-  // Top empleados por marcajes
-  var topEmp=(_supData&&_supData.empleados||[]).slice()
-    .sort(function(x,y){return (y.marcajesRango||0)-(x.marcajesRango||0);})
-    .slice(0,8).map(function(e){ return {etiqueta:e.nombre, valor:e.marcajesRango||0}; })
-    .filter(function(e){return e.valor>0;});
-
-  // Uso del sistema por usuario
+  var hc=d.horasColaboradores||[];
+  var topEmp=hc.slice().sort(function(a,b){return b.marcajes-a.marcajes;}).filter(function(e){return e.marcajes>0;})
+    .slice(0,10).map(function(e){return {etiqueta:e.nombre, valor:e.marcajes};});
+  var horasEmp=hc.filter(function(e){return e.horas>0;}).slice(0,15)
+    .map(function(e){return {etiqueta:e.nombre, valor:(Math.round(e.horas*10)/10), sufijo:' h'};});
   var usoBarras=(d.uso||[]).map(function(u){
-    return {etiqueta:u.nombre, valor:u.ingresosPeriodo||0,
-            color:(u.ingresosPeriodo>0?'#065F46':'#B91C1C')};
+    return {etiqueta:u.nombre, valor:u.ingresosPeriodo||0, color:(u.ingresosPeriodo>0?'#065F46':'#B91C1C')};
   });
-
-  // Respuesta por aprobador
   var respBarras=(d.sla||[]).filter(function(u){return u.recibidas>0;}).map(function(u){
     return {etiqueta:u.nombre, valor:u.tasaRespuesta||0, sufijo:'%',
             color:(u.tasaRespuesta>=80?'#065F46':(u.tasaRespuesta>=50?'#B45309':'#B91C1C'))};
   });
-
-  return {tendencia:tendencia, topEmp:topEmp, usoBarras:usoBarras, respBarras:respBarras};
+  var horasDia=(d.tendenciaDiaria||[]).map(function(t){ var p=t.fecha.split('-'); return {etiqueta:p[2]+'/'+p[1], valor:t.horas}; });
+  return {tendencia:tendencia, topEmp:topEmp, horasEmp:horasEmp, usoBarras:usoBarras, respBarras:respBarras, horasDia:horasDia};
 }
 
 // ── Cronograma de turnos (formato Operaciones) ──────────────────────────────
@@ -4907,14 +4910,20 @@ function seccionesEjecutivas(d, modo){
   var maxT=Math.max.apply(null,pt.map(function(x){return x.total;}).concat([1]));
   h+='<div style="'+card+'">'+tit('Solicitudes por tipo','Estado de cada flujo en el periodo');
   h+='<table style="width:100%;border-collapse:collapse"><tr><th style="'+th+'">Tipo</th><th style="'+th+';text-align:right">Total</th><th style="'+th+';text-align:right">Aprobadas</th><th style="'+th+';text-align:right">Rechazadas</th><th style="'+th+';text-align:right">Con el jefe</th><th style="'+th+';text-align:right">Con GH</th><th style="'+th+';width:24%"></th></tr>';
-  pt.forEach(function(t){
-    h+='<tr><td style="'+td+';font-weight:600">'+t.tipo+'</td><td style="'+td+';'+num+';font-weight:700">'+t.total+'</td>'+
+  pt.forEach(function(t,ti){
+    var clic = pdf ? '' : (' onclick="toggleDetalleTipo('+ti+')" style="cursor:pointer" title="Ver el detalle"');
+    h+='<tr'+clic+'><td style="'+td+';font-weight:600">'+(pdf?'':'<span id="flecha'+ti+'" style="display:inline-block;width:14px;color:#94A3B8">&#9656;</span>')+t.tipo+'</td><td style="'+td+';'+num+';font-weight:700">'+t.total+'</td>'+
       '<td style="'+td+';'+num+';color:#059669">'+t.aprobadas+'</td><td style="'+td+';'+num+';color:#B91C1C">'+t.rechazadas+'</td>'+
       '<td style="'+td+';'+num+';color:'+(t.enDirector?'#B45309':'#94A3B8')+'">'+t.enDirector+'</td>'+
       '<td style="'+td+';'+num+';color:'+(t.enGH?'#1E40AF':'#94A3B8')+'">'+t.enGH+'</td>'+
       '<td style="'+td+'"><div style="background:#F1F5F9;border-radius:99px;height:7px;overflow:hidden"><div style="width:'+(t.total/maxT*100).toFixed(0)+'%;height:7px;background:#0F172A;border-radius:99px"></div></div></td></tr>';
+    var filasT=(d.detalleSolicitudes||[]).filter(function(x){return x.tipo===t.tipo;});
+    if(!pdf){
+      h+='<tr id="detTipo'+ti+'" style="display:none"><td colspan="7" style="padding:0 0 12px 0">'+tablaDetalleSolicitudes(filasT,false)+'</td></tr>';
+    }
   });
   h+='</table>';
+  if(!pdf)h+='<div style="font-size:11px;color:#94A3B8;margin-top:6px">Haz clic en un tipo para ver cada solicitud, quien la aprobo y cuanto tiempo lleva o llevo en revision.</div>';
   if(pe.dias||pe.horas)h+='<div style="font-size:'+(pdf?'9':'11.5')+'px;color:#475569;margin-top:8px">Permisos del periodo: '+fmtNum(pe.dias)+' dias habiles y '+fmtNum(pe.horas)+' horas.</div>';
   h+='</div>';
 
@@ -4942,7 +4951,10 @@ function seccionesEjecutivas(d, modo){
     'Alertas de dispositivo: <b>'+((d.incidencias||{}).alertasDispositivo||0)+'</b><br>'+
     'Ingresos fallidos: <b>'+((d.incidencias||{}).ingresosFallidos||0)+'</b><br>'+
     'Avisos de correo en cola: <b>'+(ca.avisosEnCola||0)+'</b><br>'+
-    'Registros de usuarios con datos invalidos: <b style="color:'+(inval.length?'#B91C1C':'#059669')+'">'+inval.length+'</b>'+
+    'Registros de usuarios con datos invalidos: <b style="color:'+(inval.length?'#B91C1C':'#059669')+'">'+inval.length+'</b><br>'+
+    'Intentos de ingreso sin cuenta en el panel: <b>'+((d.intentosSinCuenta||[]).reduce(function(s,x){return s+x.intentos;},0))+'</b>'+
+    ((d.intentosSinCuenta||[]).length?'<div style="font-size:'+(pdf?'8.5':'11')+'px;color:#64748B;margin-top:3px">'+
+      (d.intentosSinCuenta||[]).map(function(x){return xEsc(x.usuario)+': '+x.intentos+' intento(s)';}).join('<br>')+'</div>':'')+
     (inval.length?'<div style="font-size:'+(pdf?'8.5':'11')+'px;color:#B91C1C;margin-top:4px">'+inval.map(function(x){return 'Fila '+x.fila+': '+x.motivo;}).join('<br>')+'</div>':'')+
     '</div></div></td></tr></table>';
   return h;
@@ -5059,6 +5071,55 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')cerrarNavMen
   new MutationObserver(function(){ clearTimeout(t); t=setTimeout(construirNav,60); })
     .observe(cont,{subtree:true,attributes:true,attributeFilter:['style','class'],childList:true,characterData:true});
 })();
+
+function horasLegibles(h){
+  if(h===null||h===undefined||isNaN(h))return '-';
+  if(h<1)return Math.round(h*60)+' min';
+  if(h<48)return (Math.round(h*10)/10).toString().replace('.',',')+' h';
+  return (Math.round(h/24*10)/10).toString().replace('.',',')+' dias';
+}
+function tablaDetalleSolicitudes(filas,pdf){
+  if(!filas.length)return '<div style="font-size:12px;color:#94A3B8;padding:8px 10px">Sin solicitudes en el periodo.</div>';
+  var fs=pdf?'8.5':'11.5';
+  var th='text-align:left;padding:6px 8px;font-size:'+(pdf?'7.5':'10')+'px;font-weight:700;color:#475569;background:#F1F5F9;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap';
+  var td='padding:6px 8px;border-bottom:1px solid #F1F5F9;font-size:'+fs+'px;vertical-align:top';
+  var col={'Con el jefe directo':['#FFFBEB','#92400E'],'Con Gestion Humana':['#EFF6FF','#1E40AF'],'Aprobada':['#ECFDF5','#065F46'],'Rechazada':['#FEF2F2','#991B1B']};
+  var h='<div style="'+(pdf?'':'background:#FAFBFC;border:1px solid #E2E8F0;border-radius:10px;overflow:auto;max-height:340px;margin-top:4px')+'">'+
+    '<table style="width:100%;border-collapse:collapse"><tr>'+
+    '<th style="'+th+'">Colaborador</th><th style="'+th+'">Solicitada</th><th style="'+th+'">Detalle</th>'+
+    '<th style="'+th+'">Jefe directo</th><th style="'+th+'">Estado</th><th style="'+th+'">Tiempo con el jefe</th>'+
+    '<th style="'+th+'">Tiempo con GH</th><th style="'+th+'">En espera</th></tr>';
+  filas.forEach(function(x){
+    var c=col[x.etapa]||['#F8FAFC','#475569'];
+    var esperaAlta=(x.esperaHoras!==null&&x.esperaHoras>72);
+    h+='<tr><td style="'+td+';font-weight:600">'+xEsc(x.colaborador)+'</td>'+
+      '<td style="'+td+';white-space:nowrap">'+xEsc(x.solicitada)+'</td>'+
+      '<td style="'+td+'">'+xEsc(x.resumen||'-')+(x.obsDir?'<div style="color:#64748B;font-size:'+(pdf?'7.5':'10.5')+'px;margin-top:2px">Jefe: '+xEsc(x.obsDir)+'</div>':'')+(x.obsGH?'<div style="color:#64748B;font-size:'+(pdf?'7.5':'10.5')+'px">GH: '+xEsc(x.obsGH)+'</div>':'')+'</td>'+
+      '<td style="'+td+'">'+xEsc(x.jefe)+'</td>'+
+      '<td style="'+td+'"><span style="background:'+c[0]+';color:'+c[1]+';border-radius:99px;padding:2px 8px;font-size:'+(pdf?'7.5':'10')+'px;font-weight:700;white-space:nowrap">'+x.etapa+'</span></td>'+
+      '<td style="'+td+';white-space:nowrap">'+horasLegibles(x.tiempoJefeHoras)+'</td>'+
+      '<td style="'+td+';white-space:nowrap">'+horasLegibles(x.tiempoGHHoras)+'</td>'+
+      '<td style="'+td+';white-space:nowrap;font-weight:700;color:'+(esperaAlta?'#B91C1C':'#0F172A')+'">'+(x.esperaHoras===null?'-':horasLegibles(x.esperaHoras))+'</td></tr>';
+  });
+  return h+'</table></div>';
+}
+function toggleDetalleTipo(i){
+  var r=document.getElementById('detTipo'+i), f=document.getElementById('flecha'+i);
+  if(!r)return;
+  var abrir=r.style.display==='none';
+  r.style.display=abrir?'table-row':'none';
+  if(f)f.innerHTML=abrir?'&#9662;':'&#9656;';
+}
+
+function detallePDFSolicitudes(d){
+  var det=d.detalleSolicitudes||[]; if(!det.length)return '';
+  var h='<div class="sec">Detalle de solicitudes del periodo</div>';
+  var tipos={}; det.forEach(function(x){(tipos[x.tipo]=tipos[x.tipo]||[]).push(x);});
+  Object.keys(tipos).forEach(function(t){
+    h+='<div style="font-size:10px;font-weight:800;color:#0F172A;margin:10px 0 4px">'+t+' ('+tipos[t].length+')</div>'+tablaDetalleSolicitudes(tipos[t],true);
+  });
+  return h;
+}
 </script>
 <div id="toast" style="display:none;position:fixed;bottom:24px;right:24px;background:#0A3D47;color:white;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.25)"></div>
 
