@@ -338,6 +338,7 @@ input:focus,select:focus,textarea:focus{
 <button class="tab" id="tabNomina" data-tab="nomina" onclick="switchTab('nomina')" style="display:none;background:#F0FDF4;border-color:#86EFAC;color:#14532D;font-weight:700">Nomina y jornadas</button>
         <button class="tab" id="tabSeguridad" data-tab="seguridad" onclick="switchTab('seguridad')" style="display:none">Seguridad de marcajes</button>
         <button class="tab" id="tabReporte" data-tab="reporte" onclick="switchTab('reporte')" style="display:none;background:#ECFDF5;border-color:#A7F3D0;color:#065F46;font-weight:700">Reporte ejecutivo</button>
+        <button class="tab" id="tabBitacora" data-tab="bitacora" onclick="switchTab('bitacora')" style="display:none">Historial del equipo de gestion</button>
         <button class="tab" id="tabPendCierre" data-tab="pendcierre" onclick="switchTab('pendcierre')" style="background:#FFFBEB;border-color:#FDE68A;color:#92400E;font-weight:700">Pendientes de cierre <span id="badgePendCierre" style="display:none;background:#991B1B;color:#fff;border-radius:99px;padding:1px 7px;font-size:10px;margin-left:4px"></span></button>
         <button class="tab" id="tabSeguimiento" onclick="mostrarSupDashboard()" style="background:#FFFBEB;border-color:#FDE68A;color:#92400E;font-weight:700">Seguimiento y horarios</button>
       <button class="tab" data-tab="calendario" id="tabCalendario" onclick="switchTab('calendario')" style="display:none">Calendario</button>
@@ -408,6 +409,22 @@ input:focus,select:focus,textarea:focus{
         <button onclick="copiarResumenReporte()" style="padding:8px 14px;border-radius:9px;border:1.5px solid #BFDBFE;background:#EFF6FF;color:#1E40AF;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Copiar resumen</button>
       </div>
       <div id="reporteBody" style="color:#9CA3AF;font-size:13px">Selecciona un periodo para generar el reporte.</div>
+    </div>
+    <div class="panel" id="panel-bitacora">
+      <div style="background:white;border:1.5px solid #E5E7EB;border-radius:14px;padding:12px 14px;margin-bottom:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <b style="font-size:13px;color:#0A3D47">Historial de directores, GH y supervisores</b>
+        <span style="font-size:11px;color:#6B7280">Desde</span><input id="bitDesde" type="date" style="padding:6px 9px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:12px">
+        <span style="font-size:11px;color:#6B7280">hasta</span><input id="bitHasta" type="date" style="padding:6px 9px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:12px">
+        <button onclick="cargarBitacora()" style="padding:7px 12px;border-radius:9px;border:none;background:#0A3D47;color:white;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Consultar</button>
+        <span style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">
+          <select id="bitUsuario" onchange="renderBitacora()" style="padding:6px 9px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:12px"><option value="">Todas las personas</option></select>
+          <select id="bitTipo" onchange="renderBitacora()" style="padding:6px 9px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:12px">
+            <option value="">Todas las acciones</option><option value="ingresos">Ingresos y salidas</option><option value="decisiones">Aprobaciones y rechazos</option><option value="equipo">Asignaciones, horarios y turnos</option><option value="personal">Empleados y administradores</option><option value="consultas">Consultas de informacion sensible</option><option value="fallidos">Intentos fallidos</option></select>
+          <input id="bitBuscar" oninput="renderBitacora()" placeholder="Buscar" style="padding:6px 9px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:12px;width:130px">
+          <button onclick="exportarBitacora()" style="padding:7px 12px;border-radius:9px;border:1.5px solid #A7F3D0;background:#ECFDF5;color:#065F46;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Descargar Excel</button>
+        </span>
+      </div>
+      <div id="bitBody"><div style="color:#9CA3AF;padding:12px;font-size:13px">Cargando...</div></div>
     </div>
     <div class="panel" id="panel-seguridad">
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
@@ -662,7 +679,7 @@ function fetchConTiempo(url, ms){
 var BUILD_VERSION='2026.09.16';
 
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx1Ul1pXK4ikE0m3J-jXqChKsl9cmMWNnbwNdhXf8b6lvf1-MmIbSSKPrTOkTx7aw_K/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzcUeqZ_v0tV0TPVHq5zKf9Qw7acTb8yPUNDiwF27fPDcpa2T5T91sSYq2fc4rSckq9/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -720,7 +737,7 @@ async function doLogin(){
       document.getElementById('topbarName').innerHTML=d.nombre+(role==='master'?'<span class="master-badge" style="display:inline-flex">MASTER</span>':(role==='supervisor'?'<span class="master-badge" style="display:inline-flex;background:#1E40AF">SUPERVISOR</span>':''));
       document.getElementById('topbarEmail').textContent=email;
       pintarFrase();
-      ['tabNovedades','tabCorrecciones','tabAdmins','tabCalendario','tabEmpleados','tabNomina','tabReporte','tabSeguridad'].forEach(function(id){
+      ['tabNovedades','tabCorrecciones','tabAdmins','tabCalendario','tabEmpleados','tabNomina','tabReporte','tabSeguridad','tabBitacora'].forEach(function(id){
         var el=document.getElementById(id);if(el)el.style.display='none';
       });
       var masterTabs=['tabNovedades','tabCorrecciones','tabAdmins','tabCalendario','tabEmpleados'];
@@ -744,6 +761,7 @@ async function doLogin(){
       setTimeout(function(){cargarPendientesCierre();},1600);
       if(role==='supervisor'){
         var tr=document.getElementById('tabReporte');if(tr)tr.style.display='inline-block';
+        var tbi=document.getElementById('tabBitacora');if(tbi)tbi.style.display='inline-block';
       }
       if(role==='master'||role==='supervisor'){
         var tn=document.getElementById('tabNomina');if(tn)tn.style.display='inline-block';
@@ -768,6 +786,8 @@ async function doLogin(){
 }
 
 function doLogout(){
+  // La salida queda en la bitacora (sin esperar respuesta)
+  try{ if(currentUser&&currentUser.email){ var u=SCRIPT_URL+'?action=logout&email='+encodeURIComponent(currentUser.email)+'&t='+Date.now(); if(navigator.sendBeacon){ fetch(u,{keepalive:true}).catch(function(){}); } else { new Image().src=u; } } }catch(eLo){}
   // Seguridad: nada de una sesion puede quedar visible para la siguiente
   try{
     currentUser=null;allPending=[];allHistory=[];
@@ -776,8 +796,9 @@ function doLogout(){
     if(typeof _supData!=='undefined'){_supData=null;}
     if(typeof _reporte!=='undefined'){_reporte=null;}
     if(typeof _seg!=='undefined'){_seg=null;}
+    if(typeof _bit!=='undefined'){_bit=null;}
     if(typeof _geo!=='undefined'){_geo=null;_fotos=null;_lugar.datos=null;}
-    ['nomBody','reporteBody','segBody','supContent','pendCierreBody'].forEach(function(id){
+    ['nomBody','reporteBody','segBody','supContent','pendCierreBody','bitBody'].forEach(function(id){
       var el=document.getElementById(id);if(el)el.innerHTML='';
     });
   }catch(e){}
@@ -844,7 +865,7 @@ function showToast(msg){
 
 
 var ALL_TABS=['pending','stats','history','calendario','novedades','correcciones','empleados','admins'];
-var PERMISOS_TAB={nomina:['master','supervisor'],reporte:['supervisor'],seguridad:['master','supervisor'],
+var PERMISOS_TAB={nomina:['master','supervisor'],reporte:['supervisor'],bitacora:['supervisor'],seguridad:['master','supervisor'],
   novedades:['master','supervisor'],correcciones:['master','supervisor'],
   empleados:['master','supervisor'],admins:['master','supervisor']};
 function switchTab(t){
@@ -855,7 +876,7 @@ function switchTab(t){
   try{
     if(typeof NAV_GRUPOS!=='undefined'){
       var mapaNav={pending:'[data-tab="pending"]',history:'[data-tab="history"]',stats:'[data-tab="stats"]',
-        correcciones:'#tabCorrecciones',pendcierre:'#tabPendCierre',calendario:'#tabCalendario',reporte:'#tabReporte',seguridad:'#tabSeguridad',
+        correcciones:'#tabCorrecciones',pendcierre:'#tabPendCierre',calendario:'#tabCalendario',reporte:'#tabReporte',seguridad:'#tabSeguridad',bitacora:'#tabBitacora',
         nomina:'#tabNomina',novedades:'#tabNovedades',empleados:'#tabEmpleados',admins:'#tabAdmins'};
       var selN=mapaNav[t];
       if(selN)NAV_GRUPOS.forEach(function(g){ g.items.forEach(function(it){ if(it.src===selN)_navActivo={grupo:g.id,item:selN}; }); });
@@ -872,6 +893,7 @@ function switchTab(t){
   if(t==='calendario')loadCalendar();
   if(t==='pendcierre')cargarPendientesCierre();
   if(t==='reporte')cargarReporte();
+  if(t==='bitacora'&&!_bit)cargarBitacora();
   if(t==='seguridad'&&!_seg)cargarSeguridad();
   if(t==='nomina')nomVista(window._nomVista||'liquidar');
   if(t==='stats'||t==='dashboard')loadStats();
@@ -2200,7 +2222,7 @@ function renderSupLog(){
   if(cnt)cnt.textContent=rows.length+' marcaje'+(rows.length===1?'':'s')+' en el rango seleccionado';
   if(!rows.length){el.innerHTML='<tbody><tr><td style="padding:16px;color:#9CA3AF;font-size:13px">Sin marcajes en este rango.</td></tr></tbody>';return;}
   var h='<thead><tr style="background:#F8FAFC;position:sticky;top:0">';
-  ['Fecha y hora','Empleado','Tipo','Vehiculo','Horas','Ubicacion','Seguridad'].forEach(function(t){
+  ['Fecha y hora','Empleado','Tipo','Dispositivo','Vehiculo','Horas','Ubicacion','Seguridad'].forEach(function(t){
     h+='<th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;border-bottom:1px solid #E5E7EB;white-space:nowrap">'+t+'</th>';
   });
   h+='</tr></thead><tbody>';
@@ -2210,6 +2232,7 @@ function renderSupLog(){
     h+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;font-family:monospace;font-size:11px;white-space:nowrap">'+m.fecha+'</td>';
     h+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6"><div style="font-weight:600;font-size:12px">'+m.nombre+'</div><div style="font-size:10px;color:#9CA3AF">'+m.correo+'</div></td>';
     h+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6"><span style="font-size:11px;font-weight:700;color:'+tipoColor+'">'+m.tipo+'</span></td>';
+    h+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;font-size:11px">'+dispBadge(m.dispositivo)+((m.modo||'').indexOf('Sin conexion')===0?'<div style="margin-top:3px"><span title="'+xEsc(m.modo)+'" style="background:#FFFBEB;color:#92400E;border-radius:99px;padding:1px 7px;font-size:10px;font-weight:700">Sin conexion</span></div>':'')+'</td>';
     h+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;font-size:11px;color:#374151">'+(m.vehiculo||'-')+'</td>';
     h+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;font-size:11px;text-align:center">'+(m.horas||'-')+'</td>';
     h+='<td style="padding:8px 10px;border-bottom:1px solid #F3F4F6;font-size:11px">'+(m.mapa?'<a href="'+m.mapa+'" target="_blank" style="color:#1E40AF;text-decoration:none;font-weight:600">Ver mapa</a>':(m.gpsOk==='Si'?'GPS ok':'Sin GPS'))+'</td>';
@@ -2218,6 +2241,96 @@ function renderSupLog(){
   });
   h+='</tbody>';
   el.innerHTML=h;
+}
+
+// ── Historial del equipo de gestion (solo supervisor) ───────────────────────
+var _bit=null;
+var BIT_GRUPOS={
+  ingresos:/Ingreso al panel|Salida del panel|Recuperacion de clave/,
+  decisiones:/Aprobo|Rechazo|Decision/,
+  equipo:/Asign|horario|cronograma|turno|Cierre manual|pendiente de cierre|zonas/i,
+  personal:/empleado|Dio de baja|administrador/i,
+  consultas:/Consulto|Descargo|Abrio/,
+  fallidos:null
+};
+async function cargarBitacora(){
+  var el=document.getElementById('bitBody');if(el)el.innerHTML='<div style="color:#9CA3AF;padding:12px;font-size:13px">Cargando historial...</div>';
+  var d1=document.getElementById('bitDesde'),d2=document.getElementById('bitHasta');
+  if(d1&&!d1.value){var hace=new Date(Date.now()-30*86400000);d1.value=hace.toISOString().slice(0,10);}
+  if(d2&&!d2.value){d2.value=new Date().toISOString().slice(0,10);}
+  try{
+    var d=await pedirDatos(SCRIPT_URL+'?action=getBitacora&email='+encodeURIComponent(currentUser.email)+'&desde='+(d1?d1.value:'')+'&hasta='+(d2?d2.value:'')+'&t='+Date.now());
+    if(d.status!=='ok'){if(el)el.innerHTML='<div style="color:#991B1B;padding:12px">No tienes acceso a este historial.</div>';return;}
+    _bit=d;
+    var sel=document.getElementById('bitUsuario');
+    if(sel){var us={};(d.eventos||[]).forEach(function(e){var k=(e.usuario||'').toLowerCase();if(k)us[k]=e.nombre||us[k]||k;});(d.equipos||[]).forEach(function(q){us[q.email]=q.nombre;});
+      var act=sel.value;sel.innerHTML='<option value="">Todas las personas</option>'+Object.keys(us).sort(function(a,b){return (us[a]||a)<(us[b]||b)?-1:1;}).map(function(k){return '<option value="'+xEsc(k)+'">'+xEsc(us[k]||k)+'</option>';}).join('');sel.value=act;}
+    renderBitacora();
+  }catch(e){if(el)el.innerHTML='<div style="color:#991B1B;padding:12px">No pudimos cargar el historial. Intenta de nuevo.</div>';}
+}
+function bitFiltrados(){
+  if(!_bit)return [];
+  var u=(document.getElementById('bitUsuario')||{}).value||'', g=(document.getElementById('bitTipo')||{}).value||'', q=((document.getElementById('bitBuscar')||{}).value||'').toLowerCase();
+  return (_bit.eventos||[]).filter(function(e){
+    if(u&&(e.usuario||'').toLowerCase()!==u)return false;
+    if(g==='fallidos'){if(!/fallido|no realizado/i.test(e.resultado||''))return false;}
+    else if(g&&BIT_GRUPOS[g]&&!BIT_GRUPOS[g].test(e.accion||''))return false;
+    if(q&&((e.nombre||'')+' '+(e.usuario||'')+' '+(e.accion||'')+' '+(e.afecta||'')+' '+(e.detalle||'')).toLowerCase().indexOf(q)<0)return false;
+    return true;
+  });
+}
+function renderBitacora(){
+  var el=document.getElementById('bitBody');if(!el||!_bit)return;
+  var ev=bitFiltrados();
+  var rolLbl={director:'Director',master:'Gestion Humana',supervisor:'Supervisor'};
+  // Como esta hoy cada equipo
+  var hoy='<div style="background:white;border:1.5px solid #E5E7EB;border-radius:14px;padding:12px 14px;margin-bottom:12px"><div style="font-size:12px;font-weight:700;color:#0A3D47;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Como esta hoy</div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:#F8FAFC">'+
+    ['Persona','Rol','Activo','Equipo asignado','Apoyos temporales vigentes','Ultimo ingreso','Acciones en el periodo'].map(function(t){return '<th style="text-align:left;padding:7px 8px;font-size:10px;color:#6B7280;text-transform:uppercase;border-bottom:1px solid #E5E7EB">'+t+'</th>';}).join('')+'</tr></thead><tbody>'+
+    (_bit.equipos||[]).map(function(q){
+      return '<tr><td style="padding:7px 8px;border-bottom:1px solid #F3F4F6"><b>'+xEsc(q.nombre)+'</b><div style="font-size:10px;color:#9CA3AF">'+xEsc(q.email)+'</div></td>'+
+        '<td style="padding:7px 8px;border-bottom:1px solid #F3F4F6">'+(rolLbl[q.rol]||xEsc(q.rol))+'</td>'+
+        '<td style="padding:7px 8px;border-bottom:1px solid #F3F4F6">'+xEsc(q.activo)+'</td>'+
+        '<td style="padding:7px 8px;border-bottom:1px solid #F3F4F6;font-size:11px">'+(q.propios.length?'<b>'+q.propios.length+'</b>: '+xEsc(q.propios.join(', ')):'<span style="color:#9CA3AF">Sin equipo asignado</span>')+'</td>'+
+        '<td style="padding:7px 8px;border-bottom:1px solid #F3F4F6;font-size:11px">'+(q.temporales.length?xEsc(q.temporales.join('; ')):'<span style="color:#9CA3AF">Ninguno</span>')+'</td>'+
+        '<td style="padding:7px 8px;border-bottom:1px solid #F3F4F6;font-size:11px;white-space:nowrap">'+(q.ultimoIngreso||'<span style="color:#9CA3AF">Sin ingresos en el periodo</span>')+'</td>'+
+        '<td style="padding:7px 8px;border-bottom:1px solid #F3F4F6;text-align:center"><b>'+q.acciones+'</b></td></tr>';
+    }).join('')+'</tbody></table></div></div>';
+  var kp={ing:0,dec:0,cam:0,fal:0};
+  ev.forEach(function(e){ if(BIT_GRUPOS.ingresos.test(e.accion))kp.ing++; else if(BIT_GRUPOS.decisiones.test(e.accion))kp.dec++; else kp.cam++; if(/fallido|no realizado/i.test(e.resultado||''))kp.fal++; });
+  var k='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:12px">'+
+    [['Registros',ev.length,'#0A3D47'],['Ingresos y salidas',kp.ing,'#1E40AF'],['Decisiones',kp.dec,'#065F46'],['Cambios y consultas',kp.cam,'#7C3AED'],['Fallidos o no realizados',kp.fal,'#991B1B']].map(function(x){return '<div style="background:white;border:1.5px solid #E5E7EB;border-radius:12px;padding:10px 12px"><div style="font-size:22px;font-weight:800;color:'+x[2]+'">'+x[1]+'</div><div style="font-size:11px;color:#6B7280">'+x[0]+'</div></div>';}).join('')+'</div>';
+  var t='<div style="background:white;border:1.5px solid #E5E7EB;border-radius:14px;padding:12px 14px"><div style="font-size:12px;font-weight:700;color:#0A3D47;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Que paso, quien y cuando ('+ev.length+(ev.length>800?', se muestran los 800 mas recientes':'')+')</div><div style="overflow:auto;max-height:620px"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:#F8FAFC;position:sticky;top:0">'+
+    ['Fecha y hora','Persona','Accion','A quien o que','Detalle','Resultado'].map(function(x){return '<th style="text-align:left;padding:7px 8px;font-size:10px;color:#6B7280;text-transform:uppercase;border-bottom:1px solid #E5E7EB;background:#F8FAFC">'+x+'</th>';}).join('')+'</tr></thead><tbody>'+
+    ev.slice(0,800).map(function(e){
+      var mal=/fallido|no realizado/i.test(e.resultado||'');
+      return '<tr style="'+(mal?'background:#FEF2F2':'')+'"><td style="padding:6px 8px;border-bottom:1px solid #F3F4F6;font-family:monospace;font-size:11px;white-space:nowrap">'+xEsc(e.fecha)+'</td>'+
+        '<td style="padding:6px 8px;border-bottom:1px solid #F3F4F6"><b>'+xEsc(e.nombre||e.usuario)+'</b>'+(e.rol?'<div style="font-size:10px;color:#9CA3AF">'+(rolLbl[(e.rol||'').toLowerCase()]||xEsc(e.rol))+'</div>':'')+'</td>'+
+        '<td style="padding:6px 8px;border-bottom:1px solid #F3F4F6;font-weight:600">'+xEsc(e.accion)+'</td>'+
+        '<td style="padding:6px 8px;border-bottom:1px solid #F3F4F6;font-size:11px">'+xEsc(e.afecta)+'</td>'+
+        '<td style="padding:6px 8px;border-bottom:1px solid #F3F4F6;font-size:10.5px;color:#475569;max-width:340px">'+xEsc(e.detalle)+'</td>'+
+        '<td style="padding:6px 8px;border-bottom:1px solid #F3F4F6;font-size:11px;color:'+(mal?'#991B1B':'#065F46')+';font-weight:600">'+xEsc(e.resultado)+'</td></tr>';
+    }).join('')+'</tbody></table></div><div style="font-size:10.5px;color:#9CA3AF;margin-top:8px">Antes de activar el historial solo existen los ingresos al panel y las decisiones guardadas en cada solicitud; desde la activacion queda registrada cada accion.</div></div>';
+  el.innerHTML=hoy+k+t;
+}
+function exportarBitacora(){
+  if(!_bit){alert('Primero consulta el historial.');return;}
+  var ev=bitFiltrados(); if(!ev.length){alert('No hay registros con estos filtros.');return;}
+  var cols=['Fecha y hora','Usuario','Nombre','Rol','Accion','Afecta a','Detalle','Resultado'];
+  var h='<html><head><meta charset="UTF-8"></head><body><table border="1" style="font-family:Calibri;font-size:11pt;border-collapse:collapse"><tr><td colspan="8" style="background:#0A3D47;color:white;font-size:14pt;font-weight:bold">Historial del equipo de gestion · '+xEsc(_bit.desde)+' a '+xEsc(_bit.hasta)+'</td></tr><tr>'+cols.map(function(c){return '<th style="background:#065F46;color:white">'+c+'</th>';}).join('')+'</tr>'+
+    ev.map(function(e){return '<tr>'+[e.fecha,e.usuario,e.nombre,e.rol,e.accion,e.afecta,e.detalle,e.resultado].map(function(v){return '<td>'+xEsc(v)+'</td>';}).join('')+'</tr>';}).join('')+'</table></body></html>';
+  var b=new Blob(['\ufeff'+h],{type:'application/vnd.ms-excel'}),a=document.createElement('a');
+  a.href=URL.createObjectURL(b);a.download='Historial_gestion_AMG_'+new Date().toISOString().slice(0,10)+'.xls';document.body.appendChild(a);a.click();a.remove();
+}
+
+function dispBadge(d){
+  d=d||'Sin dato';
+  var t=d.toLowerCase(), c='#6B7280', bg='#F3F4F6', ico='';
+  if(t.indexOf('computador')===0){c='#7C2D12';bg='#FFEDD5';ico='&#128187; ';}
+  else if(t.indexOf('celular')===0){c='#065F46';bg='#ECFDF5';ico='&#128241; ';}
+  else if(t.indexOf('tablet')===0){c='#1E40AF';bg='#EFF6FF';ico='&#128241; ';}
+  else if(t.indexOf('manual')>=0){c='#374151';bg='#F3F4F6';ico='&#9997; ';}
+  var p=d.split(' · ');
+  return '<span style="background:'+bg+';color:'+c+';border-radius:99px;padding:2px 8px;font-size:10px;font-weight:700;white-space:nowrap">'+ico+xEsc(p[0])+'</span>'+(p[1]?'<div style="font-size:10px;color:#9CA3AF;margin-top:2px">'+xEsc(p.slice(1).join(' · '))+'</div>':'');
 }
 
 function cambiarRango(){
@@ -2316,13 +2429,14 @@ function exportarCSV(tipo){
 
   if(tipo==='marcajes'){
     titulo='Registro de jornadas';
-    cols=['Fecha','Dia','Empleado','Correo','Empresa','Area','Entrada','Salida','Horas','Turno','Vehiculo','Ubicacion entrada','Ubicacion salida','Estado'];
-    anchos=[80,80,190,200,140,60,65,65,55,95,140,150,150,110];
+    cols=['Fecha','Dia','Empleado','Correo','Empresa','Area','Entrada','Salida','Horas','Turno','Vehiculo','Dispositivo entrada','Dispositivo salida','Modo','Ubicacion entrada','Ubicacion salida','Estado'];
+    anchos=[80,80,190,200,140,60,65,65,55,95,140,170,170,150,150,150,110];
     (_supData.jornadas||[]).forEach(function(j){
       filas.push([j.fecha,j.dia,j.nombre,j.correo,j.empresa,j.area,
                   j.entrada||'sin marcar',j.salida||'sin marcar',
                   (j.horas!==null&&j.horas!==undefined)?j.horas:'',
                   j.turno||'',j.vehiculo||'',
+                  j.dispEntrada||'',j.dispSalida||'',j.modo||'En linea',
                   j.mapaEntrada||'',j.mapaSalida||'',
                   j.alerta?(j.fpStatus||'ALERTA'):j.estado]);
     });
@@ -5981,7 +6095,8 @@ var NAV_GRUPOS=[
   {id:'analisis', titulo:'Analisis', ico:'grafica', color:'#7C3AED', items:[
     {src:'[data-tab="stats"]', t:'Dashboard', d:'Graficas de solicitudes y actividad', ico:'grafica'},
     {src:'#tabReporte', t:'Reporte ejecutivo', d:'Panorama completo de la aplicacion', ico:'documento'},
-    {src:'#tabSeguridad', t:'Seguridad de marcajes', d:'Quien marco, desde que equipo y a quien', ico:'escudo'}]},
+    {src:'#tabSeguridad', t:'Seguridad de marcajes', d:'Quien marco, desde que equipo y a quien', ico:'escudo'},
+    {src:'#tabBitacora', t:'Historial del equipo de gestion', d:'Ingresos, decisiones y cambios de directores y GH', ico:'historial'}]},
   {id:'gh', titulo:'Gestion Humana', ico:'maletin', color:'#92400E', items:[
     {src:'#tabNomina', t:'Nomina y jornadas', d:'Liquidacion de horas extra y salarios', ico:'dinero'},
     {src:'#tabNovedades', t:'Novedades de la empresa', d:'Comunicados para los colaboradores', ico:'megafono'},
