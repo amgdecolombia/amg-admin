@@ -336,6 +336,7 @@ input:focus,select:focus,textarea:focus{
       <button class="tab" data-tab="stats" onclick="switchTab('stats')">Dashboard</button>
       <button class="tab" data-tab="history" onclick="switchTab('history')">Historial</button>
 <button class="tab" id="tabNomina" data-tab="nomina" onclick="switchTab('nomina')" style="display:none;background:#F0FDF4;border-color:#86EFAC;color:#14532D;font-weight:700">Nomina y jornadas</button>
+        <button class="tab" id="tabSeguridad" data-tab="seguridad" onclick="switchTab('seguridad')" style="display:none">Seguridad de marcajes</button>
         <button class="tab" id="tabReporte" data-tab="reporte" onclick="switchTab('reporte')" style="display:none;background:#ECFDF5;border-color:#A7F3D0;color:#065F46;font-weight:700">Reporte ejecutivo</button>
         <button class="tab" id="tabPendCierre" data-tab="pendcierre" onclick="switchTab('pendcierre')" style="background:#FFFBEB;border-color:#FDE68A;color:#92400E;font-weight:700">Pendientes de cierre <span id="badgePendCierre" style="display:none;background:#991B1B;color:#fff;border-radius:99px;padding:1px 7px;font-size:10px;margin-left:4px"></span></button>
         <button class="tab" id="tabSeguimiento" onclick="mostrarSupDashboard()" style="background:#FFFBEB;border-color:#FDE68A;color:#92400E;font-weight:700">Seguimiento y horarios</button>
@@ -407,6 +408,21 @@ input:focus,select:focus,textarea:focus{
         <button onclick="copiarResumenReporte()" style="padding:8px 14px;border-radius:9px;border:1.5px solid #BFDBFE;background:#EFF6FF;color:#1E40AF;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Copiar resumen</button>
       </div>
       <div id="reporteBody" style="color:#9CA3AF;font-size:13px">Selecciona un periodo para generar el reporte.</div>
+    </div>
+    <div class="panel" id="panel-seguridad">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
+        <select id="segPeriodo" onchange="cargarSeguridad()" style="padding:8px 12px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:13px;outline:none;background:white">
+          <option value="7">Ultimos 7 dias</option>
+          <option value="30" selected>Ultimos 30 dias</option>
+          <option value="mes">Mes en curso</option>
+          <option value="90">Ultimos 90 dias</option>
+          <option value="todo">Todo el historico</option>
+        </select>
+        <button onclick="cargarSeguridad()" style="padding:8px 14px;border-radius:9px;border:1.5px solid #E5E7EB;background:white;color:#374151;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Actualizar</button>
+        <button onclick="segPDF()" style="padding:8px 14px;border-radius:9px;border:none;background:#0A3D47;color:white;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Informe ejecutivo PDF</button>
+        <button onclick="segExcel()" style="padding:8px 14px;border-radius:9px;border:none;background:#065F46;color:white;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Descargar Excel</button>
+      </div>
+      <div id="segBody" style="color:#9CA3AF;font-size:13px">Selecciona un periodo para generar el reporte.</div>
     </div>
     <div class="panel" id="panel-pendcierre">
       <div style="background:white;border-radius:14px;border:1.5px solid #FDE68A;overflow:hidden">
@@ -646,7 +662,7 @@ function fetchConTiempo(url, ms){
 var BUILD_VERSION='2026.09.16';
 
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwTKQgTJU2B4WLZBYllgjRFN7RoSMI7jcSQLpzlfSddFogcU9Mil1prKKjuqSKXM2r2/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzK4KbkZctsNA5C0Yae1CaQ78huazxCvJ2sP_yjTwan1OSjCQ0e4mrdUfKlFYLDntE/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -704,7 +720,7 @@ async function doLogin(){
       document.getElementById('topbarName').innerHTML=d.nombre+(role==='master'?'<span class="master-badge" style="display:inline-flex">MASTER</span>':(role==='supervisor'?'<span class="master-badge" style="display:inline-flex;background:#1E40AF">SUPERVISOR</span>':''));
       document.getElementById('topbarEmail').textContent=email;
       pintarFrase();
-      ['tabNovedades','tabCorrecciones','tabAdmins','tabCalendario','tabEmpleados','tabNomina','tabReporte'].forEach(function(id){
+      ['tabNovedades','tabCorrecciones','tabAdmins','tabCalendario','tabEmpleados','tabNomina','tabReporte','tabSeguridad'].forEach(function(id){
         var el=document.getElementById(id);if(el)el.style.display='none';
       });
       var masterTabs=['tabNovedades','tabCorrecciones','tabAdmins','tabCalendario','tabEmpleados'];
@@ -731,6 +747,7 @@ async function doLogin(){
       }
       if(role==='master'||role==='supervisor'){
         var tn=document.getElementById('tabNomina');if(tn)tn.style.display='inline-block';
+        var tsg=document.getElementById('tabSeguridad');if(tsg)tsg.style.display='inline-block';
       }
       if(role==='master'||role==='supervisor'){
         var rb=document.getElementById('resetBtn');if(rb)rb.style.display='inline-block';
@@ -758,7 +775,9 @@ function doLogout(){
     if(typeof _nom!=='undefined'){_nom={salarios:null,empleados:[],liq:null,jornadas:null};}
     if(typeof _supData!=='undefined'){_supData=null;}
     if(typeof _reporte!=='undefined'){_reporte=null;}
-    ['nomBody','reporteBody','supContent','pendCierreBody'].forEach(function(id){
+    if(typeof _seg!=='undefined'){_seg=null;}
+    if(typeof _geo!=='undefined'){_geo=null;_fotos=null;_lugar.datos=null;}
+    ['nomBody','reporteBody','segBody','supContent','pendCierreBody'].forEach(function(id){
       var el=document.getElementById(id);if(el)el.innerHTML='';
     });
   }catch(e){}
@@ -825,7 +844,7 @@ function showToast(msg){
 
 
 var ALL_TABS=['pending','stats','history','calendario','novedades','correcciones','empleados','admins'];
-var PERMISOS_TAB={nomina:['master','supervisor'],reporte:['supervisor'],
+var PERMISOS_TAB={nomina:['master','supervisor'],reporte:['supervisor'],seguridad:['master','supervisor'],
   novedades:['master','supervisor'],correcciones:['master','supervisor'],
   empleados:['master','supervisor'],admins:['master','supervisor']};
 function switchTab(t){
@@ -836,7 +855,7 @@ function switchTab(t){
   try{
     if(typeof NAV_GRUPOS!=='undefined'){
       var mapaNav={pending:'[data-tab="pending"]',history:'[data-tab="history"]',stats:'[data-tab="stats"]',
-        correcciones:'#tabCorrecciones',pendcierre:'#tabPendCierre',calendario:'#tabCalendario',reporte:'#tabReporte',
+        correcciones:'#tabCorrecciones',pendcierre:'#tabPendCierre',calendario:'#tabCalendario',reporte:'#tabReporte',seguridad:'#tabSeguridad',
         nomina:'#tabNomina',novedades:'#tabNovedades',empleados:'#tabEmpleados',admins:'#tabAdmins'};
       var selN=mapaNav[t];
       if(selN)NAV_GRUPOS.forEach(function(g){ g.items.forEach(function(it){ if(it.src===selN)_navActivo={grupo:g.id,item:selN}; }); });
@@ -853,6 +872,7 @@ function switchTab(t){
   if(t==='calendario')loadCalendar();
   if(t==='pendcierre')cargarPendientesCierre();
   if(t==='reporte')cargarReporte();
+  if(t==='seguridad'&&!_seg)cargarSeguridad();
   if(t==='nomina')nomVista(window._nomVista||'liquidar');
   if(t==='stats'||t==='dashboard')loadStats();
   if(t==='novedades')loadNovedades();
@@ -3603,6 +3623,975 @@ function cambioAlcanceHorario(){
 function safeSem(v){ return (v===null||v===undefined)?'':String(v).trim(); }
 
 // ── Graficas en SVG para el reporte (se dibujan sin librerias) ──────────────
+// ═══ SEGURIDAD DE MARCAJES: quien marco, desde que equipo y a quien ═══════════
+var _seg=null,_segVista='casos';
+var SEG_SEV={
+  alta:{t:'Requiere revision',c:'#B91C1C',bg:'#FEF2F2',bd:'#FECACA'},
+  media:{t:'Revisar',c:'#B45309',bg:'#FFFBEB',bd:'#FDE68A'},
+  baja:{t:'Probable coincidencia',c:'#1E40AF',bg:'#EFF6FF',bd:'#BFDBFE'},
+  info:{t:'Informativo',c:'#4B5563',bg:'#F3F4F6',bd:'#E5E7EB'}
+};
+var SEG_CLASE={
+  varias:{t:'Celular usado por varias personas',c:'#B91C1C',bg:'#FEF2F2'},
+  modelo:{t:'Mismo modelo, equipos distintos',c:'#1E40AF',bg:'#EFF6FF'},
+  computador:{t:'Computador compartido',c:'#4B5563',bg:'#F3F4F6'},
+  personal:{t:'Uso personal',c:'#065F46',bg:'#ECFDF5'}
+};
+function segIcoEquipo(tipo){
+  var comp=(tipo==='Computador');
+  return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px">'+
+    (comp?'<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>'
+         :'<rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>')+'</svg>';
+}
+function segChip(txt,c,bg){
+  return '<span style="display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;color:'+c+';background:'+bg+';white-space:nowrap">'+xEsc(txt)+'</span>';
+}
+function segEquipoTxt(d){
+  var hab=(typeof d.habituales==='string')?d.habituales:((d.habituales||[]).map(function(h){return h.nombre;}).join(', '));
+  return segIcoEquipo(d.tipo)+'<b>'+xEsc(d.tipo||'Sin dato')+'</b>'+(d.detalle?' <span style="color:#6B7280">'+xEsc(d.detalle)+'</span>':'')+
+    (d.tipo==='Computador'&&hab?' <span style="color:#4B5563">· habitual: '+xEsc(hab)+'</span>':'');
+}
+
+async function cargarSeguridad(){
+  _geo=null;_fotos=null;
+  var el=document.getElementById('segBody');
+  if(el)el.innerHTML='<div style="padding:1rem;color:#9CA3AF">Analizando marcajes y dispositivos...</div>';
+  try{
+    var dias=(document.getElementById('segPeriodo')||{}).value||'30';
+    var d=await pedirDatos(SCRIPT_URL+'?action=getReporteDispositivos&email='+encodeURIComponent(currentUser.email)+'&dias='+dias+'&t='+Date.now());
+    if(!d||d.status!=='ok'){if(el)el.innerHTML='<div style="padding:1rem;color:#991B1B">'+xEsc((d&&(d.msg||d.message))||'No pudimos generar el reporte.')+'</div>';return;}
+    _seg=d;renderSeguridad();
+  }catch(e){
+    if(el)el.innerHTML='<div style="padding:1rem;color:#991B1B">No pudimos generar el reporte. Intenta actualizar.</div>';
+  }
+}
+
+function renderSeguridad(){
+  var el=document.getElementById('segBody');if(!el||!_seg)return;
+  var k=_seg.kpis||{};
+  var h='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px">'+
+    kpiBox(k.alta||0,'Requieren revision',(k.alta?'#B91C1C':'#065F46'))+
+    kpiBox(k.media||0,'Celular distinto al registrado',(k.media?'#B45309':'#065F46'))+
+    kpiBox(k.compartidosCel||0,'Celulares con varios usuarios',(k.compartidosCel?'#B91C1C':'#065F46'))+
+    kpiBox((k.celulares||0)+' / '+(k.computadores||0),'Celulares / computadores','#0A3D47')+
+    kpiBox((k.rafagas||0)+(k.pcNoHabitual||0),'Alertas en computador',((k.rafagas||0)+(k.pcNoHabitual||0)?'#B45309':'#065F46'))+
+    kpiBox(k.marcajes||0,'Marcajes analizados','#0A3D47')+
+    '</div>';
+  h+='<div style="background:#F8FAFB;border:1px solid #E5E7EB;border-radius:12px;padding:12px 14px;font-size:11.5px;color:#4B5563;line-height:1.6;margin-bottom:14px">'+
+    'Cada celular deja una huella propia la primera vez que marca y queda registrado a esa persona. '+
+    'Si despues alguien marca desde el celular de otra persona, aparece aqui como <b style="color:#B91C1C">Requiere revision</b> con el dueno del celular y la persona que quedo marcada. La foto de verificacion muestra quien tenia el celular en la mano. '+
+    'Los <b>computadores</b> no se registran a una persona porque en oficina son compartidos; el sistema aprende quienes los usan habitualmente y senala cuando marca alguien que no suele usarlo o cuando se marca a varias personas en menos de 3 minutos. '+
+    'Dos celulares del mismo modelo y version pueden parecerse; el sistema los separa con un identificador propio de cada equipo.'+
+    (k.sinHuella?'<br><span style="color:#9CA3AF">'+k.sinHuella+' marcaje'+(k.sinHuella===1?'':'s')+' del periodo no tienen huella (registros manuales o correcciones) y no entran en el analisis.</span>':'')+
+    (k.sinRegistro?'<br><span style="color:#9CA3AF">'+k.sinRegistro+' colaborador'+(k.sinRegistro===1?'':'es')+' activo'+(k.sinRegistro===1?'':'s')+' aun no tiene celular registrado (no han marcado desde su celular).</span>':'')+
+    '</div>';
+  var bt=function(v,t,n){var on=_segVista===v;return '<button onclick="segVista(\''+v+'\')" style="padding:8px 14px;border-radius:9px;border:1.5px solid '+(on?'#0A3D47':'#E5E7EB')+';background:'+(on?'#0A3D47':'white')+';color:'+(on?'white':'#374151')+';font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">'+t+(n!==undefined?' <span style="opacity:.75">('+n+')</span>':'')+'</button>';};
+  var nCasos=(_seg.casos||[]).filter(function(c){return c.sev==='alta'||c.sev==='media';}).length;
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px">'+
+    bt('casos','Casos',nCasos)+bt('dispositivos','Dispositivos',(_seg.dispositivos||[]).length)+bt('personas','Por persona',(_seg.personas||[]).length)+bt('ubicaciones','Ubicaciones')+bt('fotos','Fotos')+
+    '<input id="segBuscar" oninput="segPintarVista()" placeholder="Buscar persona, area o equipo" style="flex:1;min-width:180px;padding:8px 12px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:12px;outline:none">'+
+    (_segVista==='casos'?'<select id="segSev" onchange="segPintarVista()" style="padding:8px 10px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:12px;background:white">'+
+      '<option value="revision">Solo los que requieren revision</option><option value="todos">Todos, incluidos informativos</option>'+
+      '<option value="alta">Requiere revision</option><option value="media">Celular distinto</option><option value="baja">Probable coincidencia</option><option value="info">Informativos</option></select>':'')+
+    '</div><div id="segVistaBody"></div>';
+  var prevQ=(document.getElementById('segBuscar')||{}).value||'';
+  el.innerHTML=h;
+  var q=document.getElementById('segBuscar');if(q&&prevQ)q.value=prevQ;
+  segPintarVista();
+}
+function segVista(v){_segVista=v;renderSeguridad();}
+function segTexto(){return ((document.getElementById('segBuscar')||{}).value||'').toLowerCase().trim();}
+function segCoincide(txt,q){return !q||String(txt||'').toLowerCase().indexOf(q)>=0;}
+function segVerEquipo(hash){_segVista='dispositivos';renderSeguridad();var q=document.getElementById('segBuscar');if(q){q.value=hash;segPintarVista();}}
+function segPintarVista(){
+  var b=document.getElementById('segVistaBody');if(!b||!_seg)return;
+  try{
+    if(_segVista==='casos')b.innerHTML=segHtmlCasos();
+    else if(_segVista==='dispositivos')b.innerHTML=segHtmlDispositivos();
+    else if(_segVista==='ubicaciones')b.innerHTML=segHtmlUbicaciones();
+    else if(_segVista==='fotos')b.innerHTML=segHtmlFotos();
+    else b.innerHTML=segHtmlPersonas();
+  }catch(e){console.error('segPintarVista:',e);b.innerHTML='<div style="color:#991B1B;padding:1rem">No se pudo mostrar esta vista.</div>';}
+}
+function segCasosFiltrados(){
+  var q=segTexto(),f=(document.getElementById('segSev')||{}).value||'revision';
+  return (_seg.casos||[]).filter(function(c){
+    if(f==='revision'&&(c.sev==='info'||c.sev==='baja'))return false;
+    if(['alta','media','baja','info'].indexOf(f)>=0&&c.sev!==f)return false;
+    return segCoincide([c.marcado,c.correo,c.area,c.marcadoPor,c.dispositivo.hash,c.dispositivo.detalle,c.dispositivo.tipo,c.dispositivo.habituales].join(' '),q);
+  });
+}
+function segHtmlCasos(){
+  var lista=segCasosFiltrados();
+  if(!lista.length)return '<div style="background:#ECFDF5;border:1.5px solid #A7F3D0;border-radius:12px;padding:18px;text-align:center;color:#065F46;font-size:13px;font-weight:600">Sin casos para revisar en este periodo con el filtro elegido.</div>';
+  var h='';
+  lista.forEach(function(c,i){
+    var s=SEG_SEV[c.sev]||SEG_SEV.info;
+    var frase=c.marcadoPor
+      ?'Desde el '+(c.dispositivo.tipo==='Computador'?'equipo':'celular')+' de <b>'+xEsc(c.marcadoPor)+'</b> se marco a <b>'+xEsc(c.marcado)+'</b>'
+      :'<b>'+xEsc(c.marcado)+'</b> marco desde un equipo que no es el suyo';
+    if(c.dispositivo.tipo==='Computador'){
+      if(c.rafaga)frase='Desde un mismo computador se marco a <b>'+xEsc(c.marcado)+'</b> en pocos minutos';
+      else if(c.sev==='info')frase='<b>'+xEsc(c.marcado)+'</b> marco desde un computador compartido';
+      else frase='<b>'+xEsc(c.marcado)+'</b> marco desde un computador que no suele usar';
+    }
+    h+='<div style="background:white;border:1.5px solid '+s.bd+';border-left:5px solid '+s.c+';border-radius:12px;margin-bottom:8px;overflow:hidden">'+
+      '<div onclick="segToggle(\'segc'+i+'\')" style="padding:11px 14px;cursor:pointer;display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap">'+
+        '<div style="flex:1;min-width:220px">'+
+          '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:4px">'+segChip(s.t,s.c,s.bg)+
+            '<span style="font-size:11px;color:#6B7280;font-family:monospace">'+xEsc(c.fecha)+'</span>'+
+            '<span style="font-size:11px;color:#6B7280">'+xEsc(c.tipo)+'</span></div>'+
+          '<div style="font-size:13px;color:#111827">'+frase+'</div>'+
+          '<div style="font-size:11px;color:#374151;margin-top:3px">'+segEquipoTxt(c.dispositivo)+'</div>'+
+        '</div>'+
+        '<div style="font-size:11px;color:'+s.c+';font-weight:600;max-width:260px">'+xEsc(c.motivo)+'</div>'+
+      '</div>'+
+      '<div id="segc'+i+'" style="display:none;padding:0 14px 12px;border-top:1px dashed #E5E7EB">'+
+        '<table style="width:100%;font-size:11.5px;border-collapse:collapse;margin-top:8px">'+
+        segFila(c.rafaga?'Personas marcadas':'Persona marcada',xEsc(c.marcado)+' <span style="color:#9CA3AF">'+xEsc(c.correo||'')+(c.area?' · '+xEsc(c.area):'')+'</span>')+
+        (c.rafaga?segFila('Secuencia',(c.detalleRafaga||[]).map(function(r){return '<span style="font-family:monospace">'+xEsc(r.fecha)+'</span> '+xEsc(r.nombre)+' <span style="color:#9CA3AF">'+xEsc(r.tipo)+'</span>';}).join('<br>')):'')+
+        (c.dispositivo.tipo==='Computador'?segFila('Usuarios habituales del equipo',c.dispositivo.habituales?xEsc(c.dispositivo.habituales):'<span style="color:#9CA3AF">Aun sin definir</span>'):
+        segFila('Equipo de',c.marcadoPor?xEsc(c.marcadoPor):'<span style="color:#9CA3AF">No identificado (equipo sin dueno registrado)</span>'))+
+        (c.evidencia&&c.evidencia.duenoCorreo?segFila('Celular registrado a',xEsc(c.marcadoPor)+' <span style="color:#9CA3AF">'+xEsc(c.evidencia.duenoCorreo)+(c.evidencia.duenoRegistro?' · desde '+xEsc(c.evidencia.duenoRegistro):'')+(c.evidencia.duenoHuella?' · huella '+xEsc(c.evidencia.duenoHuella):'')+'</span>'):'')+
+        segFila('Que tan seguro es',xEsc(c.certeza))+
+        segFila('Equipo',segEquipoTxt(c.dispositivo))+
+        segFila('Huella del equipo','<code>'+xEsc(c.dispositivo.hash)+'</code>'+(c.dispositivo.id?' · ID <code>'+xEsc(c.dispositivo.id)+'</code>':'')+
+          ' <a href="#" onclick="segVerEquipo(\''+xEsc(c.dispositivo.hash)+'\');return false" style="color:#1E40AF;font-weight:600;margin-left:6px">Ver todos sus usos</a>')+
+        (c.otrosUsuarios&&c.otrosUsuarios.length?segFila('Otras personas en ese equipo',xEsc(c.otrosUsuarios.join(', '))):'')+
+        segFila('Estado guardado',xEsc(c.estado||'OK'))+
+        segFila('Ubicacion',c.mapa?'<a href="'+xEsc(c.mapa)+'" target="_blank" rel="noopener" style="color:#1E40AF;font-weight:600">Ver en el mapa</a> <span style="font-family:monospace">'+xEsc(c.lat||'')+', '+xEsc(c.lng||'')+'</span>'+(c.precision?' <span style="color:#9CA3AF">precision '+xEsc(c.precision)+' m</span>':''):'<span style="color:#9CA3AF">Sin GPS</span>')+
+        segFila('Foto de verificacion',c.fotoId?'<button onclick="verFotoVerif(\''+xEsc(c.fotoId)+'\')" style="padding:5px 12px;border-radius:8px;border:none;background:#0A3D47;color:white;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer">Ver foto</button>':'<span style="color:#9CA3AF">No se tomo foto</span>')+
+        segFila('Fila en la hoja','Marcajes, fila '+c.fila)+
+        '</table>'+segSecuenciaHtml(c)+'</div></div>';
+  });
+  return h;
+}
+function segSecuenciaHtml(c){
+  var sq=(c.evidencia&&c.evidencia.secuencia)||[];
+  if(!sq.length)return '';
+  return '<div style="font-size:10px;font-weight:700;color:#0A3D47;text-transform:uppercase;margin:10px 0 4px">Uso de este mismo equipo ese dia</div>'+
+    '<table style="width:100%;border-collapse:collapse;font-size:11px">'+sq.map(function(x){
+      return '<tr style="border-bottom:1px solid #EEF2F4'+(x.mismo?';background:#FEF2F2;font-weight:600':'')+'"><td style="padding:4px 6px;font-family:monospace;white-space:nowrap">'+xEsc(x.fecha)+'</td><td style="padding:4px 6px">'+xEsc(x.nombre)+'</td><td style="padding:4px 6px">'+xEsc(x.tipo)+'</td><td style="padding:4px 6px;color:#6B7280">'+xEsc(x.estado)+'</td><td style="padding:4px 6px;color:#9CA3AF">fila '+x.fila+'</td></tr>';
+    }).join('')+'</table>';
+}
+function segFila(t,v){return '<tr><td style="padding:5px 8px 5px 0;color:#6B7280;width:190px;vertical-align:top;font-weight:600">'+t+'</td><td style="padding:5px 0;color:#111827">'+v+'</td></tr>';}
+function segToggle(id){var x=document.getElementById(id);if(!x)return;var ver=(x.tagName==='TR'?'table-row':'block');x.style.display=(x.style.display==='none'?ver:'none');}
+
+function segHtmlDispositivos(){
+  var q=segTexto();
+  var lista=(_seg.dispositivos||[]).filter(function(d){
+    return segCoincide([d.hash,(d.hashes||[]).join(' '),d.tipo,d.detalle,d.duenoRegistrado,(d.habituales||[]).map(function(h){return h.nombre;}).join(' ')].concat(d.usuarios.map(function(u){return u.nombre+' '+u.correo+' '+u.area;})).join(' '),q);
+  });
+  if(!lista.length)return '<div style="color:#9CA3AF;padding:1rem;font-size:13px">Sin dispositivos que coincidan.</div>';
+  var h='<div style="background:white;border:1.5px solid #E5E7EB;border-radius:12px;overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:720px"><thead><tr style="background:#F8FAFB">';
+  ['Equipo','Clasificacion','Registrado a / habituales','Personas que marcaron desde aqui','Marcajes','Ultimo uso'].forEach(function(t){
+    h+='<th style="text-align:left;padding:9px 10px;font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;border-bottom:1px solid #E5E7EB">'+t+'</th>';
+  });
+  h+='</tr></thead><tbody>';
+  lista.forEach(function(d,i){
+    var cl=SEG_CLASE[d.clase]||SEG_CLASE.personal;
+    h+='<tr onclick="segToggle(\'segd'+i+'\')" style="cursor:pointer;border-bottom:1px solid #F3F4F6">'+
+      '<td style="padding:9px 10px">'+segEquipoTxt(d)+'<div style="font-size:10px;color:#9CA3AF;font-family:monospace;margin-top:2px">'+xEsc((d.hashes&&d.hashes.length?d.hashes:[d.hash]).join(' · '))+'</div></td>'+
+      '<td style="padding:9px 10px">'+segChip(cl.t,cl.c,cl.bg)+'</td>'+
+      '<td style="padding:9px 10px">'+(d.esPC?(d.habituales&&d.habituales.length?'<span style="font-size:10px;color:#6B7280">Habituales:</span><br>'+d.habituales.map(function(h){return xEsc(h.nombre)+' <span style="color:#9CA3AF">('+h.dias+' dias)</span>';}).join('<br>'):'<span style="color:#9CA3AF">'+(d.perfilListo?'Sin usuario fijo':'Aprendiendo quien lo usa')+'</span>'):
+        (d.duenoRegistrado?xEsc(d.duenoRegistrado):'<span style="color:#9CA3AF">Sin registrar</span>'))+'</td>'+
+      '<td style="padding:9px 10px">'+d.usuarios.map(function(u){return xEsc(u.nombre)+' <span style="color:#9CA3AF">('+u.marcajes+')</span>';}).join('<br>')+'</td>'+
+      '<td style="padding:9px 10px;text-align:center;font-weight:700">'+d.total+'</td>'+
+      '<td style="padding:9px 10px;font-family:monospace;font-size:11px;white-space:nowrap">'+xEsc(d.ultimo)+'</td></tr>'+
+      '<tr id="segd'+i+'" style="display:none"><td colspan="6" style="padding:0 10px 12px;background:#FAFBFC">'+
+        '<div style="font-size:11px;color:#6B7280;padding:8px 0">Primer uso en el periodo: '+xEsc(d.primer)+' · Identificadores de equipo vistos: '+(d.nIds||0)+' · Ultimos '+d.usos.length+' marcajes:</div>'+
+        (d.esPC?'<div style="font-size:11px;color:#374151;padding:0 0 8px">Historico del computador: '+(d.totalHistorico||0)+' marcajes en '+(d.diasHistorico||0)+' dias.'+
+          (d.ocasionales&&d.ocasionales.length?' Uso ocasional: '+d.ocasionales.map(function(h){return xEsc(h.nombre)+' ('+h.marcajes+')';}).join(', ')+'.':'')+'</div>':'')+
+        '<table style="width:100%;border-collapse:collapse;font-size:11px">'+
+        d.usos.map(function(u){
+          var al=(u.estado||'').indexOf('ALERTA')===0;
+          return '<tr style="border-bottom:1px solid #EEF2F4'+(al?';background:#FEF2F2':'')+'"><td style="padding:4px 6px;font-family:monospace;white-space:nowrap">'+xEsc(u.fecha)+'</td><td style="padding:4px 6px">'+xEsc(u.nombre)+'</td><td style="padding:4px 6px">'+xEsc(u.tipo)+'</td>'+
+            '<td style="padding:4px 6px;color:'+(al?'#B91C1C':'#6B7280')+'">'+xEsc(u.estado||'OK')+'</td><td style="padding:4px 6px">'+(u.mapa?'<a href="'+xEsc(u.mapa)+'" target="_blank" rel="noopener" style="color:#1E40AF">Mapa</a>':'')+'</td></tr>';
+        }).join('')+'</table></td></tr>';
+  });
+  return h+'</tbody></table></div>';
+}
+
+function segHtmlPersonas(){
+  var q=segTexto();
+  var lista=(_seg.personas||[]).filter(function(p){return segCoincide([p.nombre,p.correo,p.area].join(' '),q);});
+  if(!lista.length)return '<div style="color:#9CA3AF;padding:1rem;font-size:13px">Sin personas que coincidan.</div>';
+  var h='<div style="background:white;border:1.5px solid #E5E7EB;border-radius:12px;overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:720px"><thead><tr style="background:#F8FAFB">';
+  ['Colaborador','Celular registrado','Equipos usados','Marcajes','Lo marcaron desde otro equipo','Desde su celular marcaron a otros'].forEach(function(t){
+    h+='<th style="text-align:left;padding:9px 10px;font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;border-bottom:1px solid #E5E7EB">'+t+'</th>';
+  });
+  h+='</tr></thead><tbody>';
+  lista.forEach(function(p){
+    h+='<tr style="border-bottom:1px solid #F3F4F6">'+
+      '<td style="padding:9px 10px"><b>'+xEsc(p.nombre)+'</b><div style="font-size:10px;color:#9CA3AF">'+xEsc(p.correo)+(p.area?' · '+xEsc(p.area):'')+'</div></td>'+
+      '<td style="padding:9px 10px">'+(p.registrado?segChip('Si'+(p.fpFecha?' · '+p.fpFecha.split(' ')[0]:''),'#065F46','#ECFDF5'):segChip('No','#B45309','#FFFBEB'))+'</td>'+
+      '<td style="padding:9px 10px">'+p.equiposLista.map(function(e){
+        var cl=SEG_CLASE[e.clase]||SEG_CLASE.personal;
+        return '<a href="#" onclick="segVerEquipo(\''+xEsc(e.hash)+'\');return false" style="color:'+cl.c+';text-decoration:none">'+segIcoEquipo(e.tipo)+xEsc(e.tipo)+' <span style="font-family:monospace;font-size:10px">'+xEsc(e.hash)+'</span></a>';
+      }).join('<br>')+'</td>'+
+      '<td style="padding:9px 10px;text-align:center">'+p.marcajes+'</td>'+
+      '<td style="padding:9px 10px;text-align:center;font-weight:700;color:'+(p.casosRecibidos?'#B91C1C':'#9CA3AF')+'">'+p.casosRecibidos+'</td>'+
+      '<td style="padding:9px 10px;text-align:center;font-weight:700;color:'+(p.marcoAOtros?'#B91C1C':'#9CA3AF')+'">'+p.marcoAOtros+'</td></tr>';
+  });
+  return h+'</tbody></table></div>';
+}
+
+async function verFotoVerif(id){
+  var m=document.getElementById('segFotoModal');
+  if(!m){
+    m=document.createElement('div');m.id='segFotoModal';
+    m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+    m.onclick=function(e){if(e.target===m)m.style.display='none';};
+    document.body.appendChild(m);
+  }
+  m.style.display='flex';
+  m.innerHTML='<div style="background:white;border-radius:14px;padding:16px;max-width:460px;width:100%;text-align:center;font-size:13px;color:#6B7280">Cargando foto...</div>';
+  try{
+    var d=await pedirDatos(SCRIPT_URL+'?action=getFotoVerificacion&email='+encodeURIComponent(currentUser.email)+'&id='+encodeURIComponent(id));
+    if(!d||d.status!=='ok')throw new Error((d&&(d.msg||d.message))||'No disponible');
+    m.innerHTML='<div style="background:white;border-radius:14px;padding:16px;max-width:460px;width:100%">'+
+      '<div style="font-size:13px;font-weight:700;color:#0A3D47;margin-bottom:8px">Foto de verificacion</div>'+
+      '<img src="data:'+xEsc(d.mime||'image/jpeg')+';base64,'+d.b64+'" style="width:100%;border-radius:10px;display:block">'+
+      '<div style="font-size:10px;color:#9CA3AF;margin-top:6px">'+xEsc(d.nombre||'')+'</div>'+
+      '<button onclick="document.getElementById(\'segFotoModal\').style.display=\'none\'" style="margin-top:10px;width:100%;padding:9px;border-radius:9px;border:none;background:#0A3D47;color:white;font-family:inherit;font-weight:700;cursor:pointer">Cerrar</button></div>';
+  }catch(e){
+    m.innerHTML='<div style="background:white;border-radius:14px;padding:16px;max-width:460px;width:100%;text-align:center;font-size:13px;color:#991B1B">No pudimos abrir la foto.<br><button onclick="document.getElementById(\'segFotoModal\').style.display=\'none\'" style="margin-top:10px;padding:8px 16px;border-radius:9px;border:none;background:#0A3D47;color:white;font-family:inherit;font-weight:700;cursor:pointer">Cerrar</button></div>';
+  }
+}
+
+function segFilasExport(){
+  var casos=(_seg.casos||[]).filter(function(c){return c.sev!=='info';});
+  return casos.map(function(c){
+    return [c.fecha,(SEG_SEV[c.sev]||{}).t||c.sev,c.marcado,c.correo,c.area,c.marcadoPor||'No identificado',c.tipo,
+      c.dispositivo.tipo,c.dispositivo.detalle||'',c.dispositivo.hash,c.dispositivo.id||'',c.motivo,c.certeza,c.estado||'OK',
+      (c.otrosUsuarios||[]).join(', '),c.mapa||'',c.lat||'',c.lng||'',c.precision||'',
+      (c.evidencia||{}).duenoCorreo||'',(c.evidencia||{}).duenoRegistro||'',(c.evidencia||{}).duenoHuella||'',
+      ((c.evidencia||{}).registroMarcados||[]).map(function(r){return r.nombre+': '+(r.huella?r.huella+' desde '+r.registro:'sin celular registrado');}).join(' | '),
+      c.fotoId?((c.evidencia||{}).fotoNombre||c.fotoId):'No',c.fila,
+      ((c.evidencia||{}).secuencia||[]).map(function(x){return x.fecha+' '+x.nombre+' ('+x.tipo+', fila '+x.fila+')';}).join(' | ')];
+  });
+}
+function segExcel(){
+  if(!_seg){showToast('Genera el reporte primero.');return;}
+  var t=function(rows,titulo){
+    var h='<tr><td colspan="'+rows[0].length+'" style="font-weight:bold;font-size:14px;background:#0A3D47;color:white">'+xEsc(titulo)+'</td></tr>';
+    rows.forEach(function(r,i){h+='<tr>'+r.map(function(v){return (i===0?'<th style="background:#E5E7EB">':'<td>')+xEsc(v===undefined?'':v)+(i===0?'</th>':'</td>');}).join('')+'</tr>';});
+    return h+'<tr><td></td></tr>';
+  };
+  var k=_seg.kpis||{};
+  var h='<table border="1">';
+  h+=t([['Indicador','Valor'],['Periodo',_seg.periodo.desde+' al '+_seg.periodo.hasta],['Marcajes analizados',k.marcajes],['Requieren revision',k.alta],
+    ['Celular distinto al registrado',k.media],['Probable coincidencia de modelo',k.baja],['Usos de computador compartido',k.info],
+    ['Celulares con varios usuarios',k.compartidosCel],['Celulares y tablets',k.celulares],['Computadores',k.computadores],
+    ['Colaboradores activos sin celular registrado',k.sinRegistro],['Marcajes sin huella (manuales)',k.sinHuella]],'Seguridad de marcajes · Resumen');
+  h+=t([['Fecha','Nivel','Persona marcada','Correo','Area','Desde el equipo de / habitual','Tipo de marcaje','Equipo','Detalle del equipo','Huella','ID equipo','Motivo','Certeza','Estado guardado','Otras personas en el equipo','Mapa','Latitud','Longitud','Precision GPS (m)','Correo del dueno del equipo','Fecha de registro del equipo','Huella registrada del dueno','Celular registrado de la persona marcada','Foto','Fila hoja','Uso del mismo equipo ese dia']].concat(segFilasExport()),'Casos');
+  h+=t([['Equipo','Detalle','Huella','Clasificacion','Registrado a','Usuarios habituales','Uso ocasional','Personas (marcajes)','Total marcajes','Primer uso','Ultimo uso']].concat((_seg.dispositivos||[]).map(function(d){
+    return [d.tipo,d.detalle||'',d.hash,(SEG_CLASE[d.clase]||{}).t||d.clase,d.duenoRegistrado||'',(d.habituales||[]).map(function(h){return h.nombre+' ('+h.dias+' dias)';}).join(', '),(d.ocasionales||[]).map(function(h){return h.nombre+' ('+h.marcajes+')';}).join(', '),d.usuarios.map(function(u){return u.nombre+' ('+u.marcajes+')';}).join(', '),d.total,d.primer,d.ultimo];
+  })),'Dispositivos');
+  h+=t([['Colaborador','Correo','Area','Celular registrado','Equipos usados','Marcajes','Lo marcaron desde otro equipo','Desde su celular marcaron a otros']].concat((_seg.personas||[]).map(function(p){
+    return [p.nombre,p.correo,p.area,p.registrado?'Si':'No',p.equiposLista.map(function(e){return e.tipo+' '+e.hash;}).join(', '),p.marcajes,p.casosRecibidos,p.marcoAOtros];
+  })),'Por persona');
+  h+='</table>';
+  var blob=new Blob(['﻿<html><head><meta charset="utf-8"></head><body>'+h+'</body></html>'],{type:'application/vnd.ms-excel;charset=utf-8;'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='AMG_seguridad_marcajes_'+new Date().toISOString().slice(0,10)+'.xls';
+  document.body.appendChild(a);a.click();setTimeout(function(){a.remove();},500);
+}
+function segPares(){
+  // Quien con quien: celular de A usado para marcar a B, y personas marcadas juntas desde un computador
+  var pares={},juntos={};
+  (_seg.casos||[]).forEach(function(c){
+    if(c.rafaga){
+      var n=c.marcado.split(', ');
+      for(var i=0;i<n.length;i++)for(var j=i+1;j<n.length;j++){
+        var k=[n[i],n[j]].sort().join('|');
+        var x=juntos[k]=juntos[k]||{a:[n[i],n[j]].sort()[0],b:[n[i],n[j]].sort()[1],veces:0,primera:c.fecha,ultima:c.fecha,ts0:c.ts,ts1:c.ts};
+        x.veces++; if(c.ts<x.ts0){x.ts0=c.ts;x.primera=c.fecha;} if(c.ts>x.ts1){x.ts1=c.ts;x.ultima=c.fecha;}
+      }
+      return;
+    }
+    if(!c.marcadoPor||c.dispositivo.tipo==='Computador'||c.sev==='info'||c.sev==='baja')return;
+    var k2=c.marcadoPor+'>'+c.marcado;
+    var y=pares[k2]=pares[k2]||{de:c.marcadoPor,a:c.marcado,area:c.area,veces:0,primera:c.fecha,ultima:c.fecha,ts0:c.ts,ts1:c.ts,fotos:0};
+    y.veces++; if(c.fotoId)y.fotos++;
+    if(c.ts<y.ts0){y.ts0=c.ts;y.primera=c.fecha;} if(c.ts>y.ts1){y.ts1=c.ts;y.ultima=c.fecha;}
+  });
+  var lp=Object.keys(pares).map(function(k){var p=pares[k];p.mutuo=!!pares[p.a+'>'+p.de];return p;}).sort(function(a,b){return b.veces-a.veces;});
+  var lj=Object.keys(juntos).map(function(k){return juntos[k];}).sort(function(a,b){return b.veces-a.veces;});
+  return {pares:lp,juntos:lj};
+}
+function segSemanas(casos){
+  var m={};
+  casos.forEach(function(c){
+    var d=new Date(c.ts);var l=new Date(d.getFullYear(),d.getMonth(),d.getDate()-((d.getDay()+6)%7));
+    var k=l.getTime();m[k]=(m[k]||0)+1;
+  });
+  return Object.keys(m).sort().slice(-12).map(function(k){var d=new Date(+k);
+    return {etiqueta:'Semana del '+('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2),valor:m[k]};});
+}
+function segCodigo(txt){var h=0;for(var i=0;i<txt.length;i++){h=((h<<5)-h)+txt.charCodeAt(i);h|=0;}return 'SM-'+Math.abs(h).toString(36).toUpperCase();}
+function segPDF(){
+  if(!_seg){showToast('Genera el reporte primero.');return;}
+  var w=window.open('','_blank','width=1000,height=800');
+  if(!w){alert('Permite las ventanas emergentes para generar el PDF.');return;}
+  var logoEl=document.getElementById('amg-logo-b64');var logo=logoEl?logoEl.src:'';
+  var k=_seg.kpis||{},per=_seg.periodo||{},esc=xEsc,fmtN=function(n){return String(n||0);};
+  var selP=document.getElementById('segPeriodo');var nomPer=selP?selP.options[selP.selectedIndex].text:'';
+  var generado=new Date().toLocaleString('es-CO');
+  // Situaciones relevantes en orden cronologico con numero de ficha
+  var rel=(_seg.casos||[]).filter(function(c){return c.sev==='alta'||c.sev==='media';}).slice().sort(function(a,b){return a.ts-b.ts;});
+  rel.forEach(function(c,i){c._n=i+1;});
+  var codigo=segCodigo(generado+'|'+rel.map(function(c){return c.fila+c.fecha+c.marcado;}).join('|'));
+  var cel=rel.filter(function(c){return c.dispositivo.tipo!=='Computador';});
+  var pc=rel.filter(function(c){return c.dispositivo.tipo==='Computador';});
+  var fichaTxt=function(c){return '<a class="fl" href="#f'+c._n+'">#'+c._n+'</a>';};
+  // Parejas celular a persona
+  var pares={};
+  cel.forEach(function(c){if(!c.marcadoPor)return;var key=c.marcadoPor+'>'+c.marcado;(pares[key]=pares[key]||{de:c.marcadoPor,a:c.marcado,casos:[]}).casos.push(c);});
+  var lp=Object.keys(pares).map(function(kk){var p=pares[kk];p.mutuo=!!pares[p.a+'>'+p.de];return p;}).sort(function(a,b){return b.casos.length-a.casos.length;});
+  // Personas juntas en computador
+  var juntos={};
+  pc.filter(function(c){return c.rafaga;}).forEach(function(c){
+    var n=c.marcado.split(', ').sort();
+    for(var i=0;i<n.length;i++)for(var j=i+1;j<n.length;j++){var key=n[i]+'|'+n[j];(juntos[key]=juntos[key]||{a:n[i],b:n[j],casos:[]}).casos.push(c);}
+  });
+  var lj=Object.keys(juntos).map(function(kk){return juntos[kk];}).sort(function(a,b){return b.casos.length-a.casos.length;});
+  var mutuos=lp.filter(function(p){return p.mutuo;}).length/2;
+  var recurrentes=lp.filter(function(p){return p.casos.length>=2;});
+  // Expediente por persona
+  var exp={};
+  var persona=function(nom){return exp[nom]=exp[nom]||{nombre:nom,recibidos:[],otorgados:[],rafagas:[],noHab:[],cambio:[]};};
+  rel.forEach(function(c){
+    if(c.rafaga){c.marcado.split(', ').forEach(function(n){persona(n).rafagas.push(c);});return;}
+    if(c.dispositivo.tipo==='Computador'){persona(c.marcado).noHab.push(c);return;}
+    if(c.marcadoPor){persona(c.marcado).recibidos.push(c);persona(c.marcadoPor).otorgados.push(c);}
+    else persona(c.marcado).cambio.push(c);
+  });
+  var infoP={};(_seg.personas||[]).forEach(function(p){infoP[p.nombre]=p;});
+  var regDe=function(nom){var r=null;rel.forEach(function(c){((c.evidencia||{}).registroMarcados||[]).forEach(function(x){if(x.nombre===nom)r=x;});
+    if(!r&&c.marcadoPor===nom&&c.evidencia&&c.evidencia.duenoCorreo)r={correo:c.evidencia.duenoCorreo,area:c.evidencia.duenoArea,huella:c.evidencia.duenoHuella,registro:c.evidencia.duenoRegistro,idEquipo:c.evidencia.duenoIdEquipo};});return r||{};};
+  var lexp=Object.keys(exp).map(function(n){var e=exp[n];e.total=e.recibidos.length+e.otorgados.length+e.rafagas.length+e.noHab.length+e.cambio.length;return e;}).sort(function(a,b){return b.total-a.total;});
+  // Nivel
+  var nivel,colN,bgN;
+  if(!rel.length){nivel='Sin hallazgos';colN='#065F46';bgN='#ECFDF5';}
+  else if(recurrentes.length||mutuos||lj.filter(function(x){return x.casos.length>=2;}).length){nivel='Patron recurrente';colN='#B91C1C';bgN='#FEF2F2';}
+  else{nivel='Hallazgos puntuales';colN='#B45309';bgN='#FFFBEB';}
+  var pl=function(n,s1,s2){return n===1?s1:s2;};
+  var p1='En el periodo analizado ('+esc(per.desde)+' al '+esc(per.hasta)+') el sistema reviso <b>'+fmtN(k.marcajes)+' marcajes</b> de entrada y salida hechos por <b>'+fmtN(k.personas)+' colaboradores</b> desde <b>'+fmtN(k.equipos)+' equipos</b> ('+fmtN(k.celulares)+' '+pl(k.celulares,'celular o tablet','celulares o tablets')+' y '+fmtN(k.computadores)+' '+pl(k.computadores,'computador','computadores')+').';
+  var p2=!rel.length?'No se encontraron marcajes hechos desde el celular de otra persona ni patrones de marcaje entre companeros en computadores compartidos.':
+    ('Se identificaron <b>'+rel.length+' '+pl(rel.length,'situacion','situaciones')+' para revisar</b> que involucran a <b>'+lexp.length+' '+pl(lexp.length,'persona','personas')+'</b>. '+
+     (cel.length?cel.length+' '+pl(cel.length,'corresponde','corresponden')+' a celulares. ':'')+(pc.length?pc.length+' '+pl(pc.length,'ocurrio','ocurrieron')+' en computadores compartidos. ':'')+
+     (recurrentes.length?'<b>'+recurrentes.length+' '+pl(recurrentes.length,'pareja se repite','parejas se repiten')+'</b> en mas de una ocasion. ':'')+
+     (mutuos?'<b>'+mutuos+' '+pl(mutuos,'caso','casos')+' de marcaje mutuo</b> (cada persona marco a la otra). ':'')+
+     'Cada situacion tiene una ficha de evidencia numerada en el Anexo A con fecha y hora exacta, equipo, dueno del equipo, ubicacion GPS, foto y la fila de la hoja de origen.');
+  var kp=function(v,l,c){return '<div class="kp"><div class="kv" style="color:'+c+'">'+v+'</div><div class="kl">'+l+'</div></div>';};
+  var sec=function(n,t,sub){return '<h2><span class="num">'+n+'</span>'+t+'</h2>'+(sub?'<div class="sub">'+sub+'</div>':'');};
+  var vacio=function(cols,t){return '<tr><td colspan="'+cols+'" class="ok">'+t+'</td></tr>';};
+  var gps=function(lat,lng,prec){return (lat&&lng)?esc(lat)+', '+esc(lng)+(prec?' <span class="m">(precision '+esc(prec)+' m)</span>':''):'<span class="m">Sin GPS</span>';};
+  var eqTxt=function(d){return esc(d.tipo||'Sin dato')+(d.detalle?' <span class="m">'+esc(d.detalle)+'</span>':'');};
+
+  // Seccion 1: pares
+  var tPares=lp.map(function(p,i){
+    return '<tr class="'+(i%2?'z':'')+'"><td><b>'+esc(p.de)+'</b></td><td><b>'+esc(p.a)+'</b></td><td class="c"><b style="color:'+(p.casos.length>=2?'#B91C1C':'#1F2937')+'">'+p.casos.length+'</b></td>'+
+      '<td>'+p.casos.map(function(c){return esc(c.fecha)+' <span class="m">'+esc(c.tipo)+'</span> '+fichaTxt(c);}).join('<br>')+'</td>'+
+      '<td>'+(p.mutuo?'<span class="tag r">Mutuo</span> ':'')+(p.casos.length>=2?'<span class="tag a">Recurrente</span>':'')+'</td></tr>';
+  }).join('')||vacio(5,'Ningun colaborador fue marcado desde el celular de otra persona en el periodo.');
+  var tJuntos=lj.map(function(p,i){
+    return '<tr class="'+(i%2?'z':'')+'"><td><b>'+esc(p.a)+'</b> y <b>'+esc(p.b)+'</b></td><td class="c"><b style="color:'+(p.casos.length>=2?'#B91C1C':'#1F2937')+'">'+p.casos.length+'</b></td>'+
+      '<td>'+p.casos.map(function(c){return esc(c.fecha)+' '+fichaTxt(c);}).join('<br>')+'</td><td>'+(p.casos.length>=2?'<span class="tag a">Recurrente</span>':'')+'</td></tr>';
+  }).join('')||vacio(4,'No hubo personas marcadas juntas desde un mismo computador.');
+
+  // Seccion 3: expediente por persona
+  var filaC=function(c,quien){return '<tr><td style="white-space:nowrap">'+esc(c.fecha)+'</td><td>'+esc(c.tipo)+'</td><td>'+quien+'</td><td>'+eqTxt(c.dispositivo)+'<div class="m">Huella '+esc(c.dispositivo.hash)+(c.dispositivo.id?' · ID '+esc(c.dispositivo.id):'')+'</div></td><td class="c">'+(c.fotoId?'Si':'No')+'</td><td class="c">'+fichaTxt(c)+'</td></tr>';};
+  var thC=function(t3){return '<thead><tr><th>Fecha y hora</th><th>Marcaje</th><th>'+t3+'</th><th>Equipo usado</th><th class="c">Foto</th><th class="c">Ficha</th></tr></thead>';};
+  var tExp=lexp.map(function(e){
+    var r=regDe(e.nombre),ip=infoP[e.nombre]||{};
+    var h='<div class="exp"><div class="exph"><div><b style="font-size:12px">'+esc(e.nombre)+'</b> <span class="m">'+esc(r.correo||ip.correo||'')+(r.area||ip.area?' · '+esc(r.area||ip.area):'')+'</span></div>'+
+      '<div class="m">Celular registrado: '+(r.huella?'huella <b>'+esc(r.huella)+'</b>'+(r.idEquipo?' · ID '+esc(r.idEquipo):'')+(r.registro?' · desde '+esc(r.registro):''):'<b style="color:#B45309">no tiene</b>')+
+      ' · '+e.total+' '+pl(e.total,'situacion','situaciones')+'</div></div>';
+    if(e.recibidos.length)h+='<div class="st">Lo marcaron desde el celular de otra persona ('+e.recibidos.length+')</div><table>'+thC('Celular de')+'<tbody>'+e.recibidos.map(function(c){return filaC(c,'<b>'+esc(c.marcadoPor)+'</b>');}).join('')+'</tbody></table>';
+    if(e.otorgados.length)h+='<div class="st">Desde su celular se marco a otra persona ('+e.otorgados.length+')</div><table>'+thC('Persona marcada')+'<tbody>'+e.otorgados.map(function(c){return filaC(c,'<b>'+esc(c.marcado)+'</b>');}).join('')+'</tbody></table>';
+    if(e.rafagas.length)h+='<div class="st">Marcado junto a otras personas desde un mismo computador ('+e.rafagas.length+')</div><table>'+thC('Marcados en el mismo grupo')+'<tbody>'+e.rafagas.map(function(c){return filaC(c,esc(c.marcado.split(', ').filter(function(n){return n!==e.nombre;}).join(', ')));}).join('')+'</tbody></table>';
+    if(e.noHab.length)h+='<div class="st">Marco desde un computador que no suele usar ('+e.noHab.length+')</div><table>'+thC('Usuarios habituales del computador')+'<tbody>'+e.noHab.map(function(c){return filaC(c,esc(c.dispositivo.habituales||''));}).join('')+'</tbody></table>';
+    if(e.cambio.length)h+='<div class="st">Marco desde un celular distinto al suyo, sin dueno identificado ('+e.cambio.length+')</div><table>'+thC('Dueno del equipo')+'<tbody>'+e.cambio.map(function(c){return filaC(c,'<span class="m">No registrado a nadie</span>');}).join('')+'</tbody></table>';
+    return h+'</div>';
+  }).join('')||'<div class="ok">Ningun colaborador aparece involucrado.</div>';
+
+  // Computadores
+  var pcs=(_seg.dispositivos||[]).filter(function(d){return d.esPC;});
+  var tPC=pcs.map(function(d,i){
+    var al=pc.filter(function(c){return c.dispositivo.hash===d.hash||(d.hashes||[]).indexOf(c.dispositivo.hash)>=0;});
+    return '<tr class="'+(i%2?'z':'')+'"><td><b>Computador</b><div class="m">'+esc(d.detalle||'')+' · huella '+esc((d.hashes||[d.hash]).join(', '))+'</div></td><td>'+
+      (d.habituales.length?d.habituales.map(function(h){return '<b>'+esc(h.nombre)+'</b> <span class="m">'+h.marcajes+' marcajes · '+h.dias+' dias · '+h.porcentaje+'% · ultimo '+esc(h.ultimo)+'</span>';}).join('<br>'):'<span class="m">'+(d.perfilListo?'Sin usuario fijo':'Historial insuficiente')+'</span>')+'</td><td>'+
+      (d.ocasionales.length?d.ocasionales.map(function(h){return esc(h.nombre)+' <span class="m">'+h.marcajes+' · ultimo '+esc(h.ultimo)+'</span>';}).join('<br>'):'<span class="m">Ninguno</span>')+'</td><td class="c">'+(d.totalHistorico||d.total)+'</td><td>'+(al.length?al.map(fichaTxt).join(' '):'<span class="m">Ninguna</span>')+'</td></tr>';
+  }).join('')||vacio(5,'No se marco desde computadores en el periodo.');
+
+  // Recomendaciones
+  var rec=[];
+  if(recurrentes.length)rec.push('Revisar con apoyo de Gestion Humana las parejas recurrentes: '+recurrentes.slice(0,6).map(function(p){return esc(p.de)+' y '+esc(p.a)+' ('+p.casos.length+' veces)';}).join('; ')+'.');
+  else if(cel.length)rec.push('Revisar con cada persona los '+cel.length+' casos de celular, apoyados en la foto de verificacion, la ubicacion y el uso del equipo ese dia (Anexo A).');
+  if(pc.length)rec.push('Validar con los usuarios habituales de cada computador los usos no habituales y los grupos marcados en pocos minutos.');
+  if(k.sinRegistro)rec.push('Pedir a los '+k.sinRegistro+' colaboradores activos sin celular registrado que marquen desde su propio celular, para que el control los cubra.');
+  rec.push('Conservar una copia de la hoja de Marcajes y de la carpeta de fotos AMG_Verificaciones con la fecha de este informe, para que la evidencia se pueda verificar mas adelante.');
+  rec.push('Antes de iniciar cualquier proceso, validar con el asesor legal el uso de esta evidencia y el tratamiento de las fotos como dato personal.');
+  rec.push('El control sigue funcionando en tiempo real; este informe puede generarse de nuevo con los datos al dia.');
+
+  // Anexo A: fichas
+  var kv=function(t,v){return '<tr><td class="kk">'+t+'</td><td>'+v+'</td></tr>';};
+  var fichas=rel.map(function(c){
+    var s=SEG_SEV[c.sev]||SEG_SEV.info,ev=c.evidencia||{};
+    var regM=(ev.registroMarcados||[]).map(function(r){return '<b>'+esc(r.nombre)+'</b> '+esc(r.correo)+(r.area?' · '+esc(r.area):'')+'<br><span class="m">Celular registrado: '+(r.huella?'huella '+esc(r.huella)+(r.idEquipo?' · ID '+esc(r.idEquipo):'')+(r.registro?' · registrado el '+esc(r.registro):''):'no tiene')+'</span>';}).join('<br>');
+    var dueno=c.dispositivo.tipo==='Computador'?('Computador compartido. Usuarios habituales: '+(c.dispositivo.habituales?'<b>'+esc(c.dispositivo.habituales)+'</b>':'aun sin definir')):
+      (c.marcadoPor?'<b>'+esc(c.marcadoPor)+'</b>'+(ev.duenoCorreo?' '+esc(ev.duenoCorreo):'')+(ev.duenoArea?' · '+esc(ev.duenoArea):'')+
+        '<br><span class="m">Registrado a su nombre'+(ev.duenoRegistro?' desde el '+esc(ev.duenoRegistro):'')+(ev.duenoHuella?' · huella registrada '+esc(ev.duenoHuella):'')+(ev.duenoIdEquipo?' · ID '+esc(ev.duenoIdEquipo):'')+'</span>':'<span class="m">El equipo no esta registrado a ningun colaborador</span>');
+    var coincide='';
+    if(ev.duenoHuella)coincide=(ev.duenoHuella===c.dispositivo.hash||(ev.duenoIdEquipo&&ev.duenoIdEquipo===c.dispositivo.id))?'<b style="color:#B91C1C">Si.</b> La huella o el ID del equipo usado coinciden con el celular registrado a '+esc(c.marcadoPor)+'.':'La huella actual difiere de la registrada; el vinculo se establece por el historial del equipo.';
+    var seq=(ev.secuencia||[]).map(function(x){return '<tr'+(x.mismo?' class="hl"':'')+'><td style="white-space:nowrap">'+esc(x.fecha)+'</td><td><b>'+esc(x.nombre)+'</b></td><td>'+esc(x.tipo)+'</td><td>'+esc(x.estado)+'</td><td>'+gps(x.lat,x.lng,x.prec)+'</td><td class="c">'+x.fila+'</td></tr>';}).join('');
+    var raf=c.rafaga?(c.detalleRafaga||[]).map(function(x){return esc(x.fecha)+' · <b>'+esc(x.nombre)+'</b> '+esc(x.correo||'')+' · '+esc(x.tipo)+' · fila '+x.fila;}).join('<br>'):'';
+    return '<div class="ficha" id="f'+c._n+'"><div class="fh"><span class="fn">Ficha #'+c._n+'</span><b style="color:'+s.c+'">'+s.t+'</b><span class="m">'+esc(c.motivo)+'</span></div>'+
+      '<table class="kvt"><tbody>'+
+      kv('Fecha y hora exacta','<b>'+esc(c.fecha)+'</b> (hora de Colombia, registrada por el servidor)')+
+      kv('Tipo de marcaje',esc(c.tipo))+
+      kv(c.rafaga?'Personas marcadas':'Persona marcada',regM||esc(c.marcado))+
+      (raf?kv('Secuencia del grupo',raf):'')+
+      kv('Equipo usado',eqTxt(c.dispositivo)+'<br><span class="m">Huella del equipo: '+esc(c.dispositivo.hash)+(c.dispositivo.id?' · ID del equipo: '+esc(c.dispositivo.id):' · ID del equipo: no disponible (registro anterior a la actualizacion)')+'</span>')+
+      kv(c.dispositivo.tipo==='Computador'?'Uso del computador':'Equipo registrado a',dueno)+
+      (coincide?kv('Coincidencia del equipo',coincide):'')+
+      kv('Respaldo del sistema',esc(c.certeza))+
+      kv('Estado guardado al marcar',esc(c.estado||'OK'))+
+      kv('Ubicacion GPS',gps(c.lat,c.lng,c.precision)+(c.mapa?' <span class="m">'+esc(c.mapa)+'</span>':''))+
+      kv('Foto de verificacion',c.fotoId?'Si. Archivo '+esc(ev.fotoNombre||c.fotoId)+' en la carpeta AMG_Verificaciones. Consultable en el panel.':'No se tomo foto'+(c.dispositivo.tipo==='Computador'?' (en computador no se solicita)':''))+
+      kv('Registro de origen','Hoja Marcajes, fila '+c.fila)+
+      '</tbody></table>'+
+      (seq?'<div class="st">Uso de este mismo equipo ese dia</div><table class="seq"><thead><tr><th>Fecha y hora</th><th>Persona marcada</th><th>Marcaje</th><th>Estado</th><th>Ubicacion GPS</th><th class="c">Fila</th></tr></thead><tbody>'+seq+'</tbody></table>':'')+
+      '</div>';
+  }).join('')||'<div class="ok">Sin situaciones en el periodo.</div>';
+
+  var sem=segSemanas(rel);
+  var barras=lexp.slice(0,10).map(function(e){return {etiqueta:e.nombre,valor:e.total,color:'#B91C1C'};});
+  var css='@page{size:letter;margin:13mm 11mm}*{box-sizing:border-box}body{font-family:Inter,Arial,sans-serif;color:#1F2937;margin:0;font-size:10px;line-height:1.45;-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
+    '.wrap{max-width:920px;margin:0 auto;padding:24px}.hdr{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #0A3D47;padding-bottom:12px}'+
+    'h1{font-size:20px;color:#0A3D47;margin:0 0 4px}h2{font-size:13.5px;color:#0A3D47;margin:22px 0 6px;display:flex;align-items:center;gap:8px;page-break-after:avoid}'+
+    '.num{display:inline-flex;min-width:22px;height:22px;padding:0 5px;border-radius:6px;background:#0A3D47;color:#fff;font-size:11px;align-items:center;justify-content:center}'+
+    '.sub{font-size:9.5px;color:#6B7280;margin:0 0 8px}.m{font-size:8.5px;color:#7B868D}.conf{font-size:9px;color:#991B1B;font-weight:700;letter-spacing:.4px;text-transform:uppercase}'+
+    '.res{border:1.5px solid '+colN+'40;background:'+bgN+';border-radius:12px;padding:14px 16px;margin-top:14px}.niv{display:inline-block;padding:3px 12px;border-radius:20px;background:'+colN+';color:#fff;font-weight:800;font-size:10px;text-transform:uppercase;letter-spacing:.5px}'+
+    '.res p{margin:8px 0 0;font-size:10.5px}.g{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:12px}.kp{border:1px solid #E5E7EB;border-radius:10px;padding:9px 6px;text-align:center}'+
+    '.kv{font-size:20px;font-weight:800}.kl{font-size:7.5px;color:#6B7280;text-transform:uppercase;font-weight:700;margin-top:2px}'+
+    'table{width:100%;border-collapse:collapse}tr{page-break-inside:avoid}th{background:#0A3D47;color:#fff;text-align:left;padding:5px 7px;font-size:8px;text-transform:uppercase;letter-spacing:.3px}'+
+    'td{padding:5px 7px;border-bottom:1px solid #EEF2F4;vertical-align:top}tr.z td{background:#F8FAFB}.c{text-align:center}.ok{text-align:center;color:#065F46;padding:12px;font-weight:600}'+
+    '.tag{display:inline-block;padding:1px 7px;border-radius:10px;font-size:8px;font-weight:800}.tag.r{background:#FEE2E2;color:#991B1B}.tag.a{background:#FEF3C7;color:#92400E}'+
+    '.fl{color:#1E40AF;font-weight:700;text-decoration:none}.two{display:grid;grid-template-columns:1fr 1fr;gap:16px;page-break-inside:avoid}.box{border:1px solid #E5E7EB;border-radius:10px;padding:10px 12px;page-break-inside:avoid}'+
+    '.exp{border:1px solid #D9E1E5;border-radius:10px;padding:10px 12px;margin-bottom:10px;page-break-inside:avoid}.exph{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border-bottom:1px solid #EEF2F4;padding-bottom:6px;margin-bottom:4px}'+
+    '.st{font-size:9px;font-weight:800;color:#0A3D47;text-transform:uppercase;letter-spacing:.3px;margin:8px 0 4px}.exp th,.ficha th{background:#E8EEF1;color:#0A3D47}'+
+    '.ficha{border:1.5px solid #CBD5DA;border-radius:10px;padding:10px 12px;margin-bottom:12px;page-break-inside:avoid}.fh{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:6px}'+
+    '.fn{background:#0A3D47;color:#fff;border-radius:6px;padding:2px 9px;font-weight:800;font-size:10px}.kvt td{border-bottom:1px solid #F0F3F5}.kk{width:170px;color:#4B5563;font-weight:700;font-size:9px}'+
+    'tr.hl td{background:#FEF2F2;font-weight:600}ol{margin:6px 0 0;padding-left:18px}ol li{margin:4px 0}.met{font-size:9.5px;color:#374151}'+
+    '.foot{margin-top:20px;border-top:1px solid #E5E7EB;padding-top:8px;font-size:8.5px;color:#7B868D;display:flex;justify-content:space-between;gap:10px}@media print{.np{display:none}.wrap{padding:0}}';
+  var html='<!doctype html><html><head><meta charset="utf-8"><title>Informe de control de marcajes cruzados '+codigo+'</title><style>'+css+'</style></head><body><div class="wrap">'+
+    '<div class="hdr"><div><div class="conf">Confidencial · Uso exclusivo de Gerencia, Gestion Humana y asesoria legal</div><h1>Control de marcajes cruzados</h1>'+
+      '<div class="m" style="font-size:9.5px">AMG de Colombia SAS e Inmovimento SAS · Periodo: '+esc(nomPer)+' ('+esc(per.desde)+' al '+esc(per.hasta)+')<br>Generado el '+esc(generado)+' por '+esc((currentUser&&currentUser.nombre)||'')+' · Codigo del informe <b>'+codigo+'</b></div></div>'+
+      (logo?'<img src="'+logo+'" style="height:48px">':'')+'</div>'+
+    '<div class="res"><span class="niv">'+nivel+'</span><p>'+p1+'</p><p>'+p2+'</p></div>'+
+    '<div class="g">'+kp(rel.length,'Situaciones para revisar',rel.length?'#B91C1C':'#065F46')+kp(lexp.length,'Personas involucradas',lexp.length?'#B91C1C':'#065F46')+
+      kp(lp.length,'Parejas celular a persona',lp.length?'#B91C1C':'#065F46')+kp(pc.length,'Alertas en computador',pc.length?'#B45309':'#065F46')+
+      kp(fmtN(k.marcajes),'Marcajes analizados','#0A3D47')+kp(fmtN(k.equipos),'Equipos distintos','#0A3D47')+'</div>'+
+    sec(1,'Quien fue marcado desde el celular de quien','Cada fila es el dueno del celular y la persona que quedo marcada con ese equipo, con todas las fechas. El numero azul remite a la ficha de evidencia del Anexo A.')+
+    '<table><thead><tr><th>Celular de</th><th>Persona marcada</th><th class="c">Veces</th><th>Fechas, marcaje y ficha</th><th>Patron</th></tr></thead><tbody>'+tPares+'</tbody></table>'+
+    sec(2,'Personas marcadas juntas desde un mismo computador','Dos o mas personas marcadas desde el mismo computador en menos de 3 minutos.')+
+    '<table><thead><tr><th>Personas</th><th class="c">Veces juntas</th><th>Fechas y ficha</th><th>Patron</th></tr></thead><tbody>'+tJuntos+'</tbody></table>'+
+    '<div class="two" style="margin-top:6px"><div>'+sec(3,'Situaciones por persona')+'<div class="box">'+(barras.length?svgBarras(barras,'#B91C1C',420):'<div class="ok">Sin personas involucradas</div>')+'</div></div>'+
+      '<div>'+sec(4,'Evolucion semanal')+'<div class="box">'+(sem.length?svgBarras(sem,'#0A3D47',420):'<div class="ok">Sin situaciones en el periodo</div>')+'</div></div></div>'+
+    sec(5,'Expediente por persona','Cada colaborador involucrado con todas las fechas en que fue marcado desde un equipo ajeno o en que su celular se uso para marcar a otra persona.')+tExp+
+    sec(6,'Computadores compartidos','Usuarios habituales segun todo el historico: lo usan en 3 dias distintos o mas y suman al menos el 10% de sus marcajes, o hacen el 25% o mas.')+
+    '<table><thead><tr><th>Equipo</th><th>Usuarios habituales</th><th>Uso ocasional</th><th class="c">Marcajes totales</th><th>Fichas</th></tr></thead><tbody>'+tPC+'</tbody></table>'+
+    sec(7,'Recomendaciones')+'<div class="box"><ol>'+rec.map(function(r){return '<li>'+r+'</li>';}).join('')+'</ol></div>'+
+    sec('A','Anexo A: fichas de evidencia','Una ficha por situacion, en orden cronologico. La tabla final de cada ficha muestra todo lo que se marco desde ese mismo equipo ese dia; la fila resaltada es la situacion.')+fichas+
+    sec('B','Alcance de la evidencia y metodologia')+'<div class="box met"><ol>'+
+      '<li><b>Fuente de los datos.</b> Hoja de calculo Marcajes del sistema de registro de turnos. Cada marcaje guarda la fecha y hora del servidor (no la del celular), la ubicacion GPS, la huella del equipo y el estado calculado en ese momento. Cada ficha indica la fila exacta de origen.</li>'+
+      '<li><b>Huella del equipo.</b> Al marcar, el navegador genera una huella con caracteristicas tecnicas del equipo (pantalla, sistema, navegador, procesador grafico). Desde '+(k.inicioTipoEquipo?esc(k.inicioTipoEquipo):'la ultima actualizacion')+' se guarda ademas un identificador propio de cada equipo, el tipo de equipo y su modelo.</li>'+
+      '<li><b>Registro del celular.</b> El primer celular con el que marca un colaborador queda registrado a su nombre con fecha. Si despues se marca a otra persona desde ese celular, el sistema lo detecta al instante, pide una foto con la camara frontal y avisa a Gestion Humana por correo.</li>'+
+      '<li><b>Lo que demuestra.</b> Que el marcaje de la persona indicada se hizo desde el equipo registrado a otro colaborador, en la fecha, hora y ubicacion senaladas. <b>Lo que no demuestra por si sola:</b> quien tenia el equipo en la mano. Para eso estan la foto de verificacion, el uso del mismo equipo ese dia y la version de los involucrados.</li>'+
+      '<li><b>Limitaciones.</b> Dos celulares identicos del mismo modelo y version pueden generar la misma huella; desde la actualizacion se distinguen con el identificador propio del equipo. Los registros anteriores a '+(k.inicioTipoEquipo?esc(k.inicioTipoEquipo):'la actualizacion')+' no tienen ese identificador ni el tipo de equipo. Los computadores no se registran a una persona por ser compartidos.</li>'+
+      '<li><b>Historico.</b> El analisis cubre los datos disponibles'+(k.inicioHistorico?' desde el '+esc(k.inicioHistorico):'')+'. '+(k.sinHuella?k.sinHuella+' marcajes del periodo fueron registros manuales o correcciones y no tienen huella de equipo. ':'')+'Las fotos se conservan en la carpeta AMG_Verificaciones de Google Drive.</li>'+
+      '<li><b>Integridad.</b> Este informe se genero automaticamente desde los datos del sistema, sin edicion manual, y se identifica con el codigo '+codigo+'. Se recomienda conservar una copia de la hoja y de las fotos con esta fecha.</li>'+
+    '</ol></div>'+
+    '<div class="foot"><span>Sistema de registro de turnos AMG · Seguridad de marcajes · '+codigo+'</span><span>Documento confidencial · Generado el '+esc(generado)+'</span></div>'+
+    '<div class="np" style="margin-top:16px;text-align:center"><button onclick="window.print()" style="padding:10px 22px;border:none;border-radius:8px;background:#0A3D47;color:#fff;font-weight:700;cursor:pointer;font-size:13px">Guardar como PDF</button></div>'+
+    '</div></body></html>';
+  w.document.open();w.document.write(html);w.document.close();
+  setTimeout(function(){try{w.focus();w.print();}catch(e){}},700);
+}
+
+// ═══ UBICACIONES: estan marcando en campo o desde la casa ══════════════════════
+var _geo=null,_geoPersona='',_geoMapa=null,_geoCapa=null,_geoEditando=false,_geoZonasEdit=null;
+var GEO_CLASE={
+  en_zona:{t:'En zona de trabajo',c:'#065F46',bg:'#ECFDF5',col:'#10B981'},
+  fuera:{t:'Fuera de zona',c:'#B45309',bg:'#FFFBEB',col:'#F59E0B'},
+  residencial:{t:'En zona residencial',c:'#B91C1C',bg:'#FEF2F2',col:'#DC2626'},
+  vigilado:{t:'En punto vigilado',c:'#6D28D9',bg:'#F5F3FF',col:'#7C3AED'},
+  sin_gps:{t:'Sin GPS',c:'#4B5563',bg:'#F3F4F6',col:'#9CA3AF'}
+};
+var GEO_ZCOL={Trabajo:'#10B981',Recogida:'#2563EB',Residencial:'#DC2626',Vigilado:'#7C3AED'};
+async function cargarUbicaciones(){
+  var b=document.getElementById('segVistaBody');if(b)b.innerHTML='<div style="padding:1rem;color:#9CA3AF">Analizando ubicaciones...</div>';
+  try{
+    var dias=(document.getElementById('segPeriodo')||{}).value||'30';
+    var d=await pedirDatos(SCRIPT_URL+'?action=getReporteUbicaciones&email='+encodeURIComponent(currentUser.email)+'&dias='+dias+'&t='+Date.now());
+    if(!d||d.status!=='ok')throw new Error((d&&(d.msg||d.message))||'');
+    _geo=d;_geo._dias=dias;segPintarVista();
+  }catch(e){if(b)b.innerHTML='<div style="padding:1rem;color:#991B1B">No pudimos analizar las ubicaciones. '+xEsc(e.message||'')+'</div>';}
+}
+function geoGmaps(lat,lng){return 'https://www.google.com/maps?q='+lat+','+lng;}
+function segHtmlUbicaciones(){
+  var dias=(document.getElementById('segPeriodo')||{}).value||'30';
+  if(!_geo||_geo._dias!==dias){setTimeout(cargarUbicaciones,0);return '<div style="padding:1rem;color:#9CA3AF">Analizando ubicaciones...</div>';}
+  var k=_geo.kpis||{},q=segTexto();
+  var btn=function(t,fn,bg,col,bd){return '<button onclick="'+fn+'" style="padding:8px 14px;border-radius:9px;border:'+(bd||'none')+';background:'+bg+';color:'+col+';font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">'+t+'</button>';};
+  var h='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">'+
+    btn('Informe de ubicaciones PDF','geoPDF()','#0A3D47','white')+btn('Excel de ubicaciones','geoExcel()','#065F46','white')+
+    btn(_geoEditando?'Cerrar zonas':'Zonas de trabajo','geoToggleZonas()','white','#374151','1.5px solid #E5E7EB')+'</div>';
+  h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:12px">'+
+    kpiBox(k.cumplimiento===null||k.cumplimiento===undefined?'s/d':k.cumplimiento,'Marcajes en zona de trabajo',(k.cumplimiento>=90?'#065F46':(k.cumplimiento>=70?'#B45309':'#B91C1C')),k.cumplimiento===null?'':'%')+
+    kpiBox(k.en_zona||0,'En zona de trabajo','#065F46')+kpiBox(k.fuera||0,'Fuera de zona',(k.fuera?'#B45309':'#065F46'))+
+    kpiBox(k.residencial||0,'En zona residencial',(k.residencial?'#B91C1C':'#065F46'))+kpiBox(k.vigilado||0,'En punto vigilado',(k.vigilado?'#6D28D9':'#065F46'))+kpiBox(k.sin_gps||0,'Sin GPS',(k.sin_gps?'#4B5563':'#065F46'))+
+    kpiBox(k.personasFuera||0,'Personas con marcajes fuera',(k.personasFuera?'#B91C1C':'#065F46'))+'</div>';
+  h+=lugarHtml();
+  if(_geoEditando)h+=geoHtmlZonas();
+  h+='<div style="background:white;border:1.5px solid #E5E7EB;border-radius:12px;overflow:hidden;margin-bottom:12px">'+
+    '<div style="padding:8px 12px;font-size:11px;color:#6B7280;display:flex;gap:12px;flex-wrap:wrap;align-items:center">'+
+      Object.keys(GEO_CLASE).filter(function(c){return c!=='sin_gps';}).map(function(c){return '<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+GEO_CLASE[c].col+';margin-right:4px"></span>'+GEO_CLASE[c].t+'</span>';}).join('')+
+      '<span style="margin-left:auto">Circulos: verde trabajo, azul recogida, rojo residencial, morado vigilado</span></div>'+
+    '<div id="geoMapa" style="height:420px;background:#EEF2F4"></div></div>';
+  var pers=(_geo.personas||[]).filter(function(p){return segCoincide(p.nombre+' '+p.correo+' '+p.area,q);});
+  h+='<div style="background:white;border:1.5px solid #E5E7EB;border-radius:12px;overflow-x:auto;margin-bottom:12px"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:760px"><thead><tr style="background:#F8FAFB">';
+  ['Colaborador','Marcajes','En zona','Fuera','Residencial','Vigilado','Sin GPS','% en zona','Entradas fuera','Salidas fuera','Ultimo fuera'].forEach(function(t){h+='<th style="text-align:left;padding:9px 10px;font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;border-bottom:1px solid #E5E7EB">'+t+'</th>';});
+  h+='</tr></thead><tbody>';
+  pers.forEach(function(p){
+    var sel=_geoPersona===p.correo,cp=p.cumplimiento;
+    h+='<tr onclick="geoFiltrarPersona(\''+xEsc(p.correo)+'\')" style="cursor:pointer;border-bottom:1px solid #F3F4F6'+(sel?';background:#EFF6FF':'')+'"><td style="padding:8px 10px"><b>'+xEsc(p.nombre)+'</b><div style="font-size:10px;color:#9CA3AF">'+xEsc(p.area||'')+'</div></td>'+
+      '<td style="padding:8px 10px;text-align:center">'+p.total+'</td><td style="padding:8px 10px;text-align:center;color:#065F46">'+p.en_zona+'</td>'+
+      '<td style="padding:8px 10px;text-align:center;font-weight:700;color:'+(p.fuera?'#B45309':'#9CA3AF')+'">'+p.fuera+'</td><td style="padding:8px 10px;text-align:center;font-weight:700;color:'+(p.residencial?'#B91C1C':'#9CA3AF')+'">'+p.residencial+'</td><td style="padding:8px 10px;text-align:center;font-weight:700;color:'+(p.vigilado?'#6D28D9':'#9CA3AF')+'">'+(p.vigilado||0)+'</td>'+
+      '<td style="padding:8px 10px;text-align:center;color:#6B7280">'+p.sin_gps+'</td><td style="padding:8px 10px;text-align:center;font-weight:800;color:'+(cp===null?'#9CA3AF':(cp>=90?'#065F46':(cp>=70?'#B45309':'#B91C1C')))+'">'+(cp===null?'s/d':cp+'%')+'</td>'+
+      '<td style="padding:8px 10px;text-align:center">'+p.entradasFuera+'</td><td style="padding:8px 10px;text-align:center">'+p.salidasFuera+'</td><td style="padding:8px 10px;font-family:monospace;font-size:11px">'+xEsc(p.ultimoFuera||'')+'</td></tr>';
+  });
+  h+='</tbody></table></div>';
+  var lista=(_geo.fuera||[]).filter(function(f){return (!_geoPersona||f.correo===_geoPersona)&&segCoincide(f.nombre+' '+f.area+' '+(f.zona||''),q);});
+  h+='<div style="font-size:12px;font-weight:700;color:#0A3D47;margin:4px 0 8px">Marcajes fuera de zona'+(_geoPersona?' · '+xEsc((pers.filter(function(p){return p.correo===_geoPersona;})[0]||{}).nombre||'')+' <a href="#" onclick="geoFiltrarPersona(\'\');return false" style="color:#1E40AF;font-weight:600">ver todos</a>':'')+' ('+lista.length+')</div>';
+  h+='<div style="background:white;border:1.5px solid #E5E7EB;border-radius:12px;overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:760px"><thead><tr style="background:#F8FAFB">';
+  ['Fecha y hora','Colaborador','Marcaje','Resultado','Donde','Coordenadas','Precision','Fila',''].forEach(function(t){h+='<th style="text-align:left;padding:9px 10px;font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;border-bottom:1px solid #E5E7EB">'+t+'</th>';});
+  h+='</tr></thead><tbody>';
+  lista.slice(0,400).forEach(function(f){
+    var c=GEO_CLASE[f.clase]||GEO_CLASE.fuera;
+    var donde=f.clase==='vigilado'?xEsc(f.zona):f.clase==='residencial'?xEsc(f.zona)+(f.distKm!==null?' <span style="color:#9CA3AF">· a '+String(f.distKm).replace('.',',')+' km de la zona de trabajo</span>':''):(f.clase==='fuera'?'A '+String(f.distKm).replace('.',',')+' km de '+xEsc(f.zonaCercana):'<span style="color:#9CA3AF">No se obtuvo ubicacion</span>');
+    h+='<tr style="border-bottom:1px solid #F3F4F6"><td style="padding:8px 10px;font-family:monospace;font-size:11px;white-space:nowrap">'+xEsc(f.fecha)+'</td><td style="padding:8px 10px"><b>'+xEsc(f.nombre)+'</b></td><td style="padding:8px 10px">'+xEsc(f.tipo)+'</td>'+
+      '<td style="padding:8px 10px">'+segChip(c.t,c.c,c.bg)+(f.impreciso?' '+segChip('GPS impreciso','#4B5563','#F3F4F6'):'')+'</td><td style="padding:8px 10px">'+donde+'</td>'+
+      '<td style="padding:8px 10px">'+(f.lat!==''?'<a href="'+geoGmaps(f.lat,f.lng)+'" target="_blank" rel="noopener" style="color:#1E40AF;font-family:monospace;font-size:11px">'+f.lat+', '+f.lng+'</a>':'')+'</td>'+
+      '<td style="padding:8px 10px;color:#6B7280">'+(f.prec!==''?xEsc(f.prec)+' m':'')+'</td><td style="padding:8px 10px;color:#9CA3AF">'+f.fila+'</td>'+
+      '<td style="padding:8px 10px">'+(f.lat!==''?'<button onclick="lugarDesdeFila('+(_geo.fuera||[]).indexOf(f)+')" style="padding:4px 9px;border-radius:7px;border:1.5px solid #C7D2FE;background:#EEF2FF;color:#3730A3;font-family:inherit;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">Informe de este lugar</button>':'')+'</td></tr>';
+  });
+  if(!lista.length)h+='<tr><td colspan="9" style="padding:16px;text-align:center;color:#065F46;font-weight:600">Todos los marcajes con GPS estan dentro de una zona de trabajo.</td></tr>';
+  h+='</tbody></table></div>';
+  setTimeout(geoPintarMapa,0);
+  return h;
+}
+function geoFiltrarPersona(c){_geoPersona=(_geoPersona===c?'':c);segPintarVista();}
+function geoCargarLeaflet(){
+  return new Promise(function(res,rej){
+    if(window.L)return res();
+    var css=document.createElement('link');css.rel='stylesheet';css.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';document.head.appendChild(css);
+    var s=document.createElement('script');s.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';s.onload=function(){res();};s.onerror=rej;document.head.appendChild(s);
+  });
+}
+async function geoPintarMapa(){
+  var el=document.getElementById('geoMapa');if(!el||!_geo)return;
+  try{await geoCargarLeaflet();}catch(e){el.style.height='auto';el.innerHTML='<div style="padding:12px">'+geoSVG(900,440)+'<div style="font-size:11px;color:#9CA3AF;margin-top:6px">Vista simplificada: no se pudo cargar el mapa satelital en esta conexion.</div></div>';return;}
+  try{if(_geoMapa){_geoMapa.remove();_geoMapa=null;}}catch(e){}
+  var calle=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'});
+  var sat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Imagenes &copy; Esri'});
+  _geoMapa=L.map(el,{layers:[sat]});
+  L.control.layers({'Satelite':sat,'Calles':calle}).addTo(_geoMapa);
+  var limites=[];
+  (_geo.zonas||[]).filter(function(z){return z.activa;}).forEach(function(z){
+    var col=GEO_ZCOL[z.tipo]||'#10B981';
+    L.circle([z.lat,z.lng],{radius:z.radio,color:col,weight:2,fillOpacity:.08}).addTo(_geoMapa).bindPopup('<b>'+xEsc(z.nombre)+'</b><br>'+xEsc(z.tipo)+' · radio '+z.radio+' m');
+    limites.push([z.lat,z.lng]);
+  });
+  (_geo.puntos||[]).forEach(function(p){
+    if(_geoPersona){var pp=(_geo.personas||[]).filter(function(x){return x.correo===_geoPersona;})[0];if(pp&&p[3]!==pp.nombre)return;}
+    var c=GEO_CLASE[p[2]]||GEO_CLASE.fuera;
+    L.circleMarker([p[0],p[1]],{radius:5,color:'#fff',weight:1,fillColor:c.col,fillOpacity:.9}).addTo(_geoMapa)
+      .bindPopup('<b>'+xEsc(p[3])+'</b><br>'+xEsc(p[4])+' · '+(p[5]==='E'?'Entrada':'Salida')+'<br>'+c.t+'<br><a href="'+geoGmaps(p[0],p[1])+'" target="_blank">Abrir en Google Maps</a>');
+    limites.push([p[0],p[1]]);
+  });
+  if(_lugar.lat!==null&&_lugar.sel!=='fuera'&&_lugar.sel!=='todos'){L.circle([_lugar.lat,_lugar.lng],{radius:_lugar.radio||300,color:'#FACC15',weight:3,dashArray:'6 4',fillOpacity:.1}).addTo(_geoMapa);}
+  _geoMapa.on('click',function(ev){
+    if(_lugar.pick){_lugar.pick=false;_lugar.sel='punto';_lugar.lat=Math.round(ev.latlng.lat*1e5)/1e5;_lugar.lng=Math.round(ev.latlng.lng*1e5)/1e5;_lugar.datos=null;segPintarVista();setTimeout(lugarVer,50);return;}
+    if(!_geoEditando)return;
+    var lat=Math.round(ev.latlng.lat*1e5)/1e5,lng=Math.round(ev.latlng.lng*1e5)/1e5;
+    (_geoZonasEdit=_geoZonasEdit||JSON.parse(JSON.stringify(_geo.zonas||[]))).push({nombre:'Nuevo punto',tipo:'Trabajo',lat:lat,lng:lng,radio:1500,activa:true,notas:''});
+    segPintarVista();showToast('Punto agregado. Ponle nombre, tipo y radio y guarda.');
+  });
+  if(limites.length)_geoMapa.fitBounds(limites,{padding:[30,30],maxZoom:13});else _geoMapa.setView([3.95,-73.66],10);
+}
+function geoSVG(W,H){
+  // Plano simple (sin internet) con zonas y puntos, tambien se usa en el PDF
+  var pts=(_geo.puntos||[]),zs=(_geo.zonas||[]).filter(function(z){return z.activa;});
+  var lats=[],lngs=[];pts.forEach(function(p){lats.push(p[0]);lngs.push(p[1]);});
+  zs.forEach(function(z){var dl=z.radio/111000,dg=z.radio/(111000*Math.cos(z.lat*Math.PI/180));lats.push(z.lat-dl,z.lat+dl);lngs.push(z.lng-dg,z.lng+dg);});
+  if(!lats.length)return '<div style="color:#9CA3AF;font-size:12px">Sin ubicaciones</div>';
+  var mnA=Math.min.apply(null,lats),mxA=Math.max.apply(null,lats),mnG=Math.min.apply(null,lngs),mxG=Math.max.apply(null,lngs);
+  var kx=Math.cos(((mnA+mxA)/2)*Math.PI/180),spanX=(mxG-mnG)*kx||0.01,spanY=(mxA-mnA)||0.01;
+  var esc=Math.min((W-40)/spanX,(H-40)/spanY);
+  var X=function(g){return 20+(g-mnG)*kx*esc+((W-40)-spanX*esc)/2;},Y=function(a){return H-20-(a-mnA)*esc-((H-40)-spanY*esc)/2;};
+  var s='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;background:#F8FAFB;border-radius:8px">';
+  zs.forEach(function(z){var r=z.radio/111000*esc;var col=GEO_ZCOL[z.tipo]||'#10B981';
+    s+='<circle cx="'+X(z.lng).toFixed(1)+'" cy="'+Y(z.lat).toFixed(1)+'" r="'+r.toFixed(1)+'" fill="'+col+'" fill-opacity=".08" stroke="'+col+'" stroke-width="1.5"/>'+
+       '<text x="'+X(z.lng).toFixed(1)+'" y="'+(Y(z.lat)-r-4).toFixed(1)+'" text-anchor="middle" font-family="Inter,Arial" font-size="10" font-weight="700" fill="'+col+'">'+xEsc(z.nombre)+'</text>';});
+  pts.forEach(function(p){var c=GEO_CLASE[p[2]]||GEO_CLASE.fuera;s+='<circle cx="'+X(p[1]).toFixed(1)+'" cy="'+Y(p[0]).toFixed(1)+'" r="3.2" fill="'+c.col+'" stroke="#fff" stroke-width=".6"/>';});
+  var km=Math.pow(10,Math.floor(Math.log10(Math.max(1,spanX*111/4))));var lw=km/111*esc;
+  s+='<line x1="20" y1="'+(H-10)+'" x2="'+(20+lw).toFixed(1)+'" y2="'+(H-10)+'" stroke="#374151" stroke-width="2"/><text x="'+(24+lw).toFixed(1)+'" y="'+(H-7)+'" font-family="Inter,Arial" font-size="9" fill="#374151">'+km+' km</text>';
+  return s+'</svg>';
+}
+function geoToggleZonas(){_geoEditando=!_geoEditando;_geoZonasEdit=_geoEditando?JSON.parse(JSON.stringify((_geo&&_geo.zonas)||[])):null;segPintarVista();}
+function geoHtmlZonas(){
+  var z=_geoZonasEdit||[];
+  var inp=function(i,c,v,w,t){return '<input oninput="geoZonaSet('+i+',\''+c+'\',this.value)" value="'+xEsc(v===undefined?'':v)+'" '+(t?'type="'+t+'" step="any"':'')+' style="width:'+w+';padding:6px 8px;border:1.5px solid #E5E7EB;border-radius:7px;font-family:inherit;font-size:12px">';};
+  var h='<div style="background:white;border:1.5px solid #A7F3D0;border-radius:12px;padding:12px;margin-bottom:12px">'+
+    '<div style="font-size:12px;font-weight:700;color:#065F46">Zonas de trabajo</div>'+
+    '<div style="font-size:11px;color:#6B7280;margin:4px 0 10px;line-height:1.5"><b>Trabajo</b>: campo, clusters u oficina; marcar ahi es correcto. <b>Recogida</b>: punto donde el transporte recoge al personal; tambien cuenta como correcto. <b>Residencial</b>: casco urbano; marcar ahi se senala en rojo. <b>Vigilado</b>: un sitio puntual que quieres controlar, como el parqueadero; tiene prioridad aunque quede dentro del campo. Con las zonas abiertas, toca el mapa para agregar un punto en ese lugar.</div>'+
+    '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:720px"><thead><tr>'+['Nombre','Tipo','Latitud','Longitud','Radio (m)','Activa',''].map(function(t){return '<th style="text-align:left;font-size:10px;color:#6B7280;padding:4px">'+t+'</th>';}).join('')+'</tr></thead><tbody>';
+  z.forEach(function(x,i){
+    h+='<tr><td style="padding:3px">'+inp(i,'nombre',x.nombre,'100%')+'</td><td style="padding:3px"><select onchange="geoZonaSet('+i+',\'tipo\',this.value)" style="padding:6px;border:1.5px solid #E5E7EB;border-radius:7px;font-family:inherit;font-size:12px">'+
+      ['Trabajo','Recogida','Residencial','Vigilado'].map(function(t){return '<option'+(x.tipo===t?' selected':'')+'>'+t+'</option>';}).join('')+'</select></td>'+
+      '<td style="padding:3px">'+inp(i,'lat',x.lat,'100px','number')+'</td><td style="padding:3px">'+inp(i,'lng',x.lng,'100px','number')+'</td><td style="padding:3px">'+inp(i,'radio',x.radio,'90px','number')+'</td>'+
+      '<td style="padding:3px;text-align:center"><input type="checkbox" '+(x.activa!==false?'checked':'')+' onchange="geoZonaSet('+i+',\'activa\',this.checked)"></td>'+
+      '<td style="padding:3px"><button onclick="geoZonaQuitar('+i+')" style="border:none;background:#FEF2F2;color:#B91C1C;border-radius:7px;padding:6px 10px;font-family:inherit;font-weight:700;cursor:pointer">Quitar</button></td></tr>';
+  });
+  h+='</tbody></table></div><div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">'+
+    '<button onclick="geoZonaAgregar()" style="padding:8px 14px;border-radius:9px;border:1.5px solid #E5E7EB;background:white;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Agregar zona</button>'+
+    '<button onclick="geoGuardarZonas()" style="padding:8px 14px;border-radius:9px;border:none;background:#065F46;color:white;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Guardar zonas y recalcular</button></div></div>';
+  return h;
+}
+function geoZonaSet(i,c,v){if(!_geoZonasEdit||!_geoZonasEdit[i])return;_geoZonasEdit[i][c]=v;}
+function geoZonaQuitar(i){_geoZonasEdit.splice(i,1);segPintarVista();}
+function geoZonaAgregar(){(_geoZonasEdit=_geoZonasEdit||[]).push({nombre:'',tipo:'Trabajo',lat:'',lng:'',radio:1500,activa:true,notas:''});segPintarVista();}
+async function geoGuardarZonas(){
+  try{
+    var lista=(_geoZonasEdit||[]).map(function(z){return {nombre:z.nombre,tipo:z.tipo,lat:z.lat,lng:z.lng,radio:z.radio,activa:z.activa!==false,notas:z.notas||''};});
+    var malas=lista.filter(function(z){return !z.nombre||isNaN(parseFloat(z.lat))||isNaN(parseFloat(z.lng));});
+    if(malas.length){alert('Revisa las zonas: todas necesitan nombre, latitud y longitud.');return;}
+    var d=await pedirDatos(SCRIPT_URL+'?action=saveZonas&email='+encodeURIComponent(currentUser.email)+'&zonas='+encodeURIComponent(JSON.stringify(lista)));
+    if(!d||d.status!=='ok')throw new Error((d&&(d.msg||d.message))||'');
+    showToast('Zonas guardadas ('+d.guardadas+'). Recalculando...');
+    _geoEditando=false;_geoZonasEdit=null;_geo=null;segPintarVista();
+  }catch(e){alert('No se pudieron guardar las zonas. '+(e.message||''));}
+}
+function geoExcel(){
+  if(!_geo)return;
+  var t=function(rows,titulo){var h='<tr><td colspan="'+rows[0].length+'" style="font-weight:bold;background:#0A3D47;color:white">'+xEsc(titulo)+'</td></tr>';
+    rows.forEach(function(r,i){h+='<tr>'+r.map(function(v){return (i===0?'<th style="background:#E5E7EB">':'<td>')+xEsc(v===undefined||v===null?'':v)+(i===0?'</th>':'</td>');}).join('')+'</tr>';});return h+'<tr><td></td></tr>';};
+  var h='<table border="1">'+
+    t([['Colaborador','Correo','Area','Marcajes','En zona','Fuera','Residencial','Vigilado','Sin GPS','% en zona','Entradas fuera','Salidas fuera','Ultimo fuera']].concat((_geo.personas||[]).map(function(p){return [p.nombre,p.correo,p.area,p.total,p.en_zona,p.fuera,p.residencial,p.vigilado||0,p.sin_gps,p.cumplimiento===null?'':p.cumplimiento,p.entradasFuera,p.salidasFuera,p.ultimoFuera];})),'Ubicacion por colaborador')+
+    t([['Fecha','Colaborador','Correo','Area','Marcaje','Resultado','Zona','Distancia a zona de trabajo (km)','Zona de trabajo mas cercana','Latitud','Longitud','Precision (m)','GPS impreciso','Google Maps','Fila hoja']].concat((_geo.fuera||[]).map(function(f){return [f.fecha,f.nombre,f.correo,f.area,f.tipo,(GEO_CLASE[f.clase]||{}).t,f.zona,f.distKm,f.zonaCercana,f.lat,f.lng,f.prec,f.impreciso?'Si':'No',f.lat!==''?geoGmaps(f.lat,f.lng):'',f.fila];})),'Marcajes fuera de zona')+
+    t([['Zona','Tipo','Latitud','Longitud','Radio (m)','Activa']].concat((_geo.zonas||[]).map(function(z){return [z.nombre,z.tipo,z.lat,z.lng,z.radio,z.activa?'Si':'No'];})),'Zonas configuradas')+'</table>';
+  var blob=new Blob(['﻿<html><head><meta charset="utf-8"></head><body>'+h+'</body></html>'],{type:'application/vnd.ms-excel;charset=utf-8;'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='AMG_ubicaciones_marcajes_'+new Date().toISOString().slice(0,10)+'.xls';document.body.appendChild(a);a.click();setTimeout(function(){a.remove();},500);
+}
+function geoPDF(){
+  if(!_geo)return;
+  var w=window.open('','_blank','width=1000,height=800');if(!w){alert('Permite las ventanas emergentes para generar el PDF.');return;}
+  var logoEl=document.getElementById('amg-logo-b64');var logo=logoEl?logoEl.src:'';
+  var k=_geo.kpis||{},per=_geo.periodo||{},esc=xEsc,generado=new Date().toLocaleString('es-CO');
+  var selP=document.getElementById('segPeriodo');var nomPer=selP?selP.options[selP.selectedIndex].text:'';
+  var codigo=segCodigo('geo|'+generado+'|'+(_geo.fuera||[]).map(function(f){return f.fila;}).join(','));
+  var fuera=(_geo.fuera||[]).filter(function(f){return f.clase!=='sin_gps';});
+  var cp=k.cumplimiento,colC=cp===null?'#4B5563':(cp>=90?'#065F46':(cp>=70?'#B45309':'#B91C1C'));
+  var nivel=!fuera.length?'Marcajes en zona':(k.residencial?'Marcajes desde zona residencial':'Marcajes fuera de zona');
+  var colN=!fuera.length?'#065F46':(k.residencial?'#B91C1C':'#B45309');
+  var persF=(_geo.personas||[]).filter(function(p){return p.fuera+p.residencial+(p.vigilado||0)>0;});
+  var txt='En el periodo ('+esc(per.desde)+' al '+esc(per.hasta)+') se analizaron <b>'+(k.total||0)+' marcajes</b> de entrada y salida de <b>'+(k.personas||0)+' colaboradores</b>. '+
+    (cp===null?'No hubo marcajes con GPS.':('El <b>'+cp+'%</b> de los marcajes con GPS se hizo dentro de una zona de trabajo o punto de recogida. '))+
+    (fuera.length?'<b>'+fuera.length+' marcajes</b> de <b>'+persF.length+' personas</b> se hicieron fuera de esas zonas'+(k.residencial?', de ellos <b>'+k.residencial+' en zona residencial</b> (cascos urbanos)':'')+'.':'No se encontraron marcajes fuera de zona.')+
+    (k.sin_gps?' '+k.sin_gps+' marcajes no tienen GPS.':'');
+  var kp=function(v,l,c){return '<div class="kp"><div class="kv" style="color:'+c+'">'+v+'</div><div class="kl">'+l+'</div></div>';};
+  var tPer=persF.map(function(p,i){return '<tr class="'+(i%2?'z':'')+'"><td><b>'+esc(p.nombre)+'</b><div class="m">'+esc(p.correo)+' · '+esc(p.area||'')+'</div></td><td class="c">'+p.total+'</td><td class="c">'+p.en_zona+'</td><td class="c"><b style="color:#B45309">'+p.fuera+'</b></td><td class="c"><b style="color:#B91C1C">'+p.residencial+'</b></td><td class="c"><b style="color:#6D28D9">'+(p.vigilado||0)+'</b></td><td class="c">'+p.sin_gps+'</td><td class="c"><b>'+(p.cumplimiento===null?'s/d':p.cumplimiento+'%')+'</b></td><td class="c">'+p.entradasFuera+' / '+p.salidasFuera+'</td></tr>';}).join('')||'<tr><td colspan="8" class="ok">Ningun colaborador marco fuera de zona.</td></tr>';
+  var porPersona={};fuera.forEach(function(f){(porPersona[f.nombre]=porPersona[f.nombre]||[]).push(f);});
+  var det=Object.keys(porPersona).map(function(n){
+    var l=porPersona[n].slice().sort(function(a,b){return a.ts-b.ts;});
+    return '<div class="exp"><div class="exph"><b>'+esc(n)+'</b><span class="m">'+esc(l[0].correo)+' · '+l.length+' marcajes fuera de zona</span></div><table><thead><tr><th>Fecha y hora</th><th>Marcaje</th><th>Resultado</th><th>Donde</th><th>Coordenadas</th><th>Precision</th><th class="c">Fila</th></tr></thead><tbody>'+
+      l.map(function(f){var c=GEO_CLASE[f.clase]||GEO_CLASE.fuera;
+        return '<tr><td style="white-space:nowrap">'+esc(f.fecha)+'</td><td>'+esc(f.tipo)+'</td><td><b style="color:'+c.c+'">'+c.t+'</b>'+(f.impreciso?'<div class="m">GPS impreciso</div>':'')+'</td><td>'+(f.clase==='vigilado'?esc(f.zona):f.clase==='residencial'?esc(f.zona)+'<div class="m">a '+String(f.distKm).replace('.',',')+' km de '+esc(f.zonaCercana)+'</div>':'A '+String(f.distKm).replace('.',',')+' km de '+esc(f.zonaCercana))+'</td>'+
+          '<td><a href="'+geoGmaps(f.lat,f.lng)+'">'+f.lat+', '+f.lng+'</a></td><td>'+(f.prec!==''?esc(f.prec)+' m':'')+'</td><td class="c">'+f.fila+'</td></tr>';}).join('')+'</tbody></table></div>';
+  }).join('')||'<div class="ok">Sin marcajes fuera de zona.</div>';
+  var tZ=(_geo.zonas||[]).map(function(z,i){return '<tr class="'+(i%2?'z':'')+'"><td><b>'+esc(z.nombre)+'</b></td><td>'+esc(z.tipo)+'</td><td>'+z.lat+', '+z.lng+'</td><td class="c">'+z.radio+' m</td><td class="c">'+(z.activa?'Si':'No')+'</td></tr>';}).join('');
+  var css='@page{size:letter;margin:13mm 11mm}*{box-sizing:border-box}body{font-family:Inter,Arial,sans-serif;color:#1F2937;margin:0;font-size:10px;line-height:1.45;-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
+    '.wrap{max-width:920px;margin:0 auto;padding:24px}.hdr{display:flex;justify-content:space-between;border-bottom:3px solid #0A3D47;padding-bottom:12px}h1{font-size:20px;color:#0A3D47;margin:0 0 4px}'+
+    'h2{font-size:13.5px;color:#0A3D47;margin:20px 0 6px;display:flex;align-items:center;gap:8px;page-break-after:avoid}.num{display:inline-flex;min-width:22px;height:22px;padding:0 5px;border-radius:6px;background:#0A3D47;color:#fff;font-size:11px;align-items:center;justify-content:center}'+
+    '.m{font-size:8.5px;color:#7B868D}.conf{font-size:9px;color:#991B1B;font-weight:700;text-transform:uppercase}.res{border:1.5px solid '+colN+'40;border-radius:12px;padding:12px 16px;margin-top:14px}'+
+    '.niv{display:inline-block;padding:3px 12px;border-radius:20px;background:'+colN+';color:#fff;font-weight:800;font-size:10px;text-transform:uppercase}.res p{margin:8px 0 0;font-size:10.5px}'+
+    '.g{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:12px}.kp{border:1px solid #E5E7EB;border-radius:10px;padding:9px 6px;text-align:center}.kv{font-size:20px;font-weight:800}.kl{font-size:7.5px;color:#6B7280;text-transform:uppercase;font-weight:700}'+
+    'table{width:100%;border-collapse:collapse}tr{page-break-inside:avoid}th{background:#0A3D47;color:#fff;text-align:left;padding:5px 7px;font-size:8px;text-transform:uppercase}td{padding:5px 7px;border-bottom:1px solid #EEF2F4;vertical-align:top}'+
+    'tr.z td{background:#F8FAFB}.c{text-align:center}.ok{text-align:center;color:#065F46;padding:12px;font-weight:600}a{color:#1E40AF;text-decoration:none}.box{border:1px solid #E5E7EB;border-radius:10px;padding:10px 12px;page-break-inside:avoid}'+
+    '.exp{border:1px solid #D9E1E5;border-radius:10px;padding:10px 12px;margin-bottom:10px;page-break-inside:avoid}.exph{display:flex;justify-content:space-between;gap:10px;margin-bottom:6px}.exp th{background:#E8EEF1;color:#0A3D47}'+
+    'ol{margin:6px 0 0;padding-left:18px}ol li{margin:4px 0}.foot{margin-top:18px;border-top:1px solid #E5E7EB;padding-top:8px;font-size:8.5px;color:#7B868D;display:flex;justify-content:space-between}@media print{.np{display:none}.wrap{padding:0}}';
+  var html='<!doctype html><html><head><meta charset="utf-8"><title>Informe de ubicacion de marcajes '+codigo+'</title><style>'+css+'</style></head><body><div class="wrap">'+
+    '<div class="hdr"><div><div class="conf">Confidencial · Uso exclusivo de Gerencia, Gestion Humana y asesoria legal</div><h1>Ubicacion de los marcajes</h1><div class="m" style="font-size:9.5px">AMG de Colombia SAS e Inmovimento SAS · Periodo: '+esc(nomPer)+' ('+esc(per.desde)+' al '+esc(per.hasta)+')<br>Generado el '+esc(generado)+' por '+esc((currentUser&&currentUser.nombre)||'')+' · Codigo del informe <b>'+codigo+'</b></div></div>'+(logo?'<img src="'+logo+'" style="height:48px">':'')+'</div>'+
+    '<div class="res"><span class="niv">'+nivel+'</span><p>'+txt+'</p></div>'+
+    '<div class="g">'+kp(cp===null?'s/d':cp+'%','Marcajes en zona',colC)+kp(k.en_zona||0,'En zona','#065F46')+kp(k.fuera||0,'Fuera de zona',k.fuera?'#B45309':'#065F46')+kp(k.residencial||0,'Zona residencial',k.residencial?'#B91C1C':'#065F46')+kp(k.sin_gps||0,'Sin GPS','#4B5563')+kp(persF.length,'Personas con marcajes fuera',persF.length?'#B91C1C':'#065F46')+'</div>'+
+    '<h2><span class="num">1</span>Mapa de los marcajes</h2><div class="box">'+geoSVG(880,430)+'<div class="m" style="margin-top:6px">Verde: en zona de trabajo · Naranja: fuera de zona · Rojo: zona residencial · Morado: punto vigilado. Circulos: zonas configuradas.</div></div>'+
+    '<h2><span class="num">2</span>Resumen por colaborador</h2><table><thead><tr><th>Colaborador</th><th class="c">Marcajes</th><th class="c">En zona</th><th class="c">Fuera</th><th class="c">Residencial</th><th class="c">Vigilado</th><th class="c">Sin GPS</th><th class="c">% en zona</th><th class="c">Entradas / salidas fuera</th></tr></thead><tbody>'+tPer+'</tbody></table>'+
+    '<h2><span class="num">3</span>Detalle de cada marcaje fuera de zona</h2>'+det+
+    '<h2><span class="num">4</span>Zonas usadas para el analisis</h2><table><thead><tr><th>Zona</th><th>Tipo</th><th>Centro (lat, lng)</th><th class="c">Radio</th><th class="c">Activa</th></tr></thead><tbody>'+tZ+'</tbody></table>'+
+    '<h2><span class="num">5</span>Alcance y metodologia</h2><div class="box"><ol>'+
+      '<li>La ubicacion la toma el GPS del celular en el momento de marcar y se guarda junto con la fecha y hora del servidor. Cada marcaje indica la fila exacta de la hoja Marcajes.</li>'+
+      '<li>Un marcaje esta en zona cuando cae dentro del radio de una zona de Trabajo o de Recogida. Las zonas Residencial senalan cascos urbanos donde no deberia marcarse.</li>'+
+      '<li>La precision del GPS se reporta en metros; por encima de 1.000 m el marcaje se marca como impreciso y su ubicacion debe tomarse con cautela.</li>'+
+      '<li>Si el personal se recoge en un punto de transporte y la jornada empieza ahi, ese punto debe configurarse como Recogida para no senalarlo.</li>'+
+      '<li>Existen aplicaciones que falsean la ubicacion del celular. Por eso se recomienda cruzar este informe con la huella del equipo, las fotos de verificacion y los registros de acceso al campo.</li>'+
+    '</ol></div>'+
+    '<div class="foot"><span>Sistema de registro de turnos AMG · Ubicacion de marcajes · '+codigo+'</span><span>Documento confidencial</span></div>'+
+    '<div class="np" style="margin-top:16px;text-align:center"><button onclick="window.print()" style="padding:10px 22px;border:none;border-radius:8px;background:#0A3D47;color:#fff;font-weight:700;cursor:pointer;font-size:13px">Guardar como PDF</button></div></div></body></html>';
+  w.document.open();w.document.write(html);w.document.close();setTimeout(function(){try{w.focus();w.print();}catch(e){}},700);
+}
+
+// ═══ INFORME POR LUGAR Y FECHA ═══════════════════════════════════════════════
+var _lugar={desde:'',hasta:'',sel:'fuera',lat:null,lng:null,radio:300,pick:false,datos:null};
+function lugarHoy(n){var d=new Date(Date.now()-(n||0)*86400000);return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
+function lugarHtml(){
+  if(!_lugar.desde){_lugar.desde=lugarHoy(30);_lugar.hasta=lugarHoy(0);}
+  var zs=(_geo&&_geo.zonas)||[];
+  var opt=function(v,t){return '<option value="'+xEsc(v)+'"'+(_lugar.sel===v?' selected':'')+'>'+xEsc(t)+'</option>';};
+  var st='padding:7px 9px;border:1.5px solid #E5E7EB;border-radius:8px;font-family:inherit;font-size:12px;background:white';
+  var h='<div style="background:white;border:1.5px solid #C7D2FE;border-radius:12px;padding:12px 14px;margin-bottom:12px">'+
+    '<div style="font-size:13px;font-weight:800;color:#3730A3">Informe por lugar y fecha</div>'+
+    '<div style="font-size:11px;color:#6B7280;margin:3px 0 10px">Muestra en el mapa todo lo que se marco en un sitio entre dos fechas, quien marco a quien desde el celular de otro estando alli, quienes marcaron juntos y las fotos. Ideal para revisar un parque, el parqueadero o una casa.</div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">'+
+      '<label style="font-size:10px;color:#6B7280;font-weight:700">DESDE<br><input type="date" value="'+_lugar.desde+'" onchange="_lugar.desde=this.value" style="'+st+'"></label>'+
+      '<label style="font-size:10px;color:#6B7280;font-weight:700">HASTA<br><input type="date" value="'+_lugar.hasta+'" onchange="_lugar.hasta=this.value" style="'+st+'"></label>'+
+      '<label style="font-size:10px;color:#6B7280;font-weight:700">LUGAR<br><select onchange="lugarSel(this.value)" style="'+st+';max-width:260px">'+
+        opt('fuera','Todos los marcajes fuera de zona')+opt('todos','Todos los marcajes')+
+        zs.map(function(z,i){return opt('z'+i,z.nombre+' ('+z.tipo+')');}).join('')+opt('punto','Punto elegido en el mapa')+'</select></label>'+
+      ((_lugar.sel!=='fuera'&&_lugar.sel!=='todos')?'<label style="font-size:10px;color:#6B7280;font-weight:700">RADIO (M)<br><input type="number" value="'+_lugar.radio+'" onchange="_lugar.radio=+this.value" style="'+st+';width:90px"></label>':'')+
+      '<button onclick="lugarPick()" style="padding:8px 12px;border-radius:9px;border:1.5px solid '+(_lugar.pick?'#3730A3':'#E5E7EB')+';background:'+(_lugar.pick?'#EEF2FF':'white')+';color:#3730A3;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">'+(_lugar.pick?'Toca el mapa...':'Elegir punto en el mapa')+'</button>'+
+      '<button onclick="lugarVer()" style="padding:8px 14px;border-radius:9px;border:none;background:#3730A3;color:white;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Ver</button>'+
+      '<button onclick="lugarPDF()" style="padding:8px 14px;border-radius:9px;border:none;background:#0A3D47;color:white;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Descargar PDF del lugar</button>'+
+    '</div>'+
+    (_lugar.sel==='punto'&&_lugar.lat!==null?'<div style="font-size:11px;color:#3730A3;margin-top:6px">Punto: '+_lugar.lat+', '+_lugar.lng+'</div>':'')+
+    '<div id="lugarRes" style="margin-top:10px">'+(_lugar.datos?lugarResHtml(_lugar.datos):'')+'</div></div>';
+  return h;
+}
+function lugarSel(v){
+  _lugar.sel=v;_lugar.datos=null;
+  if(v.charAt(0)==='z'){var z=(_geo.zonas||[])[+v.slice(1)];if(z){_lugar.lat=z.lat;_lugar.lng=z.lng;_lugar.radio=z.radio;}}
+  if(v==='punto'&&_lugar.lat===null)_lugar.pick=true;
+  segPintarVista();
+}
+function lugarPick(){_lugar.pick=!_lugar.pick;segPintarVista();if(_lugar.pick)showToast('Toca en el mapa el lugar que quieres revisar.');}
+function lugarDesdeFila(i){
+  var f=(_geo.fuera||[])[i];if(!f||f.lat==='')return;
+  var d=new Date(f.ts),dia=d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+  _lugar.sel='punto';_lugar.lat=f.lat;_lugar.lng=f.lng;_lugar.radio=300;_lugar.desde=dia;_lugar.hasta=dia;_lugar.datos=null;_lugar.pick=false;
+  segPintarVista();setTimeout(lugarVer,50);window.scrollTo({top:(document.getElementById('lugarRes')||{offsetTop:0}).offsetTop-200,behavior:'smooth'});
+}
+function lugarParams(fotos){
+  var q='&desde='+_lugar.desde+'&hasta='+_lugar.hasta+(fotos?'&fotos=si':'');
+  if(_lugar.sel==='fuera')q+='&soloFuera=si&lugar='+encodeURIComponent('Marcajes fuera de zona');
+  else if(_lugar.sel==='todos')q+='&lugar='+encodeURIComponent('Todos los marcajes');
+  else{
+    if(_lugar.lat===null){return null;}
+    var nom=_lugar.sel==='punto'?'Punto '+_lugar.lat+', '+_lugar.lng:(((_geo.zonas||[])[+_lugar.sel.slice(1)]||{}).nombre||'Lugar');
+    q+='&lat='+_lugar.lat+'&lng='+_lugar.lng+'&radio='+(_lugar.radio||300)+'&lugar='+encodeURIComponent(nom);
+  }
+  return q;
+}
+async function lugarCargar(fotos){
+  var q=lugarParams(fotos);if(q===null){showToast('Elige primero el punto en el mapa.');return null;}
+  var d=await pedirDatos(SCRIPT_URL+'?action=getMarcajesLugar&email='+encodeURIComponent(currentUser.email)+q+'&t='+Date.now());
+  if(!d||d.status!=='ok')throw new Error((d&&(d.msg||d.message))||'');
+  return d;
+}
+async function lugarVer(){
+  var el=document.getElementById('lugarRes');if(el)el.innerHTML='<div style="color:#9CA3AF;font-size:12px">Buscando marcajes...</div>';
+  try{var d=await lugarCargar(false);if(!d)return;_lugar.datos=d;segPintarVista();}
+  catch(e){if(el)el.innerHTML='<div style="color:#991B1B;font-size:12px">No se pudo consultar. '+xEsc(e.message||'')+'</div>';}
+}
+function lugarClaseTxt(x){var c=GEO_CLASE[x.clase]||GEO_CLASE.fuera;return '<span style="color:'+c.c+';font-weight:700">'+(x.clase==='vigilado'||x.clase==='residencial'?xEsc(x.zona):c.t)+'</span>';}
+function lugarResHtml(d){
+  var k=d.kpis||{};
+  var h='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:10px">'+
+    kpiBox(k.marcajes||0,'Marcajes','#3730A3')+kpiBox(k.personas||0,'Personas','#0A3D47')+kpiBox(k.dias||0,'Dias','#0A3D47')+
+    kpiBox(k.desdeOtro||0,'Desde el celular de otro',k.desdeOtro?'#B91C1C':'#065F46')+kpiBox(k.grupos||0,'Grupos marcados juntos',k.grupos?'#B45309':'#065F46')+kpiBox(k.conFoto||0,'Con foto','#0A3D47')+'</div>';
+  if(d.cruces.length)h+='<div style="font-size:11px;font-weight:800;color:#B91C1C;margin:6px 0 4px">QUIEN MARCO A QUIEN ESTANDO ALLI</div>'+d.cruces.map(function(c){return '<div style="font-size:12px;padding:3px 0">Celular de <b>'+xEsc(c.de)+'</b> marco a <b>'+xEsc(c.a)+'</b>: '+c.marcajes.map(function(m){return xEsc(m.fecha)+' (#'+m.n+')';}).join(', ')+'</div>';}).join('');
+  if(d.grupos.length)h+='<div style="font-size:11px;font-weight:800;color:#B45309;margin:8px 0 4px">MARCARON JUNTOS ALLI (MENOS DE 10 MIN)</div>'+d.grupos.map(function(g){return '<div style="font-size:12px;padding:3px 0">'+xEsc(g.fecha)+' · '+g.minutos+' min · <b>'+xEsc(g.personas.join(', '))+'</b> <span style="color:#9CA3AF">(#'+g.marcajes.join(', #')+')</span>'+(g.mismoEquipo.length?' <b style="color:#B91C1C">· mismo celular: '+g.mismoEquipo.map(function(m){return xEsc(m.personas.join(' y '));}).join('; ')+'</b>':'')+'</div>';}).join('');
+  h+='<div style="overflow-x:auto;margin-top:8px"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:720px"><thead><tr style="background:#F8FAFB">'+
+    ['#','Fecha y hora','Persona marcada','Marcaje','Lugar','Celular de','Estado','Coordenadas','Foto'].map(function(t){return '<th style="text-align:left;padding:7px 8px;font-size:10px;color:#6B7280;text-transform:uppercase">'+t+'</th>';}).join('')+'</tr></thead><tbody>'+
+    d.marcajes.map(function(x){return '<tr style="border-bottom:1px solid #F3F4F6'+(x.deOtro?';background:#FEF2F2':'')+'"><td style="padding:6px 8px;font-weight:800;color:#3730A3">'+x.n+'</td><td style="padding:6px 8px;font-family:monospace;font-size:11px;white-space:nowrap">'+xEsc(x.fecha)+'</td><td style="padding:6px 8px"><b>'+xEsc(x.nombre)+'</b></td><td style="padding:6px 8px">'+xEsc(x.tipo)+'</td><td style="padding:6px 8px">'+lugarClaseTxt(x)+'</td>'+
+      '<td style="padding:6px 8px;color:'+(x.deOtro?'#B91C1C;font-weight:700':'#9CA3AF')+'">'+(x.deOtro?xEsc(x.deOtro):'Propio')+'</td><td style="padding:6px 8px;font-size:11px;color:#6B7280">'+xEsc(x.estado)+'</td>'+
+      '<td style="padding:6px 8px"><a href="'+geoGmaps(x.lat,x.lng)+'" target="_blank" rel="noopener" style="color:#1E40AF;font-family:monospace;font-size:11px">'+x.lat+', '+x.lng+'</a></td><td style="padding:6px 8px">'+(x.fotoId?'<button onclick="verFotoVerif(\''+xEsc(x.fotoId)+'\')" style="padding:3px 9px;border-radius:7px;border:none;background:#0A3D47;color:white;font-size:10px;font-weight:700;cursor:pointer">Ver</button>':'')+'</td></tr>';}).join('')+
+    (d.marcajes.length?'':'<tr><td colspan="9" style="padding:14px;text-align:center;color:#065F46;font-weight:600">No hubo marcajes en ese lugar y fechas.</td></tr>')+'</tbody></table></div>';
+  return h;
+}
+function lugarMapaScript(d){
+  // Script que corre dentro de la ventana del PDF: mapa satelital con los marcajes numerados
+  var pts=d.marcajes.map(function(x){return [x.lat,x.lng,x.n,(GEO_CLASE[x.clase]||GEO_CLASE.fuera).col,x.deOtro?1:0];});
+  var zs=(d.zonas||[]).filter(function(z){return z.activa;}).map(function(z){return [z.lat,z.lng,z.radio,GEO_ZCOL[z.tipo]||'#7C3AED',z.nombre];});
+  var p=d.parametros||{};
+  return 'var PTS='+JSON.stringify(pts)+',ZS='+JSON.stringify(zs)+',CEN='+JSON.stringify(p.lat!==null&&p.lat!==undefined?[p.lat,p.lng,p.radio]:null)+';'+
+    'var impreso=false;function listo(){if(impreso)return;impreso=true;setTimeout(function(){window.print();},700);}'+
+    'function sinMapa(){var el=document.getElementById("mapa");el.style.height="auto";el.style.border="none";listo();}'+
+    'var sc=document.createElement("script");sc.src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";sc.onload=iniciar;sc.onerror=sinMapa;document.head.appendChild(sc);'+
+    'setTimeout(function(){if(!window.L)sinMapa();},4000);'+
+    'function iniciar(){var el=document.getElementById("mapa");'+
+    'if(!window.L||!PTS.length){return sinMapa();}el.innerHTML="";'+
+    'var m=L.map(el,{zoomControl:false,attributionControl:true});'+
+    'var t=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"Imagenes Esri"}).addTo(m);'+
+    'var b=[];ZS.forEach(function(z){L.circle([z[0],z[1]],{radius:z[2],color:z[3],weight:2,fillOpacity:.06}).addTo(m);});'+
+    'if(CEN){L.circle([CEN[0],CEN[1]],{radius:CEN[2],color:"#FACC15",weight:3,fillOpacity:.08,dashArray:"6 4"}).addTo(m);b.push([CEN[0],CEN[1]]);}'+
+    'PTS.forEach(function(p){b.push([p[0],p[1]]);L.marker([p[0],p[1]],{icon:L.divIcon({className:"",iconSize:[22,22],iconAnchor:[11,11],html:"<div style=\\"width:22px;height:22px;border-radius:50%;background:"+p[3]+";border:2px solid "+(p[4]?"#FFF200":"#fff")+";color:#fff;font:700 10px Arial;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.5)\\">"+p[2]+"</div>"})}).addTo(m);});'+
+    'm.fitBounds(b,{padding:[40,40],maxZoom:18});t.on("load",listo);setTimeout(listo,8000);}';
+}
+async function lugarPDF(){
+  var w=window.open('','_blank','width=1000,height=800');if(!w){alert('Permite las ventanas emergentes para generar el PDF.');return;}
+  w.document.write('<p style="font-family:Arial;padding:20px;color:#6B7280">Preparando el informe del lugar con mapa y fotos...</p>');
+  var d;
+  try{d=await lugarCargar(true);if(!d){w.close();return;}}catch(e){w.document.body.innerHTML='<p style="font-family:Arial;padding:20px;color:#991B1B">No se pudo generar: '+xEsc(e.message||'')+'</p>';return;}
+  _lugar.datos=d;
+  var logoEl=document.getElementById('amg-logo-b64');var logo=logoEl?logoEl.src:'';
+  var p=d.parametros||{},k=d.kpis||{},esc=xEsc,generado=new Date().toLocaleString('es-CO');
+  var codigo=segCodigo('lugar|'+generado+'|'+d.marcajes.map(function(x){return x.fila;}).join(','));
+  var lugarTxt=esc(p.lugar||'')+(p.radio?' (radio de '+p.radio+' m alrededor de '+p.lat+', '+p.lng+')':'');
+  var res='Entre el '+esc(p.desde)+' y el '+esc(p.hasta)+' se registraron <b>'+k.marcajes+' marcajes</b> en '+lugarTxt+', de <b>'+k.personas+' '+(k.personas===1?'persona':'personas')+'</b> en '+k.dias+' '+(k.dias===1?'dia':'dias')+'. '+
+    (k.desdeOtro?'<b style="color:#B91C1C">'+k.desdeOtro+' '+(k.desdeOtro===1?'marcaje se hizo':'marcajes se hicieron')+' desde el celular de otra persona.</b> ':'Todos se hicieron desde el celular propio. ')+
+    (k.grupos?'<b>'+k.grupos+' '+(k.grupos===1?'vez':'veces')+'</b> varias personas marcaron juntas en el lugar en menos de 10 minutos. ':'')+(k.conFoto?k.conFoto+' con foto de verificacion.':'');
+  // SVG de respaldo
+  var svg=(function(){var W=880,H=440,pts=d.marcajes;if(!pts.length)return '<div class="ok">Sin marcajes</div>';
+    var la=pts.map(function(x){return x.lat;}),ln=pts.map(function(x){return x.lng;});if(p.lat!==null&&p.lat!==undefined){var dl=p.radio/111000,dg=p.radio/(111000*Math.cos(p.lat*Math.PI/180));la.push(p.lat-dl,p.lat+dl);ln.push(p.lng-dg,p.lng+dg);}
+    var a0=Math.min.apply(null,la),a1=Math.max.apply(null,la),g0=Math.min.apply(null,ln),g1=Math.max.apply(null,ln);var kx=Math.cos((a0+a1)/2*Math.PI/180);
+    var sx=Math.max((g1-g0)*kx,0.002),sy=Math.max(a1-a0,0.002),e=Math.min((W-60)/sx,(H-60)/sy);
+    var X=function(g){return 30+(g-g0)*kx*e+((W-60)-(g1-g0)*kx*e)/2;},Y=function(a){return H-30-(a-a0)*e-((H-60)-(a1-a0)*e)/2;};
+    var s='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;background:#F1F5F9;border-radius:8px">';
+    if(p.lat!==null&&p.lat!==undefined){var r=p.radio/111000*e;s+='<circle cx="'+X(p.lng)+'" cy="'+Y(p.lat)+'" r="'+r+'" fill="#FACC15" fill-opacity=".1" stroke="#CA8A04" stroke-dasharray="6 4"/>';}
+    pts.forEach(function(x){var c=(GEO_CLASE[x.clase]||GEO_CLASE.fuera).col;s+='<circle cx="'+X(x.lng)+'" cy="'+Y(x.lat)+'" r="10" fill="'+c+'" stroke="'+(x.deOtro?'#CA8A04':'#fff')+'" stroke-width="2"/><text x="'+X(x.lng)+'" y="'+(Y(x.lat)+3.5)+'" text-anchor="middle" font-family="Arial" font-size="9" font-weight="700" fill="#fff">'+x.n+'</text>';});
+    return s+'</svg>';})();
+  var tCruces=d.cruces.map(function(c,i){return '<tr class="'+(i%2?'z':'')+'"><td><b>'+esc(c.de)+'</b></td><td><b>'+esc(c.a)+'</b></td><td class="c"><b style="color:#B91C1C">'+c.marcajes.length+'</b></td><td>'+c.marcajes.map(function(m){return esc(m.fecha)+' <span class="m">'+esc(m.tipo)+'</span> <b class="nr">#'+m.n+'</b>';}).join('<br>')+'</td></tr>';}).join('')||'<tr><td colspan="4" class="ok">Nadie marco a otra persona desde su celular en este lugar.</td></tr>';
+  var tGrupos=d.grupos.map(function(g,i){return '<tr class="'+(i%2?'z':'')+'"><td style="white-space:nowrap">'+esc(g.fecha)+'</td><td class="c">'+g.minutos+' min</td><td><b>'+esc(g.personas.join(', '))+'</b></td><td>'+g.marcajes.map(function(n){return '<b class="nr">#'+n+'</b>';}).join(' ')+'</td><td>'+(g.mismoEquipo.length?'<b style="color:#B91C1C">Si: '+g.mismoEquipo.map(function(m){return esc(m.personas.join(' y '))+(m.dueno?' (celular de '+esc(m.dueno)+')':'');}).join('; ')+'</b>':'No')+'</td></tr>';}).join('')||'<tr><td colspan="5" class="ok">No hubo personas marcando juntas en el lugar.</td></tr>';
+  var tMarc=d.marcajes.map(function(x,i){var c=GEO_CLASE[x.clase]||GEO_CLASE.fuera;
+    return '<tr class="'+(x.deOtro?'al':(i%2?'z':''))+'"><td class="c"><b class="nr">'+x.n+'</b></td><td style="white-space:nowrap">'+esc(x.fecha)+'</td><td><b>'+esc(x.nombre)+'</b><div class="m">'+esc(x.correo)+' · '+esc(x.area||'')+'</div></td><td>'+esc(x.tipo)+'</td>'+
+      '<td><b style="color:'+c.c+'">'+(x.clase==='vigilado'||x.clase==='residencial'?esc(x.zona):c.t)+'</b>'+(x.clase==='fuera'&&x.distKm!==null?'<div class="m">a '+String(x.distKm).replace('.',',')+' km de '+esc(x.zonaCercana)+'</div>':'')+'</td>'+
+      '<td>'+(x.deOtro?'<b style="color:#B91C1C">'+esc(x.deOtro)+'</b>':'Propio')+'<div class="m">'+esc(x.devTipo||'')+(x.devDetalle?' · '+esc(x.devDetalle):'')+(x.hash?' · huella '+esc(x.hash):'')+'</div></td>'+
+      '<td><a href="'+geoGmaps(x.lat,x.lng)+'">'+x.lat+', '+x.lng+'</a><div class="m">'+(x.prec!==''?'precision '+esc(x.prec)+' m':'')+(x.distM!==null?' · a '+x.distM+' m del centro':'')+'</div></td><td class="c">'+x.fila+'</td>'+
+      '<td class="c">'+(x.fotoB64?'<img src="data:image/jpeg;base64,'+x.fotoB64+'" style="width:70px;border-radius:4px">':(x.fotoId?'Si':'No'))+'</td></tr>';}).join('')||'<tr><td colspan="9" class="ok">Sin marcajes en el lugar y fechas elegidos.</td></tr>';
+  var tPer=d.personas.map(function(x,i){return '<tr class="'+(i%2?'z':'')+'"><td><b>'+esc(x.nombre)+'</b><div class="m">'+esc(x.correo)+'</div></td><td class="c">'+x.total+'</td><td class="c">'+x.entradas+' / '+x.salidas+'</td><td class="c">'+x.nDias+'</td><td>'+x.listaDias.map(function(s){var q=s.split('-');return q[2]+'/'+q[1];}).join(', ')+'</td><td class="c"><b style="color:'+(x.desdeOtro?'#B91C1C':'#9CA3AF')+'">'+x.desdeOtro+'</b></td><td class="c">'+x.enGrupo+'</td></tr>';}).join('');
+  var fotos=d.marcajes.filter(function(x){return x.fotoB64;});
+  var gal=fotos.length?'<div class="gal">'+fotos.map(function(x){return '<div class="ft"><img src="data:image/jpeg;base64,'+x.fotoB64+'"><div><b class="nr">#'+x.n+'</b> '+esc(x.fecha)+'<br>Marcaje de <b>'+esc(x.nombre)+'</b>'+(x.deOtro?'<br><span style="color:#B91C1C">Celular de '+esc(x.deOtro)+'</span>':'')+'</div></div>';}).join('')+'</div>':'';
+  var css='@page{size:letter;margin:12mm 10mm}*{box-sizing:border-box}body{font-family:Inter,Arial,sans-serif;color:#1F2937;margin:0;font-size:10px;line-height:1.45;-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
+    '.wrap{max-width:940px;margin:0 auto;padding:22px}.hdr{display:flex;justify-content:space-between;border-bottom:3px solid #0A3D47;padding-bottom:10px}h1{font-size:19px;color:#0A3D47;margin:0 0 4px}'+
+    'h2{font-size:13px;color:#0A3D47;margin:18px 0 6px;display:flex;align-items:center;gap:8px;page-break-after:avoid}.num{display:inline-flex;min-width:22px;height:22px;padding:0 5px;border-radius:6px;background:#0A3D47;color:#fff;font-size:11px;align-items:center;justify-content:center}'+
+    '.m{font-size:8.5px;color:#7B868D}.conf{font-size:9px;color:#991B1B;font-weight:700;text-transform:uppercase}.res{border:1.5px solid #C7D2FE;background:#EEF2FF;border-radius:12px;padding:12px 16px;margin-top:12px;font-size:10.5px}'+
+    '.g{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:10px}.kp{border:1px solid #E5E7EB;border-radius:10px;padding:8px 6px;text-align:center}.kv{font-size:19px;font-weight:800}.kl{font-size:7.5px;color:#6B7280;text-transform:uppercase;font-weight:700}'+
+    '#mapa{height:470px;border-radius:10px;border:1px solid #D9E1E5;overflow:hidden}.ley{font-size:8.5px;color:#4B5563;margin-top:5px}'+
+    'table{width:100%;border-collapse:collapse}tr{page-break-inside:avoid}th{background:#0A3D47;color:#fff;text-align:left;padding:5px 6px;font-size:8px;text-transform:uppercase}td{padding:5px 6px;border-bottom:1px solid #EEF2F4;vertical-align:top}'+
+    'tr.z td{background:#F8FAFB}tr.al td{background:#FEF2F2}.c{text-align:center}.ok{text-align:center;color:#065F46;padding:12px;font-weight:600}.nr{color:#3730A3}a{color:#1E40AF;text-decoration:none}'+
+    '.gal{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.ft{border:1px solid #E5E7EB;border-radius:8px;overflow:hidden;page-break-inside:avoid;font-size:9px}.ft img{width:100%;display:block}.ft div{padding:5px 7px}'+
+    '.box{border:1px solid #E5E7EB;border-radius:10px;padding:10px 12px;page-break-inside:avoid}ol{margin:4px 0 0;padding-left:18px}ol li{margin:3px 0}'+
+    '.foot{margin-top:16px;border-top:1px solid #E5E7EB;padding-top:8px;font-size:8.5px;color:#7B868D;display:flex;justify-content:space-between}@media print{.np{display:none}.wrap{padding:0}}';
+  var kp=function(v,l,c){return '<div class="kp"><div class="kv" style="color:'+c+'">'+v+'</div><div class="kl">'+l+'</div></div>';};
+  var html='<!doctype html><html><head><meta charset="utf-8"><title>Informe del lugar '+codigo+'</title><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><style>'+css+'</style></head><body><div class="wrap">'+
+    '<div class="hdr"><div><div class="conf">Confidencial · Uso exclusivo de Gerencia, Gestion Humana y asesoria legal</div><h1>Marcajes en un lugar</h1>'+
+      '<div class="m" style="font-size:9.5px">'+lugarTxt+' · Del '+esc(p.desde)+' al '+esc(p.hasta)+'<br>Generado el '+esc(generado)+' por '+esc((currentUser&&currentUser.nombre)||'')+' · Codigo del informe <b>'+codigo+'</b></div></div>'+(logo?'<img src="'+logo+'" style="height:46px">':'')+'</div>'+
+    '<div class="res">'+res+'</div>'+
+    '<div class="g">'+kp(k.marcajes,'Marcajes','#3730A3')+kp(k.personas,'Personas','#0A3D47')+kp(k.dias,'Dias','#0A3D47')+kp(k.desdeOtro,'Desde celular de otro',k.desdeOtro?'#B91C1C':'#065F46')+kp(k.grupos,'Grupos juntos',k.grupos?'#B45309':'#065F46')+kp(k.conFoto,'Con foto','#0A3D47')+'</div>'+
+    '<h2><span class="num">1</span>Mapa satelital</h2><div id="mapa">'+svg+'</div>'+
+    '<div class="ley">Cada numero es un marcaje del detalle (seccion 4). Verde: en zona de trabajo · Naranja: fuera de zona · Rojo: zona residencial · Morado: punto vigilado. Borde amarillo: marcado desde el celular de otra persona. Circulo punteado: lugar analizado.</div>'+
+    '<h2><span class="num">2</span>Quien marco a quien estando alli</h2><table><thead><tr><th>Celular de</th><th>Persona marcada</th><th class="c">Veces</th><th>Fechas y numero</th></tr></thead><tbody>'+tCruces+'</tbody></table>'+
+    '<h2><span class="num">3</span>Personas que marcaron juntas en el lugar</h2><div class="m" style="margin-bottom:5px">Dos o mas personas marcadas en menos de 10 minutos y a menos de 300 m entre si. "Mismo celular" indica que dos de ellas se marcaron con el mismo equipo.</div><table><thead><tr><th>Fecha y hora</th><th class="c">Lapso</th><th>Personas</th><th>Numeros</th><th>Mismo celular</th></tr></thead><tbody>'+tGrupos+'</tbody></table>'+
+    '<h2><span class="num">4</span>Detalle de cada marcaje</h2><table><thead><tr><th class="c">#</th><th>Fecha y hora</th><th>Persona marcada</th><th>Marcaje</th><th>Lugar</th><th>Celular usado</th><th>Coordenadas</th><th class="c">Fila</th><th class="c">Foto</th></tr></thead><tbody>'+tMarc+'</tbody></table>'+
+    (gal?'<h2><span class="num">5</span>Fotos de verificacion</h2>'+gal:'')+
+    '<h2><span class="num">'+(gal?6:5)+'</span>Resumen por persona</h2><table><thead><tr><th>Persona</th><th class="c">Marcajes</th><th class="c">Entradas / salidas</th><th class="c">Dias</th><th>Fechas</th><th class="c">Desde celular de otro</th><th class="c">En grupo</th></tr></thead><tbody>'+tPer+'</tbody></table>'+
+    '<h2><span class="num">'+(gal?7:6)+'</span>Alcance</h2><div class="box"><ol><li>Ubicacion tomada por el GPS del celular al marcar, con la fecha y hora del servidor. Cada marcaje indica la fila de la hoja Marcajes.</li>'+
+      '<li>"Celular de" indica a quien esta registrado el celular usado. La foto de verificacion muestra quien lo tenia en la mano.</li>'+
+      '<li>Existen aplicaciones que falsean la ubicacion; se recomienda cruzar con la huella del equipo, las fotos y los registros de acceso al campo.</li></ol></div>'+
+    '<div class="foot"><span>Sistema de registro de turnos AMG · Informe de lugar · '+codigo+'</span><span>Documento confidencial</span></div>'+
+    '<div class="np" style="margin-top:14px;text-align:center"><button onclick="window.print()" style="padding:10px 22px;border:none;border-radius:8px;background:#0A3D47;color:#fff;font-weight:700;cursor:pointer;font-size:13px">Guardar como PDF</button></div></div>'+
+    '<script>'+lugarMapaScript(d)+'<\/script></body></html>';
+  w.document.open();w.document.write(html);w.document.close();
+  segPintarVista();
+}
+
+// ═══ FOTOS DE VERIFICACION: galeria descargable ══════════════════════════════
+var _fotos=null;
+async function cargarFotos(mas){
+  var b=document.getElementById('segVistaBody');
+  var dias=(document.getElementById('segPeriodo')||{}).value||'30';
+  if(!mas&&b)b.innerHTML='<div style="padding:1rem;color:#9CA3AF">Cargando fotos...</div>';
+  try{
+    var desde=mas&&_fotos?_fotos.fotos.length:0;
+    var d=await pedirDatos(SCRIPT_URL+'?action=getFotosVerificacion&email='+encodeURIComponent(currentUser.email)+'&dias='+dias+'&desde='+desde+'&cuantos=24&t='+Date.now());
+    if(!d||d.status!=='ok')throw new Error((d&&(d.msg||d.message))||'');
+    if(mas&&_fotos)_fotos.fotos=_fotos.fotos.concat(d.fotos);else{_fotos=d;_fotos._dias=dias;}
+    _fotos.total=d.total;segPintarVista();
+  }catch(e){if(b)b.innerHTML='<div style="padding:1rem;color:#991B1B">No pudimos cargar las fotos. '+xEsc(e.message||'')+'</div>';}
+}
+function segHtmlFotos(){
+  var dias=(document.getElementById('segPeriodo')||{}).value||'30';
+  if(!_fotos||_fotos._dias!==dias){setTimeout(function(){cargarFotos(false);},0);return '<div style="padding:1rem;color:#9CA3AF">Cargando fotos...</div>';}
+  var q=segTexto();
+  var lista=_fotos.fotos.filter(function(f){var m=f.marcaje||{};return segCoincide([f.correo,m.nombre,m.dueno,m.estado,f.fecha].join(' '),q);});
+  var h='<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px"><div style="font-size:12px;color:#6B7280">'+_fotos.total+' foto'+(_fotos.total===1?'':'s')+' en el periodo · mostrando '+_fotos.fotos.length+'</div>'+
+    '<button onclick="fotosZip()" style="margin-left:auto;padding:8px 14px;border-radius:9px;border:none;background:#0A3D47;color:white;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Descargar todas (ZIP)</button></div>';
+  if(!lista.length)return h+'<div style="background:#F8FAFB;border:1.5px solid #E5E7EB;border-radius:12px;padding:18px;text-align:center;color:#6B7280;font-size:13px">No hay fotos de verificacion en este periodo. La foto solo se pide cuando el sistema detecta un celular que no corresponde.</div>';
+  h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px">';
+  lista.forEach(function(f){
+    var i=_fotos.fotos.indexOf(f),m=f.marcaje||{};
+    var al=(m.estado||'').indexOf('ALERTA')===0;
+    h+='<div style="background:white;border:1.5px solid '+(al?'#FECACA':'#E5E7EB')+';border-radius:12px;overflow:hidden">'+
+      (f.b64?'<img onclick="fotoGrande('+i+')" src="data:image/jpeg;base64,'+f.b64+'" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block;cursor:zoom-in;background:#111">':'<div style="aspect-ratio:4/3;background:#F3F4F6;display:flex;align-items:center;justify-content:center;color:#9CA3AF;font-size:11px">No se pudo abrir</div>')+
+      '<div style="padding:9px 11px;font-size:11px;line-height:1.5">'+
+        '<div style="font-family:monospace;color:#374151">'+xEsc(f.fecha)+'</div>'+
+        '<div>Marcaje de <b>'+xEsc(m.nombre||f.correo)+'</b>'+(m.tipo?' <span style="color:#9CA3AF">'+xEsc(m.tipo)+'</span>':'')+'</div>'+
+        (m.dueno?'<div style="color:#B91C1C;font-weight:600">Celular de '+xEsc(m.dueno.replace(/\s*\(.*\)$/,''))+'</div>':(al?'<div style="color:#B45309;font-weight:600">Celular distinto al registrado</div>':''))+
+        (m.equipo?'<div style="color:#6B7280">'+xEsc(m.equipo)+'</div>':'')+
+        (m.lat?'<a href="'+geoGmaps(m.lat,m.lng)+'" target="_blank" rel="noopener" style="color:#1E40AF">Ubicacion</a> · ':'')+(m.fila?'<span style="color:#9CA3AF">fila '+m.fila+'</span>':'')+
+        '<div style="margin-top:6px"><button onclick="fotoDescargar('+i+')" style="width:100%;padding:6px;border-radius:8px;border:1.5px solid #E5E7EB;background:white;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer">Descargar</button></div>'+
+      '</div></div>';
+  });
+  h+='</div>';
+  if(_fotos.fotos.length<_fotos.total)h+='<div style="text-align:center;margin-top:12px"><button onclick="cargarFotos(true)" style="padding:8px 18px;border-radius:9px;border:1.5px solid #E5E7EB;background:white;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Cargar mas fotos</button></div>';
+  return h;
+}
+function fotoDescargar(i){
+  var f=_fotos&&_fotos.fotos[i];if(!f||!f.b64)return;
+  var a=document.createElement('a');a.href='data:image/jpeg;base64,'+f.b64;a.download=f.archivo||'foto_verificacion.jpg';document.body.appendChild(a);a.click();setTimeout(function(){a.remove();},300);
+}
+function fotoGrande(i){
+  var f=_fotos&&_fotos.fotos[i];if(!f)return;var m=f.marcaje||{};
+  var x=document.getElementById('segFotoModal');
+  if(!x){x=document.createElement('div');x.id='segFotoModal';x.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';x.onclick=function(e){if(e.target===x)x.style.display='none';};document.body.appendChild(x);}
+  x.style.display='flex';
+  x.innerHTML='<div style="background:white;border-radius:14px;padding:16px;max-width:520px;width:100%;max-height:92vh;overflow:auto">'+
+    '<img src="data:image/jpeg;base64,'+f.b64+'" style="width:100%;border-radius:10px;display:block">'+
+    '<table style="width:100%;font-size:12px;margin-top:10px;border-collapse:collapse">'+
+    segFila('Fecha de la foto',xEsc(f.fecha))+segFila('Marcaje de',xEsc(m.nombre||f.correo)+(m.tipo?' · '+xEsc(m.tipo):''))+
+    (m.dueno?segFila('Celular registrado a',xEsc(m.dueno)):'')+segFila('Estado guardado',xEsc(m.estado||''))+
+    (m.equipo?segFila('Equipo',xEsc(m.equipo)+(m.hash?' · huella '+xEsc(m.hash):'')):'')+
+    (m.lat?segFila('Ubicacion','<a href="'+geoGmaps(m.lat,m.lng)+'" target="_blank" rel="noopener" style="color:#1E40AF">'+m.lat+', '+m.lng+'</a>'+(m.prec?' · '+xEsc(m.prec)+' m':'')):'')+
+    segFila('Archivo',xEsc(f.archivo))+(m.fila?segFila('Fila en la hoja','Marcajes, fila '+m.fila):'')+'</table>'+
+    '<div style="display:flex;gap:8px;margin-top:10px"><button onclick="fotoDescargar('+i+')" style="flex:1;padding:9px;border-radius:9px;border:none;background:#065F46;color:white;font-family:inherit;font-weight:700;cursor:pointer">Descargar</button>'+
+    '<button onclick="document.getElementById(\'segFotoModal\').style.display=\'none\'" style="flex:1;padding:9px;border-radius:9px;border:none;background:#0A3D47;color:white;font-family:inherit;font-weight:700;cursor:pointer">Cerrar</button></div></div>';
+}
+async function fotosZip(){
+  showToast('Preparando el ZIP con las fotos...');
+  try{
+    var dias=(document.getElementById('segPeriodo')||{}).value||'30';
+    var d=await pedirDatos(SCRIPT_URL+'?action=zipFotosVerificacion&email='+encodeURIComponent(currentUser.email)+'&dias='+dias+'&t='+Date.now());
+    if(!d||d.status!=='ok')throw new Error((d&&(d.msg||d.message))||'');
+    if(d.vacio){showToast('No hay fotos en este periodo.');return;}
+    var bin=atob(d.b64),arr=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
+    var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([arr],{type:'application/zip'}));a.download=d.nombre;document.body.appendChild(a);a.click();setTimeout(function(){a.remove();},500);
+    if(d.total>d.cantidad)showToast('Se descargaron las '+d.cantidad+' mas recientes de '+d.total+'. Elige un periodo mas corto para el resto.');
+  }catch(e){alert('No se pudo preparar el ZIP. '+(e.message||''));}
+}
+
 function svgDona(pct,color,label,sub){
   var p=Math.max(0,Math.min(100,pct||0));
   var r=52, cx=64, cy=64, circ=2*Math.PI*r;
@@ -4991,7 +5980,8 @@ var NAV_GRUPOS=[
     {src:'#tabCalendario', t:'Calendario', d:'Solicitudes del mes de un vistazo', ico:'calendario'}]},
   {id:'analisis', titulo:'Analisis', ico:'grafica', color:'#7C3AED', items:[
     {src:'[data-tab="stats"]', t:'Dashboard', d:'Graficas de solicitudes y actividad', ico:'grafica'},
-    {src:'#tabReporte', t:'Reporte ejecutivo', d:'Panorama completo de la aplicacion', ico:'documento'}]},
+    {src:'#tabReporte', t:'Reporte ejecutivo', d:'Panorama completo de la aplicacion', ico:'documento'},
+    {src:'#tabSeguridad', t:'Seguridad de marcajes', d:'Quien marco, desde que equipo y a quien', ico:'escudo'}]},
   {id:'gh', titulo:'Gestion Humana', ico:'maletin', color:'#92400E', items:[
     {src:'#tabNomina', t:'Nomina y jornadas', d:'Liquidacion de horas extra y salarios', ico:'dinero'},
     {src:'#tabNovedades', t:'Novedades de la empresa', d:'Comunicados para los colaboradores', ico:'megafono'},
@@ -5287,5 +6277,6 @@ function detallePDFSolicitudes(d){
     </div>
   </div>
 </div>
+<img id="amg-logo-b64" alt="" style="display:none" src="data:image/png;base64,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">
 </body>
 </html>
