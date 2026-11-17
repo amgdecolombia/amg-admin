@@ -667,10 +667,11 @@ input:focus,select:focus,textarea:focus{
 .btst b{display:block;font-size:16px;font-weight:800;color:#0A3D47;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .btst .btult b{font-size:13px;padding-top:2px}
 .btst small{display:block;font-size:10.5px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
-.btpers{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.btpers span{display:flex;align-items:center;gap:7px;min-width:0;background:rgba(255,255,255,.75);border:1px solid #E8EEF3;border-radius:10px;padding:5px 8px}
-.btpers span i{flex:0 0 22px;width:22px;height:22px;border-radius:50%;background:#E0F2F1;color:#0A3D47;font-style:normal;font-size:9.5px;font-weight:800;display:flex;align-items:center;justify-content:center}
-.btpers span em{font-style:normal;font-size:12px;font-weight:600;color:#1E293B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btpers{display:flex;flex-direction:column;gap:0;background:rgba(255,255,255,.7);border:1px solid #E8EEF3;border-radius:12px;overflow:hidden}
+.btpers span{display:flex;align-items:center;gap:10px;padding:8px 12px;border-top:1px solid #EEF2F6}
+.btpers span:first-child{border-top:0}
+.btpers span i{flex:0 0 26px;width:26px;height:26px;border-radius:50%;background:#E0F2F1;color:#0A3D47;font-style:normal;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.btpers span em{font-style:normal;font-size:13px;font-weight:600;color:#1E293B;line-height:1.3;word-break:break-word}
 .btpers span.ocu{display:none}.btpers.todo span.ocu{display:flex}
 .btmas{align-self:flex-start;border:0;background:transparent;color:#0A3D47;font-family:inherit;font-weight:800;font-size:12px;cursor:pointer;padding:0}
 .btvac{font-size:12px;color:#94A3B8;padding:6px 0;text-align:center;border:1px dashed #CBD5E1;border-radius:10px}
@@ -695,6 +696,7 @@ input:focus,select:focus,textarea:focus{
 .eqit:hover{background:#F1F5F9}.eqit input{accent-color:#0A3D47}
 .eqit b{display:block;font-size:13px;color:#0F172A}.eqit small{font-size:11px;color:#64748B}
 .eqact{position:sticky;bottom:-14px;display:flex;justify-content:space-between;align-items:center;gap:10px;margin:12px -16px -14px;padding:12px 16px;background:rgba(255,255,255,.95);border-top:1px solid #E2E8F0;font-size:12px;color:#475569;font-weight:700}
+.srteq{display:flex;align-items:center;justify-content:space-between;gap:6px;margin:-2px 0 8px;padding:6px 8px;border-radius:10px;background:rgba(10,61,71,.08);font-size:11px;font-weight:700;color:#0A3D47}.srteq span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.srteq button{border:0;background:#0A3D47;color:#fff;border-radius:7px;padding:3px 8px;font-family:inherit;font-size:10.5px;font-weight:700;cursor:pointer}
 
 </style>
 <style id="estiloVidrio">
@@ -8321,17 +8323,18 @@ function bitPuedeEditar(){return rolActual()==='supervisor'||tienePerm('empleado
       '<div class="btchips"><button class="btchip'+(sel.length?'':' on')+'" onclick="_bitSel={};renderBitacora()">Todos</button>'+
       eqs.map(function(q){return '<button class="btchip'+(_bitSel[q.email]?' on':'')+'" onclick="_bitSel[\''+sgE(q.email)+'\']=!_bitSel[\''+sgE(q.email)+'\'];renderBitacora()">'+sgE(asNombre(q.nombre))+' <small>'+(q.propios||[]).length+'</small></button>';}).join('')+'</div></div>'+
       '<div class="btgrid">'+vis.map(function(q){
-        var ps=(q.propios||[]).slice().sort(function(x,y){return asNombre(x).localeCompare(asNombre(y));}),max=6;
+        var ps=(q.propios||[]).slice().sort(function(x,y){return btTitulo(x).localeCompare(btTitulo(y));}),max=6;
         var ult=String(q.ultimoIngreso||''),ultF=ult.split(' ')[0]||'',ultH=ult.split(' ')[1]||'';
         var hoyF=(function(){var d=new Date();return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear();})();
         var ultTxt=!ult?'Sin ingresos':(ultF===hoyF?'Hoy '+ultH:(function(){var p=ultF.split('/'),m=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][(+p[1]||1)-1];return (+p[0])+' '+m+' '+ultH;})());
         return '<div class="btcard"><div class="btct"><div class="asav" style="background:#0A3D47">'+sgE(asIni(q.nombre))+'</div><div class="btcn"><b>'+sgE(asNombre(q.nombre))+'</b><small>'+(rolLbl[q.rol]||sgE(q.rol))+(q.activo&&!/^si$/i.test(q.activo)?' · inactivo':'')+'</small></div>'+
           (bitPuedeEditar()&&q.rol!=='supervisor'?'<button class="btedit" title="Editar equipo" onclick="abrirEditarEquipo(\''+sgE(q.email)+'\',\''+sgE(q.nombre)+'\')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Editar</button>':'')+'</div>'+
           '<div class="btst"><div><b>'+ps.length+'</b><small>Personas</small></div><div><b>'+(q.acciones||0)+'</b><small>Acciones</small></div><div class="btult"><b>'+sgE(ultTxt)+'</b><small>Ultimo ingreso</small></div></div>'+
-          (ps.length?'<div class="btpers">'+ps.map(function(n,i){return '<span'+(i>=max?' class="ocu"':'')+' title="'+sgE(n)+'"><i>'+sgE(asIni(n))+'</i><em>'+sgE(asNombre(n))+'</em></span>';}).join('')+'</div>'+(ps.length>max?'<button class="btmas" onclick="var g=this.previousElementSibling;g.classList.toggle(\'todo\');this.textContent=g.classList.contains(\'todo\')?\'Ver menos\':\'Ver todos ('+ps.length+')\'">Ver todos ('+ps.length+')</button>':''):'<div class="btvac">Sin personas asignadas</div>')+
+          (ps.length?'<div class="btpers">'+ps.map(function(n,i){return '<span'+(i>=max?' class="ocu"':'')+'><i>'+sgE(asIni(n))+'</i><em>'+sgE(btTitulo(n))+'</em></span>';}).join('')+'</div>'+(ps.length>max?'<button class="btmas" onclick="var g=this.previousElementSibling;g.classList.toggle(\'todo\');this.textContent=g.classList.contains(\'todo\')?\'Ver menos\':\'Ver todos ('+ps.length+')\'">Ver todos ('+ps.length+')</button>':''):'<div class="btvac">Sin personas asignadas</div>')+
           ((q.temporales||[]).length?'<div class="bttmp">Apoyos temporales: '+sgE(q.temporales.join('; '))+'</div>':'')+'</div>';
       }).join('')+'</div></div>';
     el.firstChild.outerHTML=h;
+    try{statsPorEquipo();}catch(e){}
   };
 })();
 async function abrirEditarEquipo(lider,nombre){
@@ -8399,6 +8402,44 @@ async function guardarEquipoLider(lider,nombre){
     setTimeout(function(){try{_bit=null;_supData=null;_asisData=null;_bitSel={};if(typeof cargarBitacora==='function'&&document.getElementById('bitBody'))cargarBitacora();if(typeof cargarEquipoBusqueda==='function')cargarEquipoBusqueda();}catch(e){}},1800);
     return r;
   };
+})();
+
+function btTitulo(n){return String(n||'').toLowerCase().replace(/\s+/g,' ').trim().replace(/(^|\s)([a-zñáéíóú])/g,function(m,a,b){return a+b.toUpperCase();});}
+// ═══ Burbujas de Solicitudes (izquierda) siguen el filtro de equipos ═══
+function statsPorEquipo(){
+  var eqs=(_bit&&_bit.equipos)||[],sel=eqs.filter(function(q){return _bitSel[q.email];});
+  var P=(typeof allPending!=='undefined'&&allPending)||[],H=(typeof allHistory!=='undefined'&&allHistory)||[];
+  var nombres=null;
+  if(sel.length){nombres={};sel.forEach(function(q){(q.propios||[]).forEach(function(n){nombres[normTxt(n)]=1;});});}
+  var f=function(r){return !nombres||nombres[normTxt(r['Nombre']||r.nombre||'')];};
+  var p=P.filter(f),h=H.filter(f);
+  window._stApl=true;setTimeout(function(){window._stApl=false;},0);
+  var set=function(id,v){var e=document.getElementById(id);if(e)e.textContent=v;};
+  set('stPending',p.length);
+  set('stApproved',h.filter(function(x){return x['Estado Director']==='Aprobado';}).length);
+  set('stRejected',h.filter(function(x){return x['Estado Director']==='Rechazado';}).length);
+  set('stTotal',p.length+h.length);
+  var rail=document.getElementById('statsRail');if(!rail)return;
+  var t=rail.querySelector('.srt');if(!t)return;
+  var tag=document.getElementById('srtEq');
+  if(!sel.length){if(tag)tag.remove();return;}
+  if(!tag){tag=document.createElement('div');tag.id='srtEq';tag.className='srteq';t.parentNode.insertBefore(tag,t.nextSibling);}
+  tag.innerHTML='<span>'+sgE(sel.map(function(q){return asNombre(q.nombre);}).join(', '))+'</span><button onclick="_bitSel={};if(typeof renderBitacora===\'function\'&&_bit)renderBitacora();else statsPorEquipo();" title="Ver toda la empresa">Quitar</button>';
+}
+(function(){
+  ['loadPending','loadHistory'].forEach(function(fn){
+    var o=window[fn];if(typeof o!=='function')return;
+    window[fn]=async function(){var r=await o.apply(this,arguments);try{statsPorEquipo();}catch(e){}return r;};
+  });
+})();
+
+// Si el conteo automatico de pendientes reescribe la burbuja mientras hay un equipo elegido, se vuelve a aplicar el filtro
+(function(){
+  function vigilar(){
+    var e=document.getElementById('stPending');if(!e||e._vig){return;}e._vig=1;
+    new MutationObserver(function(){if(window._stApl)return;var eqs=(_bit&&_bit.equipos)||[];if(eqs.some(function(q){return _bitSel[q.email];}))statsPorEquipo();}).observe(e,{childList:true,characterData:true,subtree:true});
+  }
+  setInterval(vigilar,2000);vigilar();
 })();
 
 </script>
