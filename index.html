@@ -364,6 +364,14 @@ input:focus,select:focus,textarea:focus{
 .alrev textarea{flex:1;min-width:220px;padding:8px 10px;border:1.5px solid #E5E7EB;border-radius:10px;font-family:inherit;font-size:12px;min-height:40px}
 .alrev button{padding:9px 16px;border:none;border-radius:10px;background:#065F46;color:#fff;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer}
 
+.albulk{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#fff;border:1.5px solid #E5E7EB;border-radius:12px;padding:9px 12px;margin-bottom:10px;font-size:12px}
+.albulk label{display:flex;gap:6px;align-items:center;font-weight:600;color:#334155;cursor:pointer}
+.albulk input[type=text],.albulk #alNotaLote{flex:1;min-width:180px;padding:7px 10px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:12px}
+.albulk button{padding:8px 14px;border:none;border-radius:9px;background:#065F46;color:#fff;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer}
+.albulk button:disabled{background:#CBD5E1;cursor:default}
+.alchk{width:17px;height:17px;accent-color:#065F46;cursor:pointer;flex:0 0 auto}
+.pvt input[type=date],.pvt input[type=time],.pvt select,#pvNf,#pvNh,#pvNt{padding:4px 6px;border:1.5px solid #E2E8F0;border-radius:7px;font-family:inherit;font-size:12px}
+
 </style>
 </head>
 <body>
@@ -781,7 +789,7 @@ function fetchConTiempo(url, ms){
 var BUILD_VERSION='2026.09.16';
 
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxhAod0tOXHXt3NBsI9FvSlPDTYrPizMCJFBVlOXJ8WFI70KjQcx-vBQRfrYrE1Jg7y/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyMfygqR-AT0kVOud2a3bItGrelozPFsYTI7nDV00u7Y9VLufktR2gHrq54Saz0jBZQ/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -807,7 +815,8 @@ async function doLogin(){
   if(!email||!pass){errEl.textContent='Ingresa usuario y clave.';errEl.style.display='block';return;}
   btn.disabled=true;btn.textContent='Verificando...';
   try{
-    var url=SCRIPT_URL+'?action=login&email='+encodeURIComponent(email)+'&pass='+encodeURIComponent(pass);
+    var dispL='';try{var ua=navigator.userAgent||'';var tipoD=/iPad|Tablet/i.test(ua)?'Tablet':(/Mobi|Android|iPhone/i.test(ua)?'Celular':'Computador');var so=/Windows/i.test(ua)?'Windows':(/Mac OS X/i.test(ua)&&!/iPhone|iPad/i.test(ua)?'Mac':(/Android/i.test(ua)?'Android':(/iPhone|iPad/i.test(ua)?'iOS':'Otro')));var nav=/Edg\//.test(ua)?'Edge':(/Chrome\//.test(ua)?'Chrome':(/Safari\//.test(ua)?'Safari':(/Firefox\//.test(ua)?'Firefox':'Otro')));dispL=tipoD+' · '+so+' · '+nav;}catch(eD){}
+    var url=SCRIPT_URL+'?action=login&email='+encodeURIComponent(email)+'&pass='+encodeURIComponent(pass)+'&disp='+encodeURIComponent(dispL);
     var text=null, intento=0;
     while(intento<2&&text===null){
       intento++;
@@ -4478,25 +4487,29 @@ function geoHtmlZonas(){
   var h='<div style="background:white;border:1.5px solid #A7F3D0;border-radius:12px;padding:12px;margin-bottom:12px">'+
     '<div style="font-size:12px;font-weight:700;color:#065F46">Zonas de trabajo</div>'+
     '<div style="font-size:11px;color:#6B7280;margin:4px 0 10px;line-height:1.5"><b>Trabajo</b>: campo, clusters u oficina; marcar ahi es correcto. <b>Recogida</b>: punto donde el transporte recoge al personal; tambien cuenta como correcto. <b>Residencial</b>: casco urbano; marcar ahi se senala en rojo. <b>Vigilado</b>: un sitio puntual que quieres controlar, como el parqueadero; tiene prioridad aunque quede dentro del campo. Con las zonas abiertas, toca el mapa para agregar un punto en ese lugar.</div>'+
-    '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:720px"><thead><tr>'+['Nombre','Tipo','Latitud','Longitud','Radio (m)','Activa',''].map(function(t){return '<th style="text-align:left;font-size:10px;color:#6B7280;padding:4px">'+t+'</th>';}).join('')+'</tr></thead><tbody>';
+    '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:720px"><thead><tr>'+['Nombre','Tipo','Latitud','Longitud','Radio (m)','Aplica a','Activa',''].map(function(t){return '<th style="text-align:left;font-size:10px;color:#6B7280;padding:4px">'+t+'</th>';}).join('')+'</tr></thead><tbody>';
   z.forEach(function(x,i){
     h+='<tr><td style="padding:3px">'+inp(i,'nombre',x.nombre,'100%')+'</td><td style="padding:3px"><select onchange="geoZonaSet('+i+',\'tipo\',this.value)" style="padding:6px;border:1.5px solid #E5E7EB;border-radius:7px;font-family:inherit;font-size:12px">'+
       ['Trabajo','Recogida','Residencial','Vigilado'].map(function(t){return '<option'+(x.tipo===t?' selected':'')+'>'+t+'</option>';}).join('')+'</select></td>'+
       '<td style="padding:3px">'+inp(i,'lat',x.lat,'100px','number')+'</td><td style="padding:3px">'+inp(i,'lng',x.lng,'100px','number')+'</td><td style="padding:3px">'+inp(i,'radio',x.radio,'90px','number')+'</td>'+
+      '<td style="padding:3px"><input list="zonaAplicaOpc" oninput="geoZonaSet('+i+',\'aplica\',this.value)" value="'+xEsc(x.aplica||'Todos')+'" style="width:230px;padding:6px 8px;border:1.5px solid #E5E7EB;border-radius:7px;font-family:inherit;font-size:12px"></td>'+
       '<td style="padding:3px;text-align:center"><input type="checkbox" '+(x.activa!==false?'checked':'')+' onchange="geoZonaSet('+i+',\'activa\',this.checked)"></td>'+
       '<td style="padding:3px"><button onclick="geoZonaQuitar('+i+')" style="border:none;background:#FEF2F2;color:#B91C1C;border-radius:7px;padding:6px 10px;font-family:inherit;font-weight:700;cursor:pointer">Quitar</button></td></tr>';
   });
-  h+='</tbody></table></div><div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">'+
+  var opcA={'Todos':1};z.forEach(function(x){if(x.aplica)opcA[x.aplica]=1;});['jsbejarano@amgdecolombia.com'].forEach(function(l){opcA['Equipo de '+l]=1;opcA['Excepto equipo de '+l]=1;});
+  h+='</tbody></table></div><datalist id="zonaAplicaOpc">'+Object.keys(opcA).map(function(o){return '<option value="'+xEsc(o)+'">';}).join('')+'</datalist>'+
+    '<div style="font-size:11px;color:#6B7280;margin-top:6px;line-height:1.5"><b>Aplica a</b>: "Todos"; "Equipo de correo del lider" (solo su equipo, incluidos los apoyos temporales vigentes); o "Excepto equipo de correo del lider" (todos los demas).</div>'+
+    '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">'+
     '<button onclick="geoZonaAgregar()" style="padding:8px 14px;border-radius:9px;border:1.5px solid #E5E7EB;background:white;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Agregar zona</button>'+
     '<button onclick="geoGuardarZonas()" style="padding:8px 14px;border-radius:9px;border:none;background:#065F46;color:white;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">Guardar zonas y recalcular</button></div></div>';
   return h;
 }
 function geoZonaSet(i,c,v){if(!_geoZonasEdit||!_geoZonasEdit[i])return;_geoZonasEdit[i][c]=v;}
 function geoZonaQuitar(i){_geoZonasEdit.splice(i,1);segPintarVista();}
-function geoZonaAgregar(){(_geoZonasEdit=_geoZonasEdit||[]).push({nombre:'',tipo:'Trabajo',lat:'',lng:'',radio:1500,activa:true,notas:''});segPintarVista();}
+function geoZonaAgregar(){(_geoZonasEdit=_geoZonasEdit||[]).push({nombre:'',tipo:'Trabajo',lat:'',lng:'',radio:1500,activa:true,notas:'',aplica:'Todos'});segPintarVista();}
 async function geoGuardarZonas(){
   try{
-    var lista=(_geoZonasEdit||[]).map(function(z){return {nombre:z.nombre,tipo:z.tipo,lat:z.lat,lng:z.lng,radio:z.radio,activa:z.activa!==false,notas:z.notas||''};});
+    var lista=(_geoZonasEdit||[]).map(function(z){return {nombre:z.nombre,tipo:z.tipo,lat:z.lat,lng:z.lng,radio:z.radio,activa:z.activa!==false,notas:z.notas||'',aplica:z.aplica||'Todos'};});
     var malas=lista.filter(function(z){return !z.nombre||isNaN(parseFloat(z.lat))||isNaN(parseFloat(z.lng));});
     if(malas.length){alert('Revisa las zonas: todas necesitan nombre, latitud y longitud.');return;}
     var d=await pedirDatos(SCRIPT_URL+'?action=saveZonas&email='+encodeURIComponent(currentUser.email)+'&zonas='+encodeURIComponent(JSON.stringify(lista)));
@@ -6728,6 +6741,14 @@ function renderPersona(){
       (d.deOtros||[]).map(function(o){return '<tr><td>'+xEsc(o.fecha)+'</td><td>'+xEsc(o.tipo)+'</td><td><b style="color:#991B1B">Su celular se uso para marcar a '+xEsc(o.persona)+'</b></td><td></td></tr>';}).join('')+
       '</tbody></table></div></div>';
   }
+  if(rolActual()==='supervisor'&&d.todos){
+    var hoyIso=new Date().toISOString().slice(0,10);
+    h+='<div class="pvc" style="border-color:#C4B5FD"><div class="pvct" style="color:#5B21B6">Editar marcajes <span class="pvleg">solo tu lo ves; los cambios no dejan nota, correo ni registro en el historial</span></div>'+
+      '<div class="pvtw" style="max-height:420px"><table class="pvt"><thead><tr><th>Fecha</th><th>Hora</th><th>Tipo</th><th>Lugar</th><th></th></tr></thead><tbody>'+
+      d.todos.slice().reverse().map(function(m,i){var k='pvm'+i;return '<tr'+(m.duplicado?' style="background:#FEF2F2"':'')+'><td><input type="date" id="'+k+'f" value="'+m.ymd+'"></td><td><input type="time" id="'+k+'h" value="'+m.hora+'"></td><td><select id="'+k+'t"><option'+(m.tipo==='Entrada a turno'?' selected':'')+'>Entrada a turno</option><option'+(m.tipo==='Salida de turno'?' selected':'')+'>Salida de turno</option></select>'+(m.duplicado?' <b style="color:#991B1B;font-size:10px">repetido</b>':'')+'</td><td style="font-size:11px">'+(m.clase==='en_zona'?xEsc(m.zona):xEsc(CLASE_LBL[m.clase]||m.clase||''))+'</td>'+
+        '<td style="white-space:nowrap"><button class="pvchip on" onclick="pvMk(\'editarMarcaje\','+m.fila+','+m.ts+',\''+k+'\')">Guardar</button> <button class="pvchip" style="color:#991B1B;border-color:#FECACA" onclick="pvMk(\'eliminarMarcaje\','+m.fila+','+m.ts+',\''+k+'\')">Eliminar</button></td></tr>';}).join('')+
+      '</tbody></table></div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:10px"><b style="font-size:12px;color:#5B21B6">Agregar marcaje</b><input type="date" id="pvNf" value="'+hoyIso+'"><input type="time" id="pvNh" value="08:00"><select id="pvNt"><option>Entrada a turno</option><option>Salida de turno</option></select><button class="pvchip on" onclick="pvMk(\'agregarMarcaje\',0,0,\'pvN\')">Agregar</button></div></div>';
+  }
   if(d.duplicados)h+='<div class="pvempty">Se omitieron '+d.duplicados+' marcajes repetidos (el mismo marcaje enviado dos veces en menos de 2 minutos).</div>';
   b.innerHTML=h;
 }
@@ -6858,7 +6879,7 @@ document.addEventListener('click',function(ev){var w=document.getElementById('gs
 document.addEventListener('keydown',function(ev){if(ev.key==='Escape'){var v=document.getElementById('personaView');if(v&&v.style.display==='block')cerrarPersona();}});
 
 // ── Alertas de marcaje: cruzado y de ubicacion (jefe directo, GH y supervisor) ──
-var _al={datos:null,filtro:'nuevas',cat:'',dias:'30',abiertas:{}};
+var _al={datos:null,filtro:'nuevas',cat:'',dias:'30',abiertas:{},sel:{}};
 async function revisarAlertas(silencioso){
   if(!currentUser)return;
   try{
@@ -6904,10 +6925,15 @@ function renderAlertas(){
   var h='<div class="pvctl">'+chip('filtro','nuevas','Nuevas ('+cnt(function(a){return a.estado==='Nueva';})+')')+chip('filtro','revisadas','Revisadas')+chip('filtro','todas','Todas')+
     '<span class="pvl" style="margin-left:10px">Tipo</span>'+chip('cat','','Todas')+chip('cat','Marcaje cruzado','Marcaje cruzado ('+cnt(function(a){return a.categoria!=='Ubicacion';})+')')+chip('cat','Ubicacion','Ubicacion ('+cnt(function(a){return a.categoria==='Ubicacion';})+')')+
     '<span class="pvl" style="margin-left:auto">Periodo</span><select onchange="alFiltro(\'dias\',this.value)" style="padding:6px 9px;border:1.5px solid #E2E8F0;border-radius:9px;font-family:inherit;font-size:12px">'+[['7','7 dias'],['30','30 dias'],['90','3 meses'],['365','12 meses']].map(function(o){return '<option value="'+o[0]+'"'+(_al.dias===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select></div>';
+  var nuevasVis=ls.filter(function(a){return a.estado==='Nueva';});
+  Object.keys(_al.sel).forEach(function(k){if(!nuevasVis.some(function(a){return a.id===k;}))delete _al.sel[k];});
+  var nSel=Object.keys(_al.sel).length;
+  if(nuevasVis.length)h+='<div class="albulk"><label><input type="checkbox" '+(nSel&&nSel===nuevasVis.length?'checked':'')+' onchange="alSelTodas(this.checked)"> Seleccionar todas las nuevas ('+nuevasVis.length+')</label>'+
+    '<input id="alNotaLote" placeholder="Nota para las seleccionadas (opcional)"><button '+(nSel?'':'disabled')+' onclick="revisarSeleccion()">Marcar seleccionadas como revisadas'+(nSel?' ('+nSel+')':'')+'</button></div>';
   if(!ls.length){el.innerHTML=h+'<div class="pvc"><div class="pvempty" style="padding:18px;text-align:center">'+(_al.filtro==='nuevas'?'No hay alertas nuevas. Todo al dia.':'No hay alertas con estos filtros.')+'</div></div>';return;}
   h+=ls.map(function(a){
     var ab=!!_al.abiertas[a.id],ub=a.categoria==='Ubicacion';
-    var cab='<div class="alc'+(a.estado==='Nueva'?' nueva':'')+'" onclick="alToggle(\''+a.id+'\')"><span class="ali">'+(ub?'&#128205;':'&#128241;')+'</span><div style="flex:1;min-width:0"><b>'+xEsc(tituloAlerta(a))+'</b><small>'+xEsc(a.tipo)+' · '+xEsc(a.fecha)+(a.detalleUbicacion?' · '+xEsc(a.detalleUbicacion):'')+(a.previas?' · <b style="color:#991B1B">'+a.previas+' vez'+(a.previas===1?'':'es')+' antes</b>':'')+'</small></div><span class="alst '+(a.estado==='Nueva'?'n':'r')+'">'+(a.estado==='Nueva'?'Nueva':'Revisada')+'</span><span class="alch">'+(ab?'&#9650;':'&#9660;')+'</span></div>';
+    var cab='<div class="alc'+(a.estado==='Nueva'?' nueva':'')+'" onclick="alToggle(\''+a.id+'\')">'+(a.estado==='Nueva'?'<input type="checkbox" class="alchk" '+(_al.sel[a.id]?'checked':'')+' onclick="event.stopPropagation()" onchange="alSel(\''+a.id+'\',this.checked)">':'<span style="width:18px"></span>')+'<span class="ali">'+(ub?'&#128205;':'&#128241;')+'</span><div style="flex:1;min-width:0"><b>'+xEsc(tituloAlerta(a))+'</b><small>'+xEsc(a.tipo)+' · '+xEsc(a.fecha)+(a.detalleUbicacion?' · '+xEsc(a.detalleUbicacion):'')+(a.previas?' · <b style="color:#991B1B">'+a.previas+' vez'+(a.previas===1?'':'es')+' antes</b>':'')+'</small></div><span class="alst '+(a.estado==='Nueva'?'n':'r')+'">'+(a.estado==='Nueva'?'Nueva':'Revisada')+'</span><span class="alch">'+(ab?'&#9650;':'&#9660;')+'</span></div>';
     if(!ab)return '<div class="alw">'+cab+'</div>';
     var filas=[['Tipo de alerta',a.tipoAlerta],['Persona marcada',a.nombreMarcado+' ('+a.correoMarcado+')']];
     if(!ub)filas.push(['Celular usado',a.nombreDueno?('Celular habitual de '+a.nombreDueno+' ('+a.correoDueno+')'+(a.confirmado?'':'. Puede ser un celular del mismo modelo; la foto lo confirma.')):'Un celular distinto al que tiene registrado']);
@@ -6930,6 +6956,16 @@ function renderAlertas(){
   }).join('');
   el.innerHTML=h;
 }
+function alSel(id,v){if(v)_al.sel[id]=1;else delete _al.sel[id];var nota=(document.getElementById('alNotaLote')||{}).value||'';renderAlertas();var n=document.getElementById('alNotaLote');if(n)n.value=nota;}
+function alSelTodas(v){_al.sel={};if(v)(_al.datos.alertas||[]).forEach(function(a){if(a.estado==='Nueva'&&(!_al.cat||a.categoria===_al.cat)&&_al.filtro!=='revisadas')_al.sel[a.id]=1;});var nota=(document.getElementById('alNotaLote')||{}).value||'';renderAlertas();var n=document.getElementById('alNotaLote');if(n)n.value=nota;}
+async function revisarSeleccion(){
+  var ids=Object.keys(_al.sel);if(!ids.length)return;
+  if(!confirm('Marcar '+ids.length+' alerta'+(ids.length===1?'':'s')+' como revisada'+(ids.length===1?'':'s')+'?'))return;
+  var nota=(document.getElementById('alNotaLote')||{}).value||'';
+  try{var d=await pedirDatos(SCRIPT_URL+'?action=revisarAlertasLote&email='+encodeURIComponent(currentUser.email)+'&ids='+encodeURIComponent(ids.join(','))+'&nota='+encodeURIComponent(nota)+'&t='+Date.now());
+    if(d.status==='ok'){showToast(d.msg||'Listo');_al.sel={};revisarAlertas(true);}else alert(d.msg||'No se pudo guardar.');
+  }catch(e){alert('Ocurrio un inconveniente. Intenta de nuevo.');}
+}
 function alToggle(id){_al.abiertas[id]=!_al.abiertas[id];renderAlertas();}
 async function verFotoAlerta(id){
   var c=document.getElementById('alFoto_'+id);if(c)c.innerHTML='<div class="pvempty">Cargando foto...</div>';
@@ -6941,6 +6977,15 @@ async function revisarAlerta(id){
   var n=(document.getElementById('alNota_'+id)||{}).value||'';
   try{var d=await pedirDatos(SCRIPT_URL+'?action=revisarAlertaMarcaje&email='+encodeURIComponent(currentUser.email)+'&id='+encodeURIComponent(id)+'&nota='+encodeURIComponent(n)+'&t='+Date.now());
     if(d.status==='ok'){showToast('Alerta marcada como revisada.');revisarAlertas(true);}else alert(d.msg||'No se pudo guardar.');
+  }catch(e){alert('Ocurrio un inconveniente. Intenta de nuevo.');}
+}
+
+async function pvMk(acc,fila,ts,k){
+  var f=(document.getElementById(k+'f')||{}).value||'',h=(document.getElementById(k+'h')||{}).value||'',t=(document.getElementById(k+'t')||{}).value||'';
+  if(acc==='eliminarMarcaje'&&!confirm('Eliminar este marcaje?'))return;
+  try{
+    var d=await pedirDatos(SCRIPT_URL+'?action='+acc+'&email='+encodeURIComponent(currentUser.email)+'&persona='+encodeURIComponent(_pv.email)+'&fila='+fila+'&ts='+ts+'&fecha='+f+'&hora='+h+'&tipo='+encodeURIComponent(t)+'&t='+Date.now());
+    if(d.status==='ok'){showToast(d.msg||'Listo');cargarPersona();}else alert(d.msg||'No se pudo guardar.');
   }catch(e){alert('Ocurrio un inconveniente. Intenta de nuevo.');}
 }
 
