@@ -697,6 +697,14 @@ input:focus,select:focus,textarea:focus{
 .eqit b{display:block;font-size:13px;color:#0F172A}.eqit small{font-size:11px;color:#64748B}
 .eqact{position:sticky;bottom:-14px;display:flex;justify-content:space-between;align-items:center;gap:10px;margin:12px -16px -14px;padding:12px 16px;background:rgba(255,255,255,.95);border-top:1px solid #E2E8F0;font-size:12px;color:#475569;font-weight:700}
 .srteq{display:flex;align-items:center;justify-content:space-between;gap:6px;margin:-2px 0 8px;padding:6px 8px;border-radius:10px;background:rgba(10,61,71,.08);font-size:11px;font-weight:700;color:#0A3D47}.srteq span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.srteq button{border:0;background:#0A3D47;color:#fff;border-radius:7px;padding:3px 8px;font-family:inherit;font-size:10.5px;font-weight:700;cursor:pointer}
+.repeq{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:-4px 0 14px;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.8)}
+.repeqt b{display:block;font-size:13px;color:#0A3D47}.repeqt small{font-size:11.5px;color:#64748B}
+.repkpi{cursor:pointer;transition:transform .15s,box-shadow .15s}
+.repkpi:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(10,61,71,.14)}
+.rpt{width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:6px}
+.rpt th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;color:#64748B;background:rgba(241,245,249,.9);padding:8px 10px;position:sticky;top:-14px}
+.rpt td{padding:8px 10px;border-top:1px solid #EEF2F6;color:#1E293B;vertical-align:top}
+.rpe{display:inline-block;padding:2px 8px;border-radius:99px;background:#F1F5F9;font-size:11px;font-weight:700;color:#334155;white-space:nowrap}
 
 </style>
 <style id="estiloVidrio">
@@ -1113,7 +1121,7 @@ function fetchConTiempo(url, ms){
 var BUILD_VERSION='2026.09.16';
 
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx_1CAm6QiRQl5_pvGiYtm0EGjnLuH2NwEmu6lB4a4QpHbVW0Z0gcMai_gLKuk3ERRB/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWp7cwQwF-Bp5Fo_IZkPAh7dDO9hYNfFNyBdTr7Apg7Zpsy3aQzIVzONwe5981B8fk/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -3444,7 +3452,7 @@ function renderReporte(d){
 
   var h=avisoAcc+'<div style="background:white;border-radius:14px;border:1.5px solid #E5E7EB;padding:16px;margin-bottom:14px">'+
     '<div style="font-size:15px;font-weight:800;color:#0A3D47">Reporte de uso y cumplimiento</div>'+
-    '<div style="font-size:12px;color:#6B7280;margin-top:3px">Periodo del '+d.periodo.desde+' al '+d.periodo.hasta+'</div></div>';
+    '<div style="font-size:12px;color:#6B7280;margin-top:3px">Periodo del '+d.periodo.desde+' al '+d.periodo.hasta+' &#183; <b style="color:#0A3D47">Equipos: '+xEsc((d.filtroEquipos&&d.filtroEquipos.length?d.filtroEquipos.map(function(x){return x.nombre;}).join(', '):'Toda la empresa'))+'</b></div></div>';
 
   h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:16px">';
   h+=kpiBox(a.porcentaje,'Adopcion',colAd,'%');
@@ -3608,7 +3616,7 @@ function copiarResumenReporte(){
   if(!_reporte){showToast('Genera el reporte primero.');return;}
   var d=_reporte,a=d.adopcion,o=d.operacion,s=d.solicitudes,inc=d.incidencias;
   var t='REPORTE DE USO Y CUMPLIMIENTO\n'+
-    'Periodo: '+d.periodo.desde+' al '+d.periodo.hasta+'\n\n'+
+    'Periodo: '+d.periodo.desde+' al '+d.periodo.hasta+'\n'+'Equipos: '+(d.filtroEquipos&&d.filtroEquipos.length?d.filtroEquipos.map(function(x){return x.nombre;}).join(', '):'Toda la empresa')+'\n\n'+
     'ADOPCION: '+a.empleadosActivos+' de '+a.empleadosTotal+' colaboradores ('+a.porcentaje+'%)\n'+
     'MARCAJES: '+o.marcajes+' en '+o.jornadas+' jornadas\n'+
     'JORNADAS COMPLETAS: '+o.cumplimiento+'%\n'+
@@ -3635,6 +3643,7 @@ function exportarReporte(){
   var d=_reporte,a=d.adopcion,o=d.operacion,s=d.solicitudes,inc=d.incidencias;
   var filas=[['Indicador','Valor']];
   filas.push(['Periodo', d.periodo.desde+' al '+d.periodo.hasta]);
+  filas.push(['Equipos', (d.filtroEquipos&&d.filtroEquipos.length?d.filtroEquipos.map(function(x){return x.nombre;}).join(', '):'Toda la empresa')]);
   filas.push(['Colaboradores habilitados', a.empleadosTotal]);
   filas.push(['Colaboradores que usaron la herramienta', a.empleadosActivos]);
   filas.push(['Adopcion (%)', a.porcentaje]);
@@ -3776,7 +3785,7 @@ function generarPDFReporte(){
     (logo?'<td style="width:110px"><img src="'+logo+'" style="height:34px"></td>':'')+
     '<td><div style="font-size:18px;font-weight:800;letter-spacing:-.2px">Reporte de uso y cumplimiento</div>'+
     '<div style="font-size:11px;opacity:.82;margin-top:3px">Sistema de registro de turno &#183; AMG de Colombia SAS e Inmovimento SAS</div></td>'+
-    '<td style="text-align:right;font-size:10px;opacity:.82">Periodo<br><b style="font-size:12px;opacity:1">'+d.periodo.desde.split(' ')[0]+' al '+d.periodo.hasta.split(' ')[0]+'</b></td>'+
+    '<td style="text-align:right;font-size:10px;opacity:.82">Periodo<br><b style="font-size:12px;opacity:1">'+d.periodo.desde.split(' ')[0]+' al '+d.periodo.hasta.split(' ')[0]+'</b><br><span style="font-size:10px">Equipos: '+xEsc((d.filtroEquipos&&d.filtroEquipos.length?d.filtroEquipos.map(function(x){return x.nombre;}).join(', '):'Toda la empresa'))+'</span></td>'+
   '</tr></table></div>'+
 
   '<div class="sec">Indicadores del periodo</div>'+
@@ -8441,6 +8450,87 @@ function statsPorEquipo(){
   }
   setInterval(vigilar,2000);vigilar();
 })();
+
+// ═══ Reporte ejecutivo por equipos: toda la empresa o uno o varios equipos combinados ═══
+var _repEq={};
+(function(){
+  window.cargarReporte=async function(){
+    var el=document.getElementById('reporteBody');
+    if(el)el.innerHTML='<div style="padding:1rem;color:#9CA3AF">Generando reporte...</div>';
+    try{
+      var dias=(document.getElementById('repPeriodo')||{}).value||'7';
+      var lid=Object.keys(_repEq).filter(function(k){return _repEq[k];});
+      var d=await pedirDatos(SCRIPT_URL+'?action=getReporteSemanal&email='+encodeURIComponent(currentUser.email)+'&dias='+dias+'&lideres='+encodeURIComponent(lid.join(','))+'&t='+Date.now());
+      if(d.status!=='ok'){if(el)el.innerHTML='<div style="padding:1rem;color:#991B1B">No pudimos generar el reporte.</div>';return;}
+      _reporte=d;renderReporte(d);repPintarEquipos(d);
+    }catch(e){if(el)el.innerHTML='<div style="padding:1rem;color:#991B1B">No pudimos generar el reporte. Intenta actualizar.</div>';}
+  };
+})();
+function repPintarEquipos(d){
+  var body=document.getElementById('reporteBody');if(!body)return;
+  var bar=document.getElementById('repEqBar');
+  if(!bar){bar=document.createElement('div');bar.id='repEqBar';bar.className='repeq';body.parentNode.insertBefore(bar,body);}
+  var ls=(d&&d.lideresDisponibles)||[],sel=ls.filter(function(q){return _repEq[q.email];});
+  bar.innerHTML='<div class="repeqt"><b>Equipos</b><small>'+(sel.length?'Reporte de '+sel.length+' de '+ls.length+' equipos':'Reporte de toda la empresa · elige uno o varios equipos para combinarlos')+'</small></div>'+
+    '<div class="btchips"><button class="btchip'+(sel.length?'':' on')+'" onclick="_repEq={};cargarReporte()">Toda la empresa</button>'+
+    ls.map(function(q){return '<button class="btchip'+(_repEq[q.email]?' on':'')+'" onclick="_repEq[\''+sgE(q.email)+'\']=!_repEq[\''+sgE(q.email)+'\'];cargarReporte()">'+sgE(asNombre(q.nombre))+' <small>'+q.personas+'</small></button>';}).join('')+'</div>';
+}
+
+// ═══ Reporte ejecutivo: cada indicador se puede tocar para ver el detalle del periodo y equipos elegidos ═══
+(function(){
+  var orr=window.renderReporte;if(typeof orr!=='function')return;
+  window.renderReporte=function(d){var r=orr.apply(this,arguments);try{repKpiClic(d);}catch(e){}return r;};
+})();
+var REP_KPI={'adopcion':'personas','empleados activos':'personas','marcajes':'marcajes','jornadas completas':'jornadas','solicitudes':'solicitudes','sin resolver':'sinresolver','alertas dispositivo':'alertas','con gps valido':'gps'};
+function repKpiClic(d){
+  var body=document.getElementById('reporteBody');if(!body)return;
+  body.querySelectorAll('div').forEach(function(box){
+    if(box.children.length!==2)return;
+    var lb=box.children[1];if(!lb||lb.children.length)return;
+    var k=REP_KPI[normTxt(lb.textContent)];if(!k||box.getAttribute('data-kpi'))return;
+    box.setAttribute('data-kpi',k);box.classList.add('repkpi');box.title='Ver el detalle';
+    box.onclick=function(){repDetalle(k);};
+  });
+}
+function repDetalle(k){
+  var d=_reporte||{},dk=d.detalleKpi,eq=(d.filtroEquipos&&d.filtroEquipos.length)?d.filtroEquipos.map(function(x){return asNombre(x.nombre);}).join(', '):'Toda la empresa';
+  var per=(d.periodo?d.periodo.desde.split(' ')[0]+' al '+d.periodo.hasta.split(' ')[0]:'')+' · '+eq;
+  var tabla=function(cols,filas){if(!filas.length)return '<div class="btvac">No hay registros en este periodo.</div>';
+    return '<table class="rpt"><thead><tr>'+cols.map(function(c){return '<th>'+c+'</th>';}).join('')+'</tr></thead><tbody>'+filas.map(function(f){return '<tr>'+f.map(function(v){return '<td>'+v+'</td>';}).join('')+'</tr>';}).join('')+'</tbody></table>';};
+  var N=function(n){return sgE(btTitulo(n));};
+  var titulo='',h='';
+  var falta='<div class="btvac">Este detalle aparece cuando el script nuevo este implementado.</div>';
+  var sol=(d.detalleSolicitudes||[]);
+  var filaSol=function(x){return [N(x.colaborador),sgE(x.tipo),sgE(x.resumen||''),sgE(x.solicitada||''),sgE(x.jefe||''),'<span class="rpe">'+sgE(x.etapa)+'</span>'];};
+  if(k==='personas'){titulo='Quien marco y quien no';
+    if(!dk)h=falta;else{
+      var sm=dk.sinMarcaje.filter(function(x){return !x.exento;}),ex=dk.sinMarcaje.filter(function(x){return x.exento;});
+      h='<div class="eqsec">No marcaron en el periodo ('+sm.length+')</div>'+tabla(['Colaborador','Area'],sm.map(function(x){return [N(x.nombre),sgE(x.area)];}))+
+        (ex.length?'<div class="eqsec">Exentos del registro de jornada ('+ex.length+')</div>'+tabla(['Colaborador','Area'],ex.map(function(x){return [N(x.nombre),sgE(x.area)];})):'')+
+        '<div class="eqsec">Marcaron ('+dk.conMarcaje.length+')</div>'+tabla(['Colaborador','Area'],dk.conMarcaje.map(function(x){return [N(x.nombre),sgE(x.area)];}));}
+  }else if(k==='marcajes'){titulo='Marcajes por colaborador';
+    var hc=(d.horasColaboradores||[]).slice().sort(function(a,b){return b.marcajes-a.marcajes;});
+    h=tabla(['Colaborador','Marcajes','Jornadas','Horas','Promedio'],hc.map(function(x){return [N(x.nombre),x.marcajes,x.jornadas,x.horas+' h',x.promedio+' h'];}))+
+      ((d.tendenciaDiaria||[]).length?'<div class="eqsec">Por dia</div>'+tabla(['Dia','Marcajes','Personas','Horas'],d.tendenciaDiaria.slice().reverse().map(function(x){var p=x.fecha.split('-');return [p[2]+'/'+p[1]+'/'+p[0],x.marcajes,x.personas,x.horas+' h'];})):'');
+  }else if(k==='jornadas'){titulo='Jornadas incompletas';
+    h=!dk?falta:tabla(['Colaborador','Dia','Entradas','Salidas'],dk.jornadasIncompletas.map(function(x){return [N(x.nombre),x.fecha,x.entradas,x.salidas];}));
+  }else if(k==='solicitudes'){titulo='Solicitudes del periodo';
+    h=tabla(['Colaborador','Tipo','Detalle','Solicitada','Jefe','Estado'],sol.map(filaSol));
+  }else if(k==='sinresolver'){titulo='Solicitudes sin resolver';
+    h=tabla(['Colaborador','Tipo','Detalle','Solicitada','Jefe','Estado'],sol.filter(function(x){return x.etapa==='Con el jefe directo'||x.etapa==='Con Gestion Humana';}).map(filaSol));
+  }else if(k==='alertas'){titulo='Alertas de dispositivo';
+    h=!dk?falta:tabla(['Colaborador','Fecha','Marcaje','Detalle'],dk.alertas.map(function(x){return [N(x.nombre),sgE(x.fecha),sgE(x.tipo),sgE(x.detalle)];}));
+  }else if(k==='gps'){titulo='Marcajes sin GPS valido';
+    h=!dk?falta:tabla(['Colaborador','Fecha','Marcaje'],dk.sinGps.map(function(x){return [N(x.nombre),sgE(x.fecha),sgE(x.tipo)];}));
+  }
+  cerrarRepDetalle();
+  var m=document.createElement('div');m.id='repDet';m.className='eqm';
+  m.innerHTML='<div class="eqmc" style="max-width:820px"><div class="eqmh"><div><small>'+sgE(per)+'</small><b>'+titulo+'</b></div><button onclick="cerrarRepDetalle()">Cerrar</button></div><div class="eqmb">'+
+    '<div class="asq" style="width:100%;margin-bottom:6px">'+sgSvg('lupa')+'<input placeholder="Buscar" oninput="var q=normTxt(this.value);document.querySelectorAll(\'#repDet tbody tr\').forEach(function(t){t.style.display=normTxt(t.textContent).indexOf(q)>=0?\'\':\'none\';})"></div>'+h+'</div></div>';
+  m.onclick=function(e){if(e.target===m)cerrarRepDetalle();};
+  document.body.appendChild(m);
+}
+function cerrarRepDetalle(){var m=document.getElementById('repDet');if(m)m.parentNode.removeChild(m);}
 
 </script>
 </body>
