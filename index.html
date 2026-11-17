@@ -646,6 +646,55 @@ input:focus,select:focus,textarea:focus{
 .astyp i{width:7px;height:7px;border-radius:50%;background:#94A3B8;animation:astyp 1s infinite}
 .astyp i:nth-child(2){animation-delay:.15s}.astyp i:nth-child(3){animation-delay:.3s}
 @keyframes astyp{0%,80%,100%{opacity:.3;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+/* Historial: equipos */
+.bteq{margin-bottom:12px}
+.bteqh{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.bteqs{font-size:12px;color:#64748B;margin-top:2px}
+.btchips{display:flex;gap:6px;flex-wrap:wrap}
+.btchip{border:1px solid #E2E8F0;background:#fff;border-radius:99px;padding:6px 12px;font-family:inherit;font-size:12px;font-weight:700;color:#334155;cursor:pointer}
+.btchip small{color:#94A3B8;font-weight:700}
+.btchip.on{background:#0A3D47;border-color:#0A3D47;color:#fff}.btchip.on small{color:#CBD5E1}
+.btgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;align-items:start}
+.btcard{display:flex;flex-direction:column;gap:12px;background:rgba(255,255,255,.62);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.85);border-radius:18px;padding:16px;box-shadow:0 8px 24px rgba(15,23,42,.06)}
+.btct{display:flex;gap:11px;align-items:center}
+.btct .asav{width:40px;height:40px;flex:0 0 40px;font-size:13px}
+.btcn{min-width:0;flex:1}
+.btcn b{display:block;font-size:14.5px;color:#0F172A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.btcn small{font-size:11.5px;color:#64748B}
+.btedit{display:inline-flex;align-items:center;gap:5px;flex:0 0 auto;border:1px solid rgba(10,61,71,.18);background:rgba(10,61,71,.06);border-radius:10px;padding:7px 11px;font-family:inherit;font-size:12px;font-weight:700;color:#0A3D47;cursor:pointer}
+.btedit:hover{background:#0A3D47;color:#fff}
+.btst{display:grid;grid-template-columns:1fr 1fr 1.6fr;gap:8px}
+.btst>div{background:rgba(241,245,249,.75);border:1px solid #E8EEF3;border-radius:12px;padding:8px 10px;min-width:0}
+.btst b{display:block;font-size:16px;font-weight:800;color:#0A3D47;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btst .btult b{font-size:13px;padding-top:2px}
+.btst small{display:block;font-size:10.5px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
+.btpers{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.btpers span{display:flex;align-items:center;gap:7px;min-width:0;background:rgba(255,255,255,.75);border:1px solid #E8EEF3;border-radius:10px;padding:5px 8px}
+.btpers span i{flex:0 0 22px;width:22px;height:22px;border-radius:50%;background:#E0F2F1;color:#0A3D47;font-style:normal;font-size:9.5px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.btpers span em{font-style:normal;font-size:12px;font-weight:600;color:#1E293B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btpers span.ocu{display:none}.btpers.todo span.ocu{display:flex}
+.btmas{align-self:flex-start;border:0;background:transparent;color:#0A3D47;font-family:inherit;font-weight:800;font-size:12px;cursor:pointer;padding:0}
+.btvac{font-size:12px;color:#94A3B8;padding:6px 0;text-align:center;border:1px dashed #CBD5E1;border-radius:10px}
+.bttmp{font-size:11.5px;color:#92400E}
+.relojpc{display:flex;align-items:center;gap:10px;padding:6px 14px 6px 7px;border-radius:16px;background:linear-gradient(135deg,rgba(255,255,255,.18),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.28);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 6px 18px rgba(0,0,0,.12);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);color:#fff}
+.rjcara{width:38px;height:38px;flex:0 0 38px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.18))}
+.rjtx{display:flex;flex-direction:column;line-height:1.1}
+.rjh{display:flex;align-items:baseline;gap:1px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.rjh b{font-size:19px;font-weight:800;letter-spacing:.2px}
+.rjh span{font-size:12px;font-weight:700;color:#5EEAD4;width:20px}
+.rjh em{font-style:normal;font-size:10.5px;font-weight:700;color:rgba(255,255,255,.75);margin-left:4px;text-transform:uppercase}
+.rjtx small{font-size:10.5px;color:rgba(255,255,255,.72);margin-top:2px;white-space:nowrap}
+@media(max-width:600px){.relojpc{padding:4px 10px 4px 5px;gap:7px}.rjcara{width:28px;height:28px;flex-basis:28px}.rjh b{font-size:15px}.rjtx small{display:none}.btst{grid-template-columns:1fr 1fr}.btst .btult{grid-column:span 2}}
+.eqm{position:fixed;inset:0;z-index:10050;background:rgba(8,32,38,.42);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:16px}
+.eqmc{width:100%;max-width:520px;max-height:88vh;display:flex;flex-direction:column;background:rgba(255,255,255,.9);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.7);border-radius:20px;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.3)}
+.eqmh{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:linear-gradient(135deg,rgba(10,61,71,.92),rgba(26,150,144,.82));color:#fff}
+.eqmh small{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;opacity:.85}.eqmh b{font-size:16px}
+.eqmh button{border:0;background:rgba(255,255,255,.22);color:#fff;border-radius:9px;padding:6px 11px;font-family:inherit;font-weight:700;cursor:pointer}
+.eqmb{padding:14px 16px;overflow:auto}
+.eqsec{font-size:10.5px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:.6px;margin:12px 2px 6px}.eqsec small{text-transform:none;letter-spacing:0;font-weight:600;color:#94A3B8}
+.eqit{display:flex;gap:9px;align-items:center;padding:7px 8px;border-radius:10px;cursor:pointer}
+.eqit:hover{background:#F1F5F9}.eqit input{accent-color:#0A3D47}
+.eqit b{display:block;font-size:13px;color:#0F172A}.eqit small{font-size:11px;color:#64748B}
+.eqact{position:sticky;bottom:-14px;display:flex;justify-content:space-between;align-items:center;gap:10px;margin:12px -16px -14px;padding:12px 16px;background:rgba(255,255,255,.95);border-top:1px solid #E2E8F0;font-size:12px;color:#475569;font-weight:700}
 
 </style>
 <style id="estiloVidrio">
@@ -814,12 +863,12 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;ba
     <div class="panel" id="panel-comunicados">
       <div style="background:white;border:1.5px solid #E5E7EB;border-radius:14px;padding:14px 16px;margin-bottom:12px">
         <b style="font-size:14px;color:#0A3D47">Nuevo comunicado</b>
-        <div style="font-size:12px;color:#6B7280;margin:2px 0 10px">Le aparece como aviso a cada persona al entrar al panel. Cuando le da Entendido no le vuelve a salir, y tu ves quien ya lo leyo.</div>
+        <div style="font-size:12px;color:#6B7280;margin:2px 0 10px">Elige si sale en el panel (directores y GH) o en la app de registro, donde solo lo ve un colaborador activo al escribir su correo. Cuando le da Entendido no le vuelve a salir, y tu ves quien ya lo leyo.</div>
         <input id="comTitulo" maxlength="120" placeholder="Titulo, por ejemplo: Nueva busqueda de colaboradores" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:10px;font-family:inherit;font-size:13px;margin-bottom:8px">
         <textarea id="comMensaje" rows="5" maxlength="1500" placeholder="Escribe la novedad o el anuncio" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:10px;font-family:inherit;font-size:13px;resize:vertical"></textarea>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px">
           <span style="font-size:12px;color:#6B7280">Para</span>
-          <select id="comAud" style="padding:8px 10px;border:1.5px solid #E5E7EB;border-radius:10px;font-family:inherit;font-size:12px"><option value="todos">Directores y Gestion Humana</option><option value="director">Solo directores</option><option value="master">Solo Gestion Humana</option></select>
+          <select id="comAud" style="padding:8px 10px;border:1.5px solid #E5E7EB;border-radius:10px;font-family:inherit;font-size:12px"><option value="todos">Panel: directores y Gestion Humana</option><option value="director">Panel: solo directores</option><option value="master">Panel: solo Gestion Humana</option><option value="colaboradores">App de registro: todos los colaboradores</option></select>
           <button id="comBtn" onclick="publicarComunicado()" style="margin-left:auto;padding:9px 16px;border:none;border-radius:10px;background:#7C3AED;color:white;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer">Publicar comunicado</button>
         </div>
       </div>
@@ -1062,7 +1111,7 @@ function fetchConTiempo(url, ms){
 var BUILD_VERSION='2026.09.16';
 
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwpT82zxkECIKdGBvVCKVLIQwiFTIvxV3uFzecQW2ZQmSlsHkOOF_shkgmZWDZJ2gSQ/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx_1CAm6QiRQl5_pvGiYtm0EGjnLuH2NwEmu6lB4a4QpHbVW0Z0gcMai_gLKuk3ERRB/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -1113,7 +1162,7 @@ async function doLogin(){
     }
     if(d.status==='ok'){
       var role=(d.role||'').toLowerCase().trim();
-      currentUser={email:email,nombre:d.nombre||email,role:role,permisos:(d.permisos||null),verEquipos:(d.verEquipos||[])};
+      currentUser={email:email,nombre:d.nombre||email,role:role,permisos:(d.permisos||null),verEquipos:(d.verEquipos||[]),token:(d.token||'')};
 
       
       document.getElementById('loginWrap').style.display='none';
@@ -1466,7 +1515,7 @@ function buildReqCard(row,idx){
   html+='<div class="req-detail"><div class="rd-lbl">Registrado</div><div class="rd-val">'+ts+'</div></div>';
   if(fechaIni&&fechaFin){html+='<div class="req-detail" style="grid-column:1/-1"><div class="rd-lbl">Periodo</div><div class="rd-val" style="font-weight:700;color:#0A3D47">'+fechaIni+' al '+fechaFin+(diasHab?' <span style="color:#059669">('+diasHab+' dias hab.)</span>':'')+'</div></div>';}else if(fechaIni){html+='<div class="req-detail"><div class="rd-lbl">Fecha</div><div class="rd-val" style="font-weight:600">'+fechaIni+'</div></div>';}
   if(horaI)html+='<div class="req-detail"><div class="rd-lbl">Horario</div><div class="rd-val">'+horaI+' — '+horaF+(horas?' ('+horas+')':'')+'</div></div>';
-  if(motivo)html+='<div class="req-detail"><div class="rd-lbl">Motivo</div><div class="rd-val">'+motivo+'</div></div>';
+  if(motivo)html+='<div class="req-detail"><div class="rd-lbl">Motivo</div><div class="rd-val">'+xEsc(motivo)+'</div></div>';
   html+='<div class="req-detail"><div class="rd-lbl">GPS</div><div class="rd-val">'+gps+(mapsLink&&mapsLink!=='No disponible'?' <a href="'+mapsLink+'" target="_blank" style="color:#1D9E9E;font-size:11px">Ver mapa</a>':'')+'</div></div>';
   html+='</div>';
   if(isMaster)html+='<div style="display:flex;justify-content:flex-end;margin-bottom:6px"><button onclick="deleteRow('+idx+',\''+rowIdx+'\',\''+tab+'\')" style="font-size:11px;padding:4px 10px;border-radius:7px;border:1px solid #FECACA;background:#FEF2F2;color:#991B1B;cursor:pointer;font-family:inherit">Borrar registro</button></div>';
@@ -1857,7 +1906,7 @@ async function loadCorrecciones(){
       html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;font-size:11px;white-space:nowrap">'+row['Fecha Marcaje']+'</td>';
       html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;color:#991B1B;font-size:11px;font-weight:600">'+row['Hora Incorrecta']+'</td>';
       html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;color:#059669;font-size:11px;font-weight:600">'+row['Hora Correcta']+'</td>';
-      html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;font-size:11px;max-width:120px">'+row['Motivo']+'</td>';
+      html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6;font-size:11px;max-width:120px">'+xEsc(row['Motivo'])+'</td>';
       html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6"><span style="background:'+(estadoDir==='Aprobado'?'#EFF6FF':estadoDir==='Rechazado'?'#FEF2F2':'#FFFBEB')+';color:'+(estadoDir==='Aprobado'?'#1E40AF':estadoDir==='Rechazado'?'#991B1B':'#92400E')+';border-radius:99px;padding:2px 8px;font-size:10px;font-weight:600;white-space:nowrap">'+estadoDir+'</span></td>';
       html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6"><span style="background:'+(estadoGH==='Aprobado GH'?'#ECFDF5':estadoGH==='Rechazado GH'?'#FEF2F2':'#F3F4F6')+';color:'+(estadoGH==='Aprobado GH'?'#065F46':estadoGH==='Rechazado GH'?'#991B1B':'#374151')+';border-radius:99px;padding:2px 8px;font-size:10px;font-weight:600;white-space:nowrap">'+estadoGH+'</span></td>';
       html+='<td style="padding:9px 10px;border-bottom:1px solid #F3F4F6">';
@@ -7140,7 +7189,7 @@ async function cargarComunicadosAdmin(){
   try{
     var d=await pedirDatos(SCRIPT_URL+'?action=listComunicados&email='+encodeURIComponent(currentUser.email)+'&t='+Date.now());
     if(d.status!=='ok'){el.innerHTML='<div class="pvload" style="color:#991B1B">No tienes acceso.</div>';return;}
-    var aud={todos:'Directores y Gestion Humana',director:'Solo directores',master:'Solo Gestion Humana'};
+    var aud={todos:'Panel: directores y Gestion Humana',director:'Panel: solo directores',master:'Panel: solo Gestion Humana',colaboradores:'App de registro: colaboradores'};
     el.innerHTML=(d.comunicados||[]).length?(d.comunicados||[]).map(function(c){
       return '<div class="cml'+(c.activo?'':' off')+'"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div><b style="font-size:14px;color:#0A3D47">'+xEsc(c.titulo)+'</b><div style="font-size:11px;color:#6B7280">'+xEsc(c.fecha)+' · '+xEsc(aud[c.audiencia]||c.audiencia)+' · publicado por '+xEsc(c.nombreAutor||c.autor)+(c.activo?'':' · Retirado')+'</div></div>'+
         (c.activo&&(rolActual()==='supervisor'||c.autor===String(currentUser.email||'').toLowerCase())?'<button onclick="retirarComunicado(\''+xEsc(c.id)+'\')" style="padding:5px 10px;border-radius:8px;border:1px solid #FECACA;background:#FEF2F2;color:#991B1B;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">Retirar</button>':'')+'</div>'+
@@ -8225,6 +8274,132 @@ function asisElegir(email,intent,dia){
   var frase={tarde:'llego tarde',salio:'a que hora salio',horario:'horario',ficha:'ficha',novedad:'tiene permiso'}[intent]||'como va';
   asisPreguntar(asNombre(p.nombre)+' '+frase+(dia&&dia!=='hoy'?' '+dia:''));
 }
+
+// ═══ Seguridad: cada consulta al servidor lleva el comprobante de sesion del usuario ═══
+(function(){
+  var of=window.fetch;
+  window.fetch=function(u,o){
+    try{
+      if(typeof u==='string'&&typeof SCRIPT_URL!=='undefined'&&u.indexOf(SCRIPT_URL)===0&&currentUser&&currentUser.token&&u.indexOf('token=')<0&&!/action=login(&|$)/.test(u))
+        u+=(u.indexOf('?')>=0?'&':'?')+'token='+encodeURIComponent(currentUser.token);
+    }catch(e){}
+    return of.call(this,u,o);
+  };
+  var opd=window.pedirDatos;
+  if(typeof opd==='function')window.pedirDatos=async function(){
+    var d=await opd.apply(this,arguments);
+    if(d&&d.status==='error'&&/SESION_VENCIDA/.test(d.msg||d.message||'')&&!window._avisoSesion){
+      window._avisoSesion=true;alert('Tu sesion del panel vencio. Ingresa de nuevo con tu usuario y clave.');
+      try{doLogout();}catch(e){location.reload();}
+    }
+    return d;
+  };
+})();
+
+// ═══ Historial: "Como esta hoy" ordenado por equipo, filtro de equipos combinable y edicion de equipos ═══
+var _bitSel={};
+function bitPuedeEditar(){return rolActual()==='supervisor'||tienePerm('empleados');}
+(function(){
+  var orb=window.renderBitacora;
+  window.renderBitacora=function(){
+    if(!_bit)return orb();
+    var eqs=(_bit.equipos||[]).filter(function(q){return q.rol!=='supervisor';}),sel=Object.keys(_bitSel).filter(function(k){return _bitSel[k];});
+    var orig=_bit.eventos;
+    if(sel.length){
+      var miembros=[];eqs.forEach(function(q){if(_bitSel[q.email])miembros=miembros.concat((q.propios||[]).map(function(n){return normTxt(n);}));});
+      _bit.eventos=(orig||[]).filter(function(e){
+        if(_bitSel[(e.usuario||'').toLowerCase()])return true;
+        var a=normTxt((e.afecta||'')+' '+(e.detalle||''));
+        return miembros.some(function(m){return m&&a.indexOf(m)>=0;});
+      });
+    }
+    try{orb();}finally{_bit.eventos=orig;}
+    var el=document.getElementById('bitBody');if(!el||!el.firstChild)return;
+    var rolLbl={director:'Director',master:'Gestion Humana',supervisor:'Supervisor'};
+    var vis=sel.length?eqs.filter(function(q){return _bitSel[q.email];}):eqs;
+    var h='<div class="bteq"><div class="bteqh"><div><div class="sglbl">Como esta hoy cada equipo</div><div class="bteqs">'+(sel.length?'Mostrando '+sel.length+' de '+eqs.length+' equipos · el historial de abajo tambien esta filtrado':'Toca uno o varios equipos para filtrar todo el historial')+'</div></div>'+
+      '<div class="btchips"><button class="btchip'+(sel.length?'':' on')+'" onclick="_bitSel={};renderBitacora()">Todos</button>'+
+      eqs.map(function(q){return '<button class="btchip'+(_bitSel[q.email]?' on':'')+'" onclick="_bitSel[\''+sgE(q.email)+'\']=!_bitSel[\''+sgE(q.email)+'\'];renderBitacora()">'+sgE(asNombre(q.nombre))+' <small>'+(q.propios||[]).length+'</small></button>';}).join('')+'</div></div>'+
+      '<div class="btgrid">'+vis.map(function(q){
+        var ps=(q.propios||[]).slice().sort(function(x,y){return asNombre(x).localeCompare(asNombre(y));}),max=6;
+        var ult=String(q.ultimoIngreso||''),ultF=ult.split(' ')[0]||'',ultH=ult.split(' ')[1]||'';
+        var hoyF=(function(){var d=new Date();return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear();})();
+        var ultTxt=!ult?'Sin ingresos':(ultF===hoyF?'Hoy '+ultH:(function(){var p=ultF.split('/'),m=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][(+p[1]||1)-1];return (+p[0])+' '+m+' '+ultH;})());
+        return '<div class="btcard"><div class="btct"><div class="asav" style="background:#0A3D47">'+sgE(asIni(q.nombre))+'</div><div class="btcn"><b>'+sgE(asNombre(q.nombre))+'</b><small>'+(rolLbl[q.rol]||sgE(q.rol))+(q.activo&&!/^si$/i.test(q.activo)?' · inactivo':'')+'</small></div>'+
+          (bitPuedeEditar()&&q.rol!=='supervisor'?'<button class="btedit" title="Editar equipo" onclick="abrirEditarEquipo(\''+sgE(q.email)+'\',\''+sgE(q.nombre)+'\')"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Editar</button>':'')+'</div>'+
+          '<div class="btst"><div><b>'+ps.length+'</b><small>Personas</small></div><div><b>'+(q.acciones||0)+'</b><small>Acciones</small></div><div class="btult"><b>'+sgE(ultTxt)+'</b><small>Ultimo ingreso</small></div></div>'+
+          (ps.length?'<div class="btpers">'+ps.map(function(n,i){return '<span'+(i>=max?' class="ocu"':'')+' title="'+sgE(n)+'"><i>'+sgE(asIni(n))+'</i><em>'+sgE(asNombre(n))+'</em></span>';}).join('')+'</div>'+(ps.length>max?'<button class="btmas" onclick="var g=this.previousElementSibling;g.classList.toggle(\'todo\');this.textContent=g.classList.contains(\'todo\')?\'Ver menos\':\'Ver todos ('+ps.length+')\'">Ver todos ('+ps.length+')</button>':''):'<div class="btvac">Sin personas asignadas</div>')+
+          ((q.temporales||[]).length?'<div class="bttmp">Apoyos temporales: '+sgE(q.temporales.join('; '))+'</div>':'')+'</div>';
+      }).join('')+'</div></div>';
+    el.firstChild.outerHTML=h;
+  };
+})();
+async function abrirEditarEquipo(lider,nombre){
+  cerrarEditarEquipo();
+  var m=document.createElement('div');m.id='eqEdit';m.className='eqm';
+  m.innerHTML='<div class="eqmc"><div class="eqmh"><div><small>Editar equipo</small><b>'+sgE(asNombre(nombre))+'</b></div><button onclick="cerrarEditarEquipo()">Cerrar</button></div><div class="eqmb" id="eqEditBody"><div class="asvac">Cargando personas...</div></div></div>';
+  m.onclick=function(e){if(e.target===m)cerrarEditarEquipo();};
+  document.body.appendChild(m);
+  try{
+    var d=await pedirDatos(SCRIPT_URL+'?action=getEquipoAsignable&email='+encodeURIComponent(currentUser.email)+'&t='+Date.now());
+    if(d.status!=='ok')throw 0;
+    var lid=lider.toLowerCase(),emps=(d.empleados||[]).filter(function(x){return x.email;});
+    var en=emps.filter(function(x){return x.asignadoA===lid;}),libres=emps.filter(function(x){return !x.asignadoA;}),otros=emps.filter(function(x){return x.asignadoA&&x.asignadoA!==lid;});
+    var fila=function(x){return '<label class="eqit"><input type="checkbox" data-em="'+sgE(x.email)+'" data-ini="'+(x.asignadoA===lid?1:0)+'" '+(x.asignadoA===lid?'checked':'')+'><span><b>'+sgE(asNombre(x.nombre))+'</b><small>'+sgE([x.area,x.asignadoA&&x.asignadoA!==lid?'hoy con '+asNombre(x.asignadoNombre):''].filter(Boolean).join(' · '))+'</small></span></label>';};
+    var b=document.getElementById('eqEditBody');
+    b.innerHTML='<div class="asq" style="width:100%;margin-bottom:10px">'+sgSvg('lupa')+'<input placeholder="Buscar persona" oninput="var q=normTxt(this.value);document.querySelectorAll(\'#eqEditBody .eqit\').forEach(function(l){l.style.display=normTxt(l.textContent).indexOf(q)>=0?\'\':\'none\';})"></div>'+
+      '<div class="eqsec">En este equipo ('+en.length+')</div>'+(en.length?en.map(fila).join(''):'<div class="btvac">Nadie todavia</div>')+
+      '<div class="eqsec">Sin equipo ('+libres.length+')</div>'+libres.map(fila).join('')+
+      '<div class="eqsec">En otros equipos ('+otros.length+') <small>si los marcas, pasan a este equipo</small></div>'+otros.map(fila).join('')+
+      '<div class="eqact"><span id="eqResumen"></span><button class="sgbtn pri" onclick="guardarEquipoLider(\''+sgE(lid)+'\',\''+sgE(nombre)+'\')">Guardar equipo</button></div>';
+    b.onchange=function(){var ag=0,qu=0;b.querySelectorAll('input[data-em]').forEach(function(c){var ini=c.getAttribute('data-ini')==='1';if(c.checked&&!ini)ag++;if(!c.checked&&ini)qu++;});document.getElementById('eqResumen').textContent=(ag||qu)?(ag?ag+' por agregar':'')+(ag&&qu?' · ':'')+(qu?qu+' por quitar':''):'';};
+  }catch(e){var b2=document.getElementById('eqEditBody');if(b2)b2.innerHTML='<div class="asvac">No pudimos cargar las personas. Intenta de nuevo.</div>';}
+}
+function cerrarEditarEquipo(){var m=document.getElementById('eqEdit');if(m)m.parentNode.removeChild(m);}
+async function guardarEquipoLider(lider,nombre){
+  var ag=[],qu=[];
+  document.querySelectorAll('#eqEditBody input[data-em]').forEach(function(c){var ini=c.getAttribute('data-ini')==='1';if(c.checked&&!ini)ag.push(c.getAttribute('data-em'));if(!c.checked&&ini)qu.push(c.getAttribute('data-em'));});
+  if(!ag.length&&!qu.length){showToast('No hay cambios para guardar.');return;}
+  try{
+    var d=await pedirDatos(SCRIPT_URL+'?action=asignarEquipo&email='+encodeURIComponent(currentUser.email)+'&lider='+encodeURIComponent(lider)+'&agregar='+encodeURIComponent(ag.join(','))+'&quitar='+encodeURIComponent(qu.join(','))+'&t='+Date.now());
+    showToast(d.status==='ok'?('Equipo de '+asNombre(nombre)+' actualizado. El cambio ya aplica en toda la app.'):('No se pudo guardar: '+(d.msg||'')));
+    if(d.status==='ok'){cerrarEditarEquipo();if(typeof cargarBitacora==='function')cargarBitacora();if(typeof cargarEquipoBusqueda==='function')cargarEquipoBusqueda();_supData=null;_asisData=null;}
+  }catch(e){showToast('No se pudo guardar el equipo.');}
+}
+
+// ═══ Reloj con la hora del equipo junto al usuario ═══
+(function(){
+  var dias=['Domingo','Lunes','Martes','Miercoles','Jueves','Viernes','Sabado'],mes=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  var marcas='';for(var i=0;i<12;i++){var g=i*30*Math.PI/180,r1=i%3?15.5:14,r2=17;marcas+='<line x1="'+(20+r1*Math.sin(g)).toFixed(2)+'" y1="'+(20-r1*Math.cos(g)).toFixed(2)+'" x2="'+(20+r2*Math.sin(g)).toFixed(2)+'" y2="'+(20-r2*Math.cos(g)).toFixed(2)+'" stroke="rgba(255,255,255,'+(i%3?.45:.9)+')" stroke-width="'+(i%3?1:1.6)+'" stroke-linecap="round"/>';}
+  function pintar(){
+    var r=document.querySelector('.topbar-right');if(!r)return;
+    var el=document.getElementById('relojPc');
+    if(!el){el=document.createElement('div');el.id='relojPc';el.className='relojpc';el.title='Hora de este equipo';
+      el.innerHTML='<svg viewBox="0 0 40 40" class="rjcara"><circle cx="20" cy="20" r="19" fill="rgba(255,255,255,.1)" stroke="rgba(255,255,255,.35)"/>'+marcas+
+        '<line id="rjH" x1="20" y1="20" x2="20" y2="11" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><line id="rjM" x1="20" y1="20" x2="20" y2="6.5" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>'+
+        '<line id="rjS" x1="20" y1="23.5" x2="20" y2="5" stroke="#5EEAD4" stroke-width="1" stroke-linecap="round"/><circle cx="20" cy="20" r="1.8" fill="#5EEAD4"/></svg>'+
+        '<div class="rjtx"><div class="rjh"><b id="rjHM"></b><span id="rjSS"></span><em id="rjAP"></em></div><small id="rjF"></small></div>';
+      r.insertBefore(el,r.firstChild);}
+    var d=new Date(),h=d.getHours(),m=d.getMinutes(),sg=d.getSeconds();
+    document.getElementById('rjH').setAttribute('transform','rotate('+((h%12)*30+m/2)+' 20 20)');
+    document.getElementById('rjM').setAttribute('transform','rotate('+(m*6+sg/10)+' 20 20)');
+    document.getElementById('rjS').setAttribute('transform','rotate('+(sg*6)+' 20 20)');
+    document.getElementById('rjHM').textContent=(h%12||12)+':'+('0'+m).slice(-2);
+    document.getElementById('rjSS').textContent=':'+('0'+sg).slice(-2);
+    document.getElementById('rjAP').textContent=h<12?'a. m.':'p. m.';
+    document.getElementById('rjF').textContent=dias[d.getDay()]+' '+d.getDate()+' de '+mes[d.getMonth()];
+  }
+  pintar();setInterval(pintar,1000);
+})();
+// Al crear o editar un administrador, las listas de equipos se recargan solas
+(function(){
+  var og=window.guardarAdmin;if(typeof og!=='function')return;
+  window.guardarAdmin=async function(){
+    var r=await og.apply(this,arguments);
+    setTimeout(function(){try{_bit=null;_supData=null;_asisData=null;_bitSel={};if(typeof cargarBitacora==='function'&&document.getElementById('bitBody'))cargarBitacora();if(typeof cargarEquipoBusqueda==='function')cargarEquipoBusqueda();}catch(e){}},1800);
+    return r;
+  };
+})();
 
 </script>
 </body>
