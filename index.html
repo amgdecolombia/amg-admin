@@ -706,6 +706,56 @@ input:focus,select:focus,textarea:focus{
 .rpt td{padding:8px 10px;border-top:1px solid #EEF2F6;color:#1E293B;vertical-align:top}
 .rpe{display:inline-block;padding:2px 8px;border-radius:99px;background:#F1F5F9;font-size:11px;font-weight:700;color:#334155;white-space:nowrap}
 
+
+#vehBody{display:flex;flex-direction:column;gap:14px}
+.vehhead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:16px 18px;border-radius:18px;background:rgba(255,255,255,.62);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.85)}
+.vehhead b{display:block;font-size:17px;color:#0A3D47}.vehhead small{font-size:12px;color:#64748B}
+.vehup{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;background:#0A3D47;color:#fff;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 6px 16px rgba(10,61,71,.25)}
+.vehup:hover{background:#0F5260}
+.vehest{padding:10px 14px;border-radius:12px;background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.3);font-size:12.5px;color:#075985}
+.vehest.bien{background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.35);color:#065F46}.vehest.mal{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3);color:#991B1B}
+.vehfil{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.8)}
+.vehfil select,.vehfil input{border:1px solid #DCE3EA;border-radius:9px;padding:7px 9px;font-family:inherit;font-size:12.5px;background:#fff}
+.vehfil label{font-size:12px;color:#475569;display:flex;align-items:center;gap:5px}
+.vehrap{display:inline-flex;gap:4px}.vehrap button{border:1px solid #DCE3EA;background:#fff;border-radius:8px;padding:6px 9px;font-family:inherit;font-size:11.5px;font-weight:700;color:#0A3D47;cursor:pointer}
+.vehbtn{border:0;border-radius:10px;padding:8px 13px;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;background:#065F46;color:#fff}.vehbtn.osc{background:#0A3D47}
+.vehks{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.vehk{background:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.9);border-radius:14px;padding:12px 14px;box-shadow:0 4px 14px rgba(15,23,42,.05)}
+.vehk[onclick]{cursor:pointer;transition:transform .15s}.vehk[onclick]:hover{transform:translateY(-2px)}
+.vehk b{display:block;font-size:19px;font-weight:800;color:#0A3D47;line-height:1.15}.vehk b em{font-style:normal;font-size:11px;font-weight:600;color:#64748B}
+.vehk small{display:block;margin-top:3px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.35px;color:#64748B}
+.vehk.mal b{color:#B91C1C}.vehk.reg b{color:#B45309}.vehk.bien b{color:#047857}
+.vehtw{overflow-x:auto;border-radius:14px;background:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.9)}
+.vehtab tbody tr{cursor:pointer}.vehtab tbody tr:hover td{background:rgba(14,165,233,.06)}
+.vehtab td.vrojo{color:#B91C1C;font-weight:700}.vehtab td.vnar{color:#B45309;font-weight:700}
+.vehver{border:1px solid rgba(10,61,71,.2);background:rgba(10,61,71,.06);border-radius:8px;padding:5px 9px;font-family:inherit;font-size:11.5px;font-weight:700;color:#0A3D47;cursor:pointer;white-space:nowrap}
+.vehtag{display:inline-block;margin-left:5px;padding:2px 7px;border-radius:99px;font-size:10.5px;font-weight:800;background:#F1F5F9;color:#334155;white-space:nowrap}
+.vehtag.mal{background:#FEE2E2;color:#991B1B}.vehtag.bien{background:#D1FAE5;color:#065F46}.vehtag.reg{background:#FEF3C7;color:#92400E}
+.vehnota{font-size:11.5px;color:#64748B;padding:2px 4px}
+.vehvacio{display:flex;flex-direction:column;gap:6px;text-align:center;padding:34px 20px;border-radius:16px;border:1px dashed #94A3B8;background:rgba(255,255,255,.5)}
+.vehvacio b{color:#0A3D47;font-size:15px}.vehvacio span{font-size:12.5px;color:#475569;max-width:560px;margin:0 auto}
+.vehdc{max-width:1100px !important;width:96vw}
+.vehdc .eqmh span button{margin-left:4px}
+.vehsec{margin:16px 0 6px;font-size:11.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#0A3D47}
+.vehhall{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.vehhall li{padding:9px 12px 9px 14px;border-radius:10px;font-size:12.5px;background:#F8FAFC;border-left:4px solid #94A3B8}
+.vehhall li.alto{background:#FEF2F2;border-color:#DC2626;color:#7F1D1D}.vehhall li.medio{background:#FFFBEB;border-color:#F59E0B;color:#78350F}.vehhall li.bajo{background:#F0F9FF;border-color:#0EA5E9;color:#0C4A6E}
+.vehaviso{margin-top:10px;padding:9px 12px;border-radius:10px;font-size:12.5px;font-weight:600}.vehaviso.mal{background:#FEF2F2;color:#991B1B}.vehaviso.bien{background:#ECFDF5;color:#065F46}
+.vehmapw{margin-top:14px;border-radius:14px;overflow:hidden;border:1px solid #E2E8F0}
+#vehMapa{height:420px;background:#E2E8F0}
+.vehley{display:flex;flex-wrap:wrap;gap:12px;padding:8px 12px;background:#fff;font-size:11.5px;color:#334155}
+.vehley i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+@media(max-width:700px){#vehMapa{height:300px}.vehks{grid-template-columns:1fr 1fr}.vehdc .eqmh{flex-wrap:wrap;gap:6px}}
+.zlink{background:rgba(255,255,255,.72);border:1.5px solid #A7F3D0;border-radius:14px;padding:14px;margin-bottom:12px}
+.zlinkt b{display:block;font-size:13.5px;color:#065F46}.zlinkt small{display:block;font-size:11.5px;color:#64748B;margin-top:2px;line-height:1.45}
+.zlinkf{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-top:10px}
+.zlinkf label{display:flex;flex-direction:column;gap:4px;font-size:10.5px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.3px}
+.zlinkf label.zl1{flex:1 1 280px}
+.zlinkf input,.zlinkf select{padding:8px 10px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:inherit;font-size:12.5px;background:#fff;text-transform:none;font-weight:500;color:#0F172A}
+.zlinkf button{padding:9px 16px;border:0;border-radius:10px;background:#065F46;color:#fff;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer}
+.zlinkf button:disabled{opacity:.6;cursor:wait}
+.zlinkm{font-size:12px;margin-top:8px;color:#0C4A6E}.zlinkm.bien{color:#065F46}.zlinkm.mal{color:#B91C1C}
+
 </style>
 <style id="estiloVidrio">
 /* Estilo vidrio: capa visual opcional. Para quitarlo basta con borrar este bloque. */
@@ -1121,7 +1171,7 @@ function fetchConTiempo(url, ms){
 var BUILD_VERSION='2026.09.16';
 
 
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWp7cwQwF-Bp5Fo_IZkPAh7dDO9hYNfFNyBdTr7Apg7Zpsy3aQzIVzONwe5981B8fk/exec';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwRjoBCzwkm7vRDN4AZuFjapEbDHiUD1Yo3Y7wnuLEDyaaIh_nWoaUZ-niDrx5jCMqM/exec';
 var currentUser=null,allPending=[],allHistory=[],charts={},calEvents=[];
 var calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
 
@@ -8531,6 +8581,399 @@ function repDetalle(k){
   document.body.appendChild(m);
 }
 function cerrarRepDetalle(){var m=document.getElementById('repDet');if(m)m.parentNode.removeChild(m);}
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  VEHICULOS: el usuario sube el Excel tal cual lo descarga de OnTrack y el
+//  panel lo lee, lo envia al sistema y muestra recorridos, alertas y el cruce
+//  con los marcajes de quienes declararon el vehiculo.
+// ═══════════════════════════════════════════════════════════════════════════
+var _veh=null,_vehDia=null,_vehMapa=null,_vehFiltro={placa:'',desde:'',hasta:''};
+
+// 1. Pestana, panel, permisos y menu
+(function(){
+  try{
+    if(typeof ICO!=='undefined')ICO.mapa='<rect x="1" y="6" width="14" height="10" rx="1"/><path d="M15 9h4l3 3v4h-7z"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/>';
+    PERMISOS_TAB.vehiculos=['supervisor'];
+    if(typeof PERM_TAB!=='undefined')PERM_TAB.vehiculos=['vehiculos','#tabVehiculos'];
+    if(typeof PERM_INFO!=='undefined')PERM_INFO.push(['vehiculos','Vehiculos y GPS','Subir reportes de OnTrack y ver recorridos cruzados con los marcajes']);
+    NAV_GRUPOS.forEach(function(g){if(g.id==='analisis')g.items.push({src:'#tabVehiculos',t:'Vehiculos y GPS',d:'Recorridos de OnTrack cruzados con los marcajes',ico:'mapa'});});
+    var tabs=document.querySelector('.tabs');
+    if(tabs&&!document.getElementById('tabVehiculos')){
+      var b=document.createElement('button');b.className='tab';b.id='tabVehiculos';b.setAttribute('data-tab','vehiculos');b.style.display='none';b.textContent='Vehiculos y GPS';
+      b.onclick=function(){switchTab('vehiculos');};tabs.appendChild(b);
+    }
+    var ref=document.getElementById('panel-seguridad');
+    if(ref&&!document.getElementById('panel-vehiculos')){
+      var p=document.createElement('div');p.className='panel';p.id='panel-vehiculos';p.innerHTML='<div id="vehBody"></div>';ref.parentNode.insertBefore(p,ref.nextSibling);
+    }
+  }catch(e){}
+  var st=window.switchTab;
+  window.switchTab=function(t){
+    var r=st.apply(this,arguments);
+    if(t==='vehiculos'){try{var a=document.querySelector('#tabVehiculos');if(typeof _navActivo!=='undefined')_navActivo={grupo:'analisis',item:'#tabVehiculos'};if(typeof construirNav==='function')construirNav();}catch(e){}vehIniciar();}
+    return r;
+  };
+  // Supervisor ve la pestana siempre; los demas segun su permiso
+  var ap=window.aplicarPermisos;
+  window.aplicarPermisos=function(){
+    var r=ap?ap.apply(this,arguments):null;
+    try{
+      var el=document.getElementById('tabVehiculos'),rol=rolActual();
+      if(el)el.style.display=(rol==='supervisor'||tienePerm('vehiculos'))?'inline-block':'none';
+      if(rol!=='supervisor'&&tienePerm('vehiculos')&&PERMISOS_TAB.vehiculos.indexOf(rol)<0)PERMISOS_TAB.vehiculos.push(rol);
+      construirNav();
+      // Usuario solo de vehiculos (por ejemplo, quien administra la flota): entra directo a esta seccion
+      var p=(currentUser&&currentUser.permisos)||[];
+      if(rol!=='supervisor'&&p.length===1&&p[0]==='vehiculos'&&!window._vehAuto){window._vehAuto=1;setTimeout(function(){switchTab('vehiculos');},300);}
+    }catch(e){}
+    return r;
+  };
+})();
+
+function vehHoy(){var d=new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
+function vehMenos(dias){var d=new Date();d.setDate(d.getDate()-dias);return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
+function vehFechaTxt(f){if(!f)return '';var p=f.split('-');var dias=['dom','lun','mar','mie','jue','vie','sab'];var d=new Date(+p[0],+p[1]-1,+p[2]);return dias[d.getDay()]+' '+(+p[2])+'/'+p[1]+'/'+p[0];}
+function vehDist(m){if(m===null||m===undefined)return 'Sin dato';return m>=1000?(Math.round(m/100)/10)+' km':m+' m';}
+
+// 2. Leer el Excel de OnTrack en el navegador
+function vehCargarXlsx(){
+  return new Promise(function(res,rej){
+    if(window.XLSX)return res();
+    var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';s.onload=function(){res();};s.onerror=rej;document.head.appendChild(s);
+  });
+}
+function vehFechaCelda(v){
+  if(v===null||v===undefined)return '';
+  if(typeof v==='number'){var d=XLSX.SSF.parse_date_code(v);if(!d)return '';var z=function(n){return ('0'+n).slice(-2);};return d.y+'-'+z(d.m)+'-'+z(d.d)+' '+z(d.H)+':'+z(d.M)+':'+z(Math.floor(d.S));}
+  if(v instanceof Date){var z2=function(n){return ('0'+n).slice(-2);};return v.getFullYear()+'-'+z2(v.getMonth()+1)+'-'+z2(v.getDate())+' '+z2(v.getHours())+':'+z2(v.getMinutes())+':'+z2(v.getSeconds());}
+  var t=String(v).trim(),m=t.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  if(m)return m[1]+'-'+m[2]+'-'+m[3]+' '+('0'+m[4]).slice(-2)+':'+m[5]+':'+(m[6]||'00');
+  m=t.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})[ T](\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  if(m)return m[3]+'-'+('0'+m[2]).slice(-2)+'-'+('0'+m[1]).slice(-2)+' '+('0'+m[4]).slice(-2)+':'+m[5]+':'+(m[6]||'00');
+  return '';
+}
+function vehLeerOnTrack(wb,nombreArchivo){
+  var nombreHoja=wb.SheetNames.filter(function(n){return /recorrido/i.test(n);})[0];
+  if(!nombreHoja){nombreHoja=wb.SheetNames.filter(function(n){var ws=wb.Sheets[n];return ws&&ws.A1&&/placa/i.test(String(ws.A1.v));})[0];}
+  if(!nombreHoja)throw new Error('Este archivo no parece ser el reporte de recorridos de OnTrack (no tiene la hoja "Recorridos").');
+  var ws=wb.Sheets[nombreHoja],rng=XLSX.utils.decode_range(ws['!ref']);
+  var out={placa:'',alias:'',calentamiento:'',kmTotal:0,sobrepasos:0,horaInicio:'',horaFin:'',segmentos:[],puntos:[],archivo:nombreArchivo||''};
+  var cel=function(r,c){var x=ws[XLSX.utils.encode_cell({r:r,c:c})];return x?x:null;};
+  var val=function(r,c){var x=cel(r,c);return x?x.v:null;};
+  var seg=null,colTipo=8,colVel=1,colLat=2,colLng=3;
+  for(var r=rng.s.r;r<=rng.e.r;r++){
+    var a=val(r,0),b=val(r,1),ta=(a===null?'':String(a).trim());
+    var tn=normTxt(ta);
+    if(tn==='placa'){out.placa=String(b||'').trim();continue;}
+    if(tn==='alias'){out.alias=String(b===null?'':b).trim();continue;}
+    if(tn==='tiempo total de calentamiento'){out.calentamiento=String(b||'');continue;}
+    if(tn==='total recorrido'){out.kmTotal=+b||0;continue;}
+    if(tn.indexOf('total sobrepasos')===0){out.sobrepasos=+b||0;continue;}
+    if(tn==='hora inicio'){out.horaInicio=vehFechaCelda(b);continue;}
+    if(tn==='hora fin'){out.horaFin=vehFechaCelda(b);continue;}
+    if(tn==='distancia (km)'){seg={km:+b||0,ini:'',fin:'',cal:''};out.segmentos.push(seg);continue;}
+    if(tn==='inicio'&&seg){seg.ini=vehFechaCelda(b);continue;}
+    if(tn==='fin'&&seg){seg.fin=vehFechaCelda(b);continue;}
+    if(tn==='tiempo de calentamiento del motor'&&seg){seg.cal=String(b||'');continue;}
+    if(tn==='fecha'){
+      for(var c=0;c<=rng.e.c;c++){var h=normTxt(String(val(r,c)||''));if(h.indexOf('velocidad')===0)colVel=c;else if(h==='latitud')colLat=c;else if(h==='longitud')colLng=c;else if(h.indexOf('tipo de cambio')===0)colTipo=c;}
+      continue;
+    }
+    var f=vehFechaCelda(a);
+    if(f&&/^\d{4}-/.test(f)){
+      var lat=+val(r,colLat),lng=+val(r,colLng);if(isNaN(lat)||isNaN(lng))continue;
+      var fl='',x=cel(r,0),col=x&&x.s&&x.s.fgColor&&x.s.fgColor.rgb?String(x.s.fgColor.rgb).toUpperCase():'';
+      if(/FF0000$/.test(col))fl+='E';
+      var tc=normTxt(String(val(r,colTipo)||''));
+      if(tc.indexOf('frenada')>=0)fl+='F';
+      if(tc.indexOf('aceleracion')>=0)fl+='A';
+      out.puntos.push([f,+val(r,colVel)||0,lat,lng,fl]);
+    }
+  }
+  if(!out.placa)throw new Error('No encontramos la placa del vehiculo en el archivo.');
+  if(!out.puntos.length)throw new Error('El archivo no trae puntos de recorrido.');
+  return out;
+}
+async function vehSubir(input){
+  var f=input.files&&input.files[0];input.value='';if(!f)return;
+  var est=document.getElementById('vehEstado');
+  var msg=function(t,tipo){if(est){est.className='vehest '+(tipo||'');est.innerHTML=t;}};
+  msg('Leyendo '+sgE(f.name)+'...');
+  try{
+    await vehCargarXlsx();
+    var buf=await f.arrayBuffer();
+    var wb=XLSX.read(buf,{type:'array',cellStyles:true});
+    var d=vehLeerOnTrack(wb,f.name);
+    var dias={};d.puntos.forEach(function(p){dias[p[0].slice(0,10)]=1;});
+    msg('Procesando '+d.puntos.length+' puntos GPS de '+sgE(d.placa)+' ('+Object.keys(dias).length+' dia'+(Object.keys(dias).length===1?'':'s')+')...');
+    d.action='subirOnTrack';d.token=(currentUser&&currentUser.token)||'';d.email=(currentUser&&currentUser.email)||'';
+    var resp=await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify(d)});
+    var j=await resp.json();
+    if(j.status!=='ok'){msg(sgE(j.message||j.error||'No se pudo cargar el reporte.'),'mal');return;}
+    msg('Listo: '+sgE(j.placa)+' · '+j.dias.map(function(x){return vehFechaTxt(x.fecha)+' ('+x.km+' km'+(x.reemplazado?', actualizado':'')+')';}).join(', '),'bien');
+    var fs=j.dias.map(function(x){return x.fecha;}).sort();
+    if(_vehFiltro.desde&&fs[0]<_vehFiltro.desde)_vehFiltro.desde=fs[0];
+    if(_vehFiltro.hasta&&fs[fs.length-1]>_vehFiltro.hasta)_vehFiltro.hasta=fs[fs.length-1];
+    await vehCargar();
+    if(j.dias.length===1)vehAbrirDia(j.placa,j.dias[0].fecha);
+  }catch(e){msg(sgE(e.message||'No se pudo leer el archivo.'),'mal');}
+}
+
+// 3. Tablero por rango de fechas
+function vehIniciar(){
+  if(!_vehFiltro.desde){_vehFiltro.desde=vehMenos(30);_vehFiltro.hasta=vehHoy();}
+  var b=document.getElementById('vehBody');if(!b)return;
+  if(!b.getAttribute('data-ok')){
+    b.setAttribute('data-ok','1');
+    b.innerHTML='<div class="vehhead"><div><b>Vehiculos y GPS</b><small>Recorridos del reporte de OnTrack cruzados con los marcajes de quienes usan el vehiculo</small></div>'+
+      '<label class="vehup"><input type="file" accept=".xlsx,.xls" onchange="vehSubir(this)" hidden><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>Subir reporte de OnTrack</label></div>'+
+      '<div id="vehEstado" class="vehest" style="display:none"></div>'+
+      '<div class="vehfil"><select id="vehPlaca" onchange="_vehFiltro.placa=this.value;vehCargar()"><option value="">Todos los vehiculos</option></select>'+
+      '<label>Desde <input type="date" id="vehDesde" onchange="_vehFiltro.desde=this.value;vehCargar()"></label><label>Hasta <input type="date" id="vehHasta" onchange="_vehFiltro.hasta=this.value;vehCargar()"></label>'+
+      '<span class="vehrap"><button onclick="vehRango(7)">7 dias</button><button onclick="vehRango(30)">30 dias</button><button onclick="vehRango(90)">90 dias</button></span>'+
+      '<span style="flex:1"></span><button class="vehbtn" onclick="vehExcelRango()">Descargar Excel</button><button class="vehbtn osc" onclick="vehPdfRango()">Descargar PDF</button></div>'+
+      '<div id="vehCont"><div class="btvac">Cargando...</div></div>';
+  }
+  var est=document.getElementById('vehEstado');if(est&&est.innerHTML)est.style.display='';
+  vehCargar();
+}
+function vehRango(n){_vehFiltro.desde=vehMenos(n);_vehFiltro.hasta=vehHoy();vehCargar();}
+async function vehCargar(){
+  var de=document.getElementById('vehDesde'),ha=document.getElementById('vehHasta');if(de)de.value=_vehFiltro.desde;if(ha)ha.value=_vehFiltro.hasta;
+  var est=document.getElementById('vehEstado');if(est&&est.innerHTML)est.style.display='';
+  try{
+    var d=await pedirDatos(SCRIPT_URL+'?action=getVehiculos&email='+encodeURIComponent(currentUser.email)+'&desde='+_vehFiltro.desde+'&hasta='+_vehFiltro.hasta+'&placa='+encodeURIComponent(_vehFiltro.placa)+'&t='+Date.now());
+    if(d.status!=='ok'){document.getElementById('vehCont').innerHTML='<div class="btvac">'+sgE(d.message||'No pudimos cargar los vehiculos.')+'</div>';return;}
+    _veh=d;vehPintar();
+  }catch(e){document.getElementById('vehCont').innerHTML='<div class="btvac">No pudimos cargar los vehiculos. Intenta de nuevo.</div>';}
+}
+function vehTotales(dias){
+  var t={dias:dias.length,km:0,horas:0,excesos:0,bruscos:0,fuera:0,noLab:0,marc:0,coin:0,lejos:0,velMax:0};
+  dias.forEach(function(x){t.km+=x.km;t.horas+=x.horasMov;t.excesos+=x.excesos;t.bruscos+=x.frenadas+x.aceleraciones;t.fuera+=x.fueraHorarioMin;if(x.diaNoLaboral&&x.km>0)t.noLab++;t.marc+=x.marcajes;t.coin+=x.coinciden;t.lejos+=x.lejos;if(x.velMax>t.velMax)t.velMax=x.velMax;});
+  t.km=Math.round(t.km*10)/10;t.horas=Math.round(t.horas*10)/10;return t;
+}
+function vehPintar(){
+  var sel=document.getElementById('vehPlaca');
+  if(sel){var v=_vehFiltro.placa;sel.innerHTML='<option value="">Todos los vehiculos</option>'+(_veh.placas||[]).map(function(p){return '<option value="'+sgE(p.placa)+'"'+(p.placa===v?' selected':'')+'>'+sgE(p.placa)+(p.alias?' · '+sgE(p.alias):'')+' ('+p.dias+' dias)</option>';}).join('');}
+  var c=document.getElementById('vehCont'),dias=_veh.dias||[];
+  if(!(_veh.placas||[]).length){c.innerHTML='<div class="vehvacio"><b>Aun no hay reportes cargados</b><span>Descarga en OnTrack el reporte de recorridos del vehiculo (el Excel tal cual) y subelo con el boton "Subir reporte de OnTrack". El sistema lo lee solo, lo cruza con los marcajes y arma los reportes.</span></div>';return;}
+  if(!dias.length){c.innerHTML='<div class="btvac">No hay recorridos cargados en ese rango de fechas.</div>';return;}
+  var t=vehTotales(dias);
+  var k=function(v,l,cls,click){return '<div class="vehk '+(cls||'')+'"'+(click?' onclick="'+click+'"':'')+'><b>'+v+'</b><small>'+l+'</small></div>';};
+  var h='<div class="vehks">'+k(t.dias,'Dias con recorrido')+k(t.km+' km','Kilometros')+k(t.horas+' h','En recorrido')+
+    k(t.excesos,'Excesos de velocidad',t.excesos?'mal':'bien',"vehOrden('excesos')")+k(t.bruscos,'Frenadas y aceleraciones bruscas',t.bruscos?'reg':'bien',"vehOrden('bruscos')")+
+    k(Math.round(t.fuera)+' min','Movimiento fuera de horario',t.fuera>=10?'reg':'bien',"vehOrden('fuera')")+k(t.noLab,'Dias no laborales con uso',t.noLab?'mal':'bien',"vehOrden('nolab')")+
+    k(t.coin+'/'+t.marc,'Marcajes que coinciden con el vehiculo',t.lejos?'reg':'bien')+k(t.lejos,'Marcajes lejos del vehiculo',t.lejos?'mal':'bien',"vehOrden('lejos')")+'</div>';
+  h+='<div class="vehtw"><table class="rpt vehtab"><thead><tr><th>Dia</th><th>Vehiculo</th><th>Km</th><th>En recorrido</th><th>Primer / ultimo mov.</th><th>Vel. max</th><th>Excesos</th><th>Bruscos</th><th>Paradas</th><th>Fuera de horario</th><th>Marcajes</th><th></th></tr></thead><tbody>'+
+    vehOrdenar(dias).map(function(x){
+      var al=[];if(x.diaNoLaboral&&x.km>0)al.push('<span class="vehtag mal">No laboral</span>');
+      return '<tr onclick="vehAbrirDia(\''+sgE(x.placa)+'\',\''+x.fecha+'\')"><td><b>'+vehFechaTxt(x.fecha)+'</b>'+al.join('')+'</td><td>'+sgE(x.placa)+'</td><td>'+x.km+'</td><td>'+x.horasMov+' h</td><td>'+(x.primerMov?sgE(x.primerMov)+' a '+sgE(x.ultimoMov):'Sin movimiento')+'</td>'+
+        '<td'+(x.excesos?' class="vrojo"':'')+'>'+x.velMax+' km/h</td><td'+(x.excesos?' class="vrojo"':'')+'>'+x.excesos+'</td><td>'+(x.frenadas+x.aceleraciones)+'</td><td>'+x.paradas+'</td><td'+(x.fueraHorarioMin>=10?' class="vnar"':'')+'>'+x.fueraHorarioMin+' min</td>'+
+        '<td>'+(x.marcajes?x.coinciden+' de '+x.marcajes+' coinciden':'Sin marcajes')+(x.lejos?' <span class="vehtag mal">'+x.lejos+' lejos</span>':'')+'</td><td><button class="vehver">Ver dia</button></td></tr>';
+    }).join('')+'</tbody></table></div>'+
+    '<div class="vehnota">Toca un dia para ver el mapa del recorrido, las paradas, los excesos y quien marco con el vehiculo. Los marcajes se comparan con la posicion del GPS a la misma hora; coinciden si estan a '+800+' m o menos.</div>';
+  c.innerHTML=h;
+}
+var _vehOrden='fecha';
+function vehOrden(k){_vehOrden=(_vehOrden===k?'fecha':k);vehPintar();}
+function vehOrdenar(d){
+  var f={excesos:function(x){return x.excesos;},bruscos:function(x){return x.frenadas+x.aceleraciones;},fuera:function(x){return x.fueraHorarioMin;},nolab:function(x){return x.diaNoLaboral&&x.km>0?1:0;},lejos:function(x){return x.lejos;}}[_vehOrden];
+  if(!f)return d;return d.slice().sort(function(a,b){return f(b)-f(a);});
+}
+
+// 4. Detalle de un dia
+async function vehAbrirDia(placa,fecha){
+  vehCerrarDia();
+  var m=document.createElement('div');m.id='vehDia';m.className='eqm';
+  m.innerHTML='<div class="eqmc vehdc"><div class="eqmh"><div><small>'+sgE(placa)+' · '+vehFechaTxt(fecha)+'</small><b>Recorrido del dia</b></div><span><button onclick="vehExcelDia()">Excel</button> <button onclick="vehPdfDia()">PDF</button> <button onclick="vehCerrarDia()">Cerrar</button></span></div><div class="eqmb" id="vehDiaB"><div class="btvac">Cargando el recorrido...</div></div></div>';
+  m.onclick=function(e){if(e.target===m)vehCerrarDia();};document.body.appendChild(m);
+  try{
+    var d=await pedirDatos(SCRIPT_URL+'?action=getVehiculoDia&email='+encodeURIComponent(currentUser.email)+'&placa='+encodeURIComponent(placa)+'&fecha='+fecha+'&t='+Date.now());
+    if(d.status!=='ok'){document.getElementById('vehDiaB').innerHTML='<div class="btvac">'+sgE(d.message||'No pudimos abrir el recorrido.')+'</div>';return;}
+    _vehDia=d;vehPintarDia();
+  }catch(e){var b=document.getElementById('vehDiaB');if(b)b.innerHTML='<div class="btvac">No pudimos abrir el recorrido.</div>';}
+}
+function vehCerrarDia(){try{if(_vehMapa){_vehMapa.remove();_vehMapa=null;}}catch(e){}var m=document.getElementById('vehDia');if(m)m.parentNode.removeChild(m);}
+function vehPintarDia(){
+  var d=_vehDia,r=d.resumen,b=document.getElementById('vehDiaB');if(!b)return;
+  var tabla=function(cols,filas,vacio){if(!filas.length)return '<div class="btvac">'+(vacio||'Sin registros.')+'</div>';return '<table class="rpt"><thead><tr>'+cols.map(function(c){return '<th>'+c+'</th>';}).join('')+'</tr></thead><tbody>'+filas.map(function(f){return '<tr>'+f.map(function(v){return '<td>'+v+'</td>';}).join('')+'</tr>';}).join('')+'</tbody></table>';};
+  var gm=function(lat,lng){return lat===null||lat===undefined?'':'<a href="https://maps.google.com/?q='+lat+','+lng+'" target="_blank" rel="noopener">Ver</a>';};
+  var k=function(v,l,cls){return '<div class="vehk '+(cls||'')+'"><b>'+v+'</b><small>'+l+'</small></div>';};
+  var h='<div class="vehks">'+k(r.km+' km','Recorrido')+k(r.horasMov+' h','En recorrido')+k(r.primerMov?r.primerMov+' a '+r.ultimoMov:'Sin mov.','Primer y ultimo movimiento')+
+    k(r.velMax+' km/h','Velocidad maxima',r.excesos?'mal':'')+k(r.excesos+(d.reporteOnTrack&&d.reporteOnTrack.sobrepasos?' <em>('+d.reporteOnTrack.sobrepasos+' segun OnTrack)</em>':''),'Excesos de velocidad',r.excesos?'mal':'bien')+
+    k(r.frenadas+' / '+r.aceleraciones,'Frenadas / aceleraciones bruscas',(r.frenadas+r.aceleraciones)?'reg':'bien')+k(r.paradas,'Paradas de 10 min o mas')+k(r.fueraHorarioMin+' min','Fuera de horario (5:00 a 19:00)',r.fueraHorarioMin>=10?'reg':'bien')+'</div>';
+  if(r.diaNoLaboral)h+='<div class="vehaviso mal">Este dia es domingo o festivo.</div>';
+  h+='<div class="vehsec">Lo que hay que mirar</div>'+(d.hallazgos.length?'<ul class="vehhall">'+d.hallazgos.map(function(x){return '<li class="'+x.nivel+'">'+sgE(x.txt)+'</li>';}).join('')+'</ul>':'<div class="vehaviso bien">Sin novedades: el recorrido y los marcajes de este dia no muestran nada fuera de lo normal.</div>');
+  h+='<div class="vehmapw"><div id="vehMapa"></div><div class="vehley"><span><i style="background:#0EA5E9"></i>Recorrido</span><span><i style="background:#EF4444"></i>Exceso de velocidad</span><span><i style="background:#F59E0B"></i>Parada</span><span><i style="background:#7C3AED"></i>Marcaje de una persona</span><span><i style="background:#10B981"></i>Zona registrada</span></div></div>';
+  h+='<div class="vehsec">Marcajes de quienes usaron el vehiculo</div>'+tabla(['Hora','Colaborador','Marcaje','Donde marco la persona','Donde estaba el vehiculo','Distancia','Resultado',''],
+    d.marcajes.map(function(x){var cls=x.veredicto==='Coincide con el vehiculo'?'bien':(x.veredicto==='Lejos del vehiculo'?'mal':'reg');
+      return [x.hora,sgE(btTitulo(x.nombre))+(x.declara?'':'<br><small>No declaro el vehiculo</small>'),sgE(x.tipo)+(x.manual?'<br><small>Registro manual</small>':''),sgE(x.lugarPersona||'Sin ubicacion')+(x.precision?'<br><small>precision '+x.precision+' m</small>':''),sgE(x.lugarVehiculo)+'<br><small>'+sgE(x.estadoVehiculo)+'</small>',vehDist(x.distanciaM),'<span class="vehtag '+cls+'">'+sgE(x.veredicto)+'</span>',gm(x.lat,x.lng)];}),
+    'Nadie declaro este vehiculo en sus marcajes de ese dia.');
+  h+='<div class="vehsec">Tramos del dia (segun OnTrack)</div>'+tabla(['Desde','Hasta','Tipo','Km','Motor encendido detenido'],d.tramos.map(function(x){return [x.inicio,x.fin,x.tipo,x.km,sgE(x.motor||'')];}));
+  h+='<div class="vehsec">Paradas de 10 minutos o mas</div>'+tabla(['Desde','Hasta','Duracion','Lugar',''],d.paradas.map(function(x){return [x.desde,x.hasta,x.min+' min'+(x.final?' (fin del dia)':''),sgE(x.lugar),gm(x.lat,x.lng)];}),'No hubo paradas largas.');
+  h+='<div class="vehsec">Excesos de velocidad</div>'+tabla(['Hora','Velocidad maxima','Lugar',''],d.excesos.map(function(x){return [x.hora,x.vel+' km/h',sgE(x.lugar),gm(x.lat,x.lng)];}),'Sin excesos de velocidad.');
+  h+='<div class="vehsec">Frenadas y aceleraciones bruscas</div>'+tabla(['Hora','Tipo','Velocidad','Lugar',''],d.bruscos.map(function(x){return [x.hora,x.tipo,x.vel+' km/h',sgE(x.lugar),gm(x.lat,x.lng)];}),'Sin frenadas ni aceleraciones bruscas.');
+  h+='<div class="vehnota">Las direcciones y velocidades vienen del reporte de OnTrack. La posicion del vehiculo a la hora de cada marcaje se toma del punto GPS mas cercano en el tiempo.</div>';
+  b.innerHTML=h;
+  setTimeout(vehPintarMapa,30);
+}
+async function vehPintarMapa(){
+  var el=document.getElementById('vehMapa'),d=_vehDia;if(!el||!d)return;
+  try{await geoCargarLeaflet();}catch(e){el.innerHTML='<div class="btvac">No se pudo cargar el mapa en esta conexion.</div>';return;}
+  try{if(_vehMapa){_vehMapa.remove();_vehMapa=null;}}catch(e){}
+  var calle=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'});
+  var sat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Imagenes &copy; Esri'});
+  _vehMapa=L.map(el,{layers:[calle]});L.control.layers({'Calles':calle,'Satelite':sat}).addTo(_vehMapa);
+  var lim=[],rec=d.recorrido||[],hm=function(s){return ('0'+Math.floor(s/3600)).slice(-2)+':'+('0'+Math.floor(s%3600/60)).slice(-2);};
+  (d.zonas||[]).forEach(function(z){L.circle([z.lat,z.lng],{radius:z.radio,color:'#10B981',weight:1.5,fillOpacity:.06}).addTo(_vehMapa).bindPopup('<b>'+sgE(z.nombre)+'</b>');});
+  for(var i=1;i<rec.length;i++){
+    var a=rec[i-1],c=rec[i];if(c[0]-a[0]>1200)continue;
+    L.polyline([[a[2],a[3]],[c[2],c[3]]],{color:c[4]?'#EF4444':'#0EA5E9',weight:c[4]?5:4,opacity:.9}).addTo(_vehMapa);
+  }
+  rec.forEach(function(p){lim.push([p[2],p[3]]);});
+  if(rec.length){
+    L.circleMarker([rec[0][2],rec[0][3]],{radius:7,color:'#fff',weight:2,fillColor:'#0A3D47',fillOpacity:1}).addTo(_vehMapa).bindPopup('Primer registro '+hm(rec[0][0]));
+    var u=rec[rec.length-1];L.circleMarker([u[2],u[3]],{radius:7,color:'#fff',weight:2,fillColor:'#0A3D47',fillOpacity:1}).addTo(_vehMapa).bindPopup('Ultimo registro '+hm(u[0]));
+  }
+  (d.paradas||[]).forEach(function(x){L.circleMarker([x.lat,x.lng],{radius:8,color:'#fff',weight:2,fillColor:'#F59E0B',fillOpacity:.95}).addTo(_vehMapa).bindPopup('<b>Parada</b><br>'+x.desde+' a '+x.hasta+' ('+x.min+' min)<br>'+sgE(x.lugar));});
+  (d.excesos||[]).forEach(function(x){L.circleMarker([x.lat,x.lng],{radius:6,color:'#fff',weight:1.5,fillColor:'#EF4444',fillOpacity:1}).addTo(_vehMapa).bindPopup('<b>Exceso de velocidad</b><br>'+x.hora+' · '+x.vel+' km/h');});
+  (d.marcajes||[]).forEach(function(x){
+    if(x.lat===null)return;
+    var col=x.veredicto==='Lejos del vehiculo'?'#DC2626':'#7C3AED';
+    L.circleMarker([x.lat,x.lng],{radius:8,color:'#fff',weight:2,fillColor:col,fillOpacity:1}).addTo(_vehMapa).bindPopup('<b>'+sgE(btTitulo(x.nombre))+'</b><br>'+sgE(x.tipo)+' '+x.hora+'<br>'+sgE(x.veredicto)+' ('+vehDist(x.distanciaM)+')');
+    if(x.vehLat!==null&&x.distanciaM>80)L.polyline([[x.lat,x.lng],[x.vehLat,x.vehLng]],{color:col,weight:2,dashArray:'5 5'}).addTo(_vehMapa);
+    lim.push([x.lat,x.lng]);
+  });
+  if(lim.length)_vehMapa.fitBounds(lim,{padding:[24,24]});else _vehMapa.setView([4.0,-73.7],11);
+}
+
+// 5. Descargas
+function vehDescargarXlsx(nombre,hojas){
+  vehCargarXlsx().then(function(){
+    var wb=XLSX.utils.book_new();
+    hojas.forEach(function(h){var ws=XLSX.utils.aoa_to_sheet(h.filas);ws['!cols']=(h.filas[0]||[]).map(function(){return {wch:20};});XLSX.utils.book_append_sheet(wb,ws,h.nombre.slice(0,31));});
+    XLSX.writeFile(wb,nombre);
+  }).catch(function(){showToast('No se pudo generar el Excel.');});
+}
+function vehExcelRango(){
+  if(!_veh||!(_veh.dias||[]).length){showToast('No hay datos en ese rango.');return;}
+  var t=vehTotales(_veh.dias);
+  vehDescargarXlsx('Vehiculos_'+(_vehFiltro.placa||'todos')+'_'+_vehFiltro.desde+'_a_'+_vehFiltro.hasta+'.xlsx',[
+    {nombre:'Resumen',filas:[['Reporte de vehiculos AMG'],['Periodo',_vehFiltro.desde+' a '+_vehFiltro.hasta],['Vehiculo',_vehFiltro.placa||'Todos'],[],['Dias con recorrido',t.dias],['Kilometros',t.km],['Horas en recorrido',t.horas],['Velocidad maxima',t.velMax],['Excesos de velocidad',t.excesos],['Frenadas y aceleraciones bruscas',t.bruscos],['Minutos fuera de horario',Math.round(t.fuera)],['Dias no laborales con uso',t.noLab],['Marcajes con el vehiculo',t.marc],['Coinciden con el vehiculo',t.coin],['Lejos del vehiculo',t.lejos]]},
+    {nombre:'Por dia',filas:[['Fecha','Placa','Alias','Km','Horas en recorrido','Primer movimiento','Ultimo movimiento','Vel max','Excesos','Frenadas bruscas','Aceleraciones bruscas','Paradas','Min fuera de horario','Dia no laboral','Marcajes','Coinciden','Lejos','Cargado por','Cargado el']].concat(_veh.dias.map(function(x){return [x.fecha,x.placa,x.alias,x.km,x.horasMov,x.primerMov,x.ultimoMov,x.velMax,x.excesos,x.frenadas,x.aceleraciones,x.paradas,x.fueraHorarioMin,x.diaNoLaboral?'Si':'No',x.marcajes,x.coinciden,x.lejos,x.subidoPor,x.subidoEl];}))}
+  ]);
+}
+function vehExcelDia(){
+  var d=_vehDia;if(!d)return;var r=d.resumen;
+  vehDescargarXlsx('Vehiculo_'+d.placa+'_'+d.fecha+'.xlsx',[
+    {nombre:'Resumen',filas:[['Vehiculo',d.placa],['Dia',d.fecha],['Kilometros',r.km],['Horas en recorrido',r.horasMov],['Primer movimiento',r.primerMov],['Ultimo movimiento',r.ultimoMov],['Velocidad maxima',r.velMax],['Excesos de velocidad',r.excesos],['Sobrepasos segun OnTrack',(d.reporteOnTrack||{}).sobrepasos||''],['Frenadas bruscas',r.frenadas],['Aceleraciones bruscas',r.aceleraciones],['Paradas de 10 min o mas',r.paradas],['Min fuera de horario',r.fueraHorarioMin],['Dia no laboral',r.diaNoLaboral?'Si':'No'],[],['Hallazgos']].concat(d.hallazgos.map(function(x){return [x.nivel,x.txt];}))},
+    {nombre:'Marcajes vs vehiculo',filas:[['Hora','Colaborador','Correo','Marcaje','Declaro el vehiculo','Lugar de la persona','Lat','Lng','Precision m','Lugar del vehiculo','Estado del vehiculo','Distancia m','Resultado']].concat(d.marcajes.map(function(x){return [x.hora,x.nombre,x.correo,x.tipo,x.declara?'Si':'No',x.lugarPersona,x.lat,x.lng,x.precision,x.lugarVehiculo,x.estadoVehiculo,x.distanciaM,x.veredicto];}))},
+    {nombre:'Tramos',filas:[['Desde','Hasta','Tipo','Km','Motor encendido detenido']].concat(d.tramos.map(function(x){return [x.inicio,x.fin,x.tipo,x.km,x.motor];}))},
+    {nombre:'Paradas',filas:[['Desde','Hasta','Minutos','Lugar','Lat','Lng']].concat(d.paradas.map(function(x){return [x.desde,x.hasta,x.min,x.lugar,x.lat,x.lng];}))},
+    {nombre:'Excesos',filas:[['Hora','Velocidad','Lugar','Lat','Lng']].concat(d.excesos.map(function(x){return [x.hora,x.vel,x.lugar,x.lat,x.lng];}))},
+    {nombre:'Bruscos',filas:[['Hora','Tipo','Velocidad','Lugar','Lat','Lng']].concat(d.bruscos.map(function(x){return [x.hora,x.tipo,x.vel,x.lugar,x.lat,x.lng];}))}
+  ]);
+}
+function vehImprimir(titulo,sub,cuerpo){
+  var w=window.open('','_blank');if(!w){showToast('Permite las ventanas emergentes para descargar el PDF.');return;}
+  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+sgE(titulo)+'</title><style>body{font-family:Inter,Arial,sans-serif;color:#0F172A;margin:28px}h1{font-size:20px;color:#0A3D47;margin:0}p.s{color:#64748B;font-size:12px;margin:4px 0 16px}h2{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:#0A3D47;margin:20px 0 6px;border-bottom:2px solid #0A3D47;padding-bottom:4px}table{width:100%;border-collapse:collapse;font-size:11px}th{background:#0A3D47;color:#fff;text-align:left;padding:6px}td{border-bottom:1px solid #E2E8F0;padding:5px 6px;vertical-align:top}.k{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.k div{border:1px solid #E2E8F0;border-radius:8px;padding:8px}.k b{display:block;font-size:16px;color:#0A3D47}.k small{font-size:10px;color:#64748B;text-transform:uppercase}li{font-size:12px;margin:4px 0}li.alto{color:#B91C1C}li.medio{color:#92400E}small{color:#64748B}.f{margin-top:24px;font-size:10px;color:#94A3B8}</style></head><body><h1>'+sgE(titulo)+'</h1><p class="s">'+sgE(sub)+'</p>'+cuerpo+'<div class="f">Generado desde el panel AMG el '+new Date().toLocaleString('es-CO')+'. Datos de recorrido tomados del reporte de OnTrack.</div><script>setTimeout(function(){window.print();},400)<\/script></body></html>');
+  w.document.close();
+}
+function vehTablaPdf(cols,filas){if(!filas.length)return '<p><small>Sin registros.</small></p>';return '<table><tr>'+cols.map(function(c){return '<th>'+c+'</th>';}).join('')+'</tr>'+filas.map(function(f){return '<tr>'+f.map(function(v){return '<td>'+(v===null||v===undefined?'':v)+'</td>';}).join('')+'</tr>';}).join('')+'</table>';}
+function vehPdfRango(){
+  if(!_veh||!(_veh.dias||[]).length){showToast('No hay datos en ese rango.');return;}
+  var t=vehTotales(_veh.dias),k=function(v,l){return '<div><b>'+v+'</b><small>'+l+'</small></div>';};
+  var cuerpo='<div class="k">'+k(t.dias,'Dias con recorrido')+k(t.km+' km','Kilometros')+k(t.horas+' h','En recorrido')+k(t.velMax+' km/h','Velocidad maxima')+k(t.excesos,'Excesos de velocidad')+k(t.bruscos,'Frenadas y aceleraciones bruscas')+k(Math.round(t.fuera)+' min','Fuera de horario')+k(t.lejos,'Marcajes lejos del vehiculo')+'</div>'+
+    '<h2>Detalle por dia</h2>'+vehTablaPdf(['Dia','Vehiculo','Km','En mov.','Primer / ultimo','Vel max','Excesos','Bruscos','Fuera de horario','Marcajes'],_veh.dias.map(function(x){return [vehFechaTxt(x.fecha)+(x.diaNoLaboral?' (no laboral)':''),sgE(x.placa),x.km,x.horasMov+' h',sgE(x.primerMov)+' a '+sgE(x.ultimoMov),x.velMax,x.excesos,x.frenadas+x.aceleraciones,x.fueraHorarioMin+' min',x.coinciden+' de '+x.marcajes+(x.lejos?' ('+x.lejos+' lejos)':'')];}));
+  vehImprimir('Reporte de vehiculos',(_vehFiltro.placa||'Todos los vehiculos')+' · '+_vehFiltro.desde+' a '+_vehFiltro.hasta,cuerpo);
+}
+function vehPdfDia(){
+  var d=_vehDia;if(!d)return;var r=d.resumen,k=function(v,l){return '<div><b>'+v+'</b><small>'+l+'</small></div>';};
+  var cuerpo='<div class="k">'+k(r.km+' km','Recorrido')+k(r.horasMov+' h','En recorrido')+k((r.primerMov||'-')+' a '+(r.ultimoMov||'-'),'Primer y ultimo mov.')+k(r.velMax+' km/h','Velocidad maxima')+k(r.excesos,'Excesos de velocidad')+k(r.frenadas+' / '+r.aceleraciones,'Frenadas / aceleraciones')+k(r.paradas,'Paradas')+k(r.fueraHorarioMin+' min','Fuera de horario')+'</div>'+
+    '<h2>Lo que hay que mirar</h2>'+(d.hallazgos.length?'<ul>'+d.hallazgos.map(function(x){return '<li class="'+x.nivel+'">'+sgE(x.txt)+'</li>';}).join('')+'</ul>':'<p>Sin novedades.</p>')+
+    '<h2>Marcajes de quienes usaron el vehiculo</h2>'+vehTablaPdf(['Hora','Colaborador','Marcaje','Donde marco','Donde estaba el vehiculo','Distancia','Resultado'],d.marcajes.map(function(x){return [x.hora,sgE(btTitulo(x.nombre)),sgE(x.tipo),sgE(x.lugarPersona),sgE(x.lugarVehiculo)+' ('+sgE(x.estadoVehiculo)+')',vehDist(x.distanciaM),sgE(x.veredicto)];}))+
+    '<h2>Tramos</h2>'+vehTablaPdf(['Desde','Hasta','Tipo','Km'],d.tramos.map(function(x){return [x.inicio,x.fin,x.tipo,x.km];}))+
+    '<h2>Paradas de 10 minutos o mas</h2>'+vehTablaPdf(['Desde','Hasta','Duracion','Lugar'],d.paradas.map(function(x){return [x.desde,x.hasta,x.min+' min',sgE(x.lugar)];}))+
+    '<h2>Excesos de velocidad</h2>'+vehTablaPdf(['Hora','Velocidad','Lugar'],d.excesos.map(function(x){return [x.hora,x.vel+' km/h',sgE(x.lugar)];}))+
+    '<h2>Frenadas y aceleraciones bruscas</h2>'+vehTablaPdf(['Hora','Tipo','Velocidad','Lugar'],d.bruscos.map(function(x){return [x.hora,x.tipo,x.vel+' km/h',sgE(x.lugar)];}));
+  vehImprimir('Recorrido '+d.placa,vehFechaTxt(d.fecha),cuerpo);
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  LUGARES PERMITIDOS PARA MARCAR: agregar zonas pegando un enlace de Google Maps
+// ═══════════════════════════════════════════════════════════════════════════
+var _zonasAbrir=false,_zLink={nombre:'',link:'',tipo:'Trabajo',radio:300,aplica:'Equipo de jsbejarano@amgdecolombia.com'};
+
+// Acceso directo en el menu de Analisis (visible para quien ve Seguridad de marcajes)
+(function(){
+  try{
+    NAV_GRUPOS.forEach(function(g){if(g.id==='analisis')g.items.push({src:'#tabZonasAtajo',t:'Lugares permitidos para marcar',d:'Agrega sedes y bases con un enlace de Google Maps',ico:'escudo'});});
+    var tabs=document.querySelector('.tabs');
+    if(tabs&&!document.getElementById('tabZonasAtajo')){
+      var b=document.createElement('button');b.className='tab';b.id='tabZonasAtajo';b.style.display='none';b.textContent='Lugares permitidos';
+      b.onclick=function(){zonasAbrirEditor();};tabs.appendChild(b);
+    }
+  }catch(e){}
+  var ap=window.aplicarPermisos;
+  window.aplicarPermisos=function(){
+    var r=ap?ap.apply(this,arguments):null;
+    try{var s=document.getElementById('tabSeguridad'),a=document.getElementById('tabZonasAtajo');if(s&&a)a.style.display=s.style.display==='none'?'none':'inline-block';construirNav();}catch(e){}
+    return r;
+  };
+  // Abre el editor solo cuando las zonas ya cargaron (si no, se guardaria una lista vacia)
+  var sp=window.segPintarVista;
+  window.segPintarVista=function(){
+    if(_zonasAbrir&&typeof _geo!=='undefined'&&_geo&&_geo.zonas){_zonasAbrir=false;_geoEditando=true;_geoZonasEdit=JSON.parse(JSON.stringify(_geo.zonas));}
+    var r=sp.apply(this,arguments);
+    if(_geoEditando){var c=document.getElementById('zLinkCaja');if(c&&window._zScroll){window._zScroll=false;c.scrollIntoView({behavior:'smooth',block:'start'});}}
+    return r;
+  };
+  // Caja para agregar con enlace, arriba del editor de zonas
+  var gz=window.geoHtmlZonas;
+  window.geoHtmlZonas=function(){
+    var sel=function(c,ops,v){return '<select onchange="_zLink.'+c+'=this.value">'+ops.map(function(o){return '<option'+(o===v?' selected':'')+'>'+o+'</option>';}).join('')+'</select>';};
+    var lideres=['Todos'];try{(_bit&&_bit.equipos||[]).forEach(function(q){if(q.rol!=='supervisor'){lideres.push('Equipo de '+q.email);lideres.push('Excepto equipo de '+q.email);}});}catch(e){}
+    if(lideres.indexOf('Equipo de jsbejarano@amgdecolombia.com')<0){lideres.push('Equipo de jsbejarano@amgdecolombia.com');lideres.push('Excepto equipo de jsbejarano@amgdecolombia.com');}
+    var h='<div id="zLinkCaja" class="zlink"><div class="zlinkt"><b>Agregar un lugar permitido con Google Maps</b><small>En Google Maps toca el lugar, luego Compartir, copia el enlace y pegalo aqui. Las marcas dentro del radio cuentan como correctas; fuera de los lugares permitidos se senalan solas.</small></div>'+
+      '<div class="zlinkf"><label class="zl1">Enlace de Google Maps<input id="zLinkUrl" placeholder="https://maps.app.goo.gl/..." value="'+xEsc(_zLink.link)+'" oninput="_zLink.link=this.value"></label>'+
+      '<label>Nombre del lugar<input id="zLinkNom" placeholder="Ej: Base AMG campo" value="'+xEsc(_zLink.nombre)+'" oninput="_zLink.nombre=this.value"></label>'+
+      '<label>Tipo'+sel('tipo',['Trabajo','Recogida','Residencial','Vigilado'],_zLink.tipo)+'</label>'+
+      '<label>Radio (m)<input type="number" min="50" step="50" value="'+xEsc(_zLink.radio)+'" oninput="_zLink.radio=this.value" style="width:90px"></label>'+
+      '<label>Aplica a'+sel('aplica',lideres,_zLink.aplica)+'</label>'+
+      '<button id="zLinkBtn" onclick="zonasAgregarLink()">Agregar y guardar</button></div><div id="zLinkMsg" class="zlinkm"></div></div>';
+    return h+gz.apply(this,arguments);
+  };
+})();
+function zonasAbrirEditor(){
+  _zonasAbrir=true;window._zScroll=true;
+  if(typeof _segVista!=='undefined')_segVista='ubicaciones';
+  switchTab('seguridad');
+  try{_navActivo={grupo:'analisis',item:'#tabZonasAtajo'};construirNav();}catch(e){}
+  if(typeof _geo!=='undefined'&&_geo&&_geo.zonas)segPintarVista();
+}
+async function zonasAgregarLink(){
+  var msg=document.getElementById('zLinkMsg'),btn=document.getElementById('zLinkBtn');
+  var m=function(t,c){if(msg){msg.className='zlinkm '+(c||'');msg.innerHTML=t;}};
+  var url=(_zLink.link||'').trim(),nom=(_zLink.nombre||'').trim();
+  if(!url){m('Pega el enlace de Google Maps.','mal');return;}
+  if(!_geoZonasEdit){if(_geo&&_geo.zonas)_geoZonasEdit=JSON.parse(JSON.stringify(_geo.zonas));else{m('Espera a que carguen las zonas actuales e intenta de nuevo.','mal');return;}}
+  if(btn)btn.disabled=true;m('Leyendo la ubicacion del enlace...');
+  try{
+    var d=await pedirDatos(SCRIPT_URL+'?action=resolverMapa&email='+encodeURIComponent(currentUser.email)+'&url='+encodeURIComponent(url)+'&t='+Date.now());
+    if(!d||d.status!=='ok'){m(xEsc((d&&(d.message||d.msg||d.error))||'No pudimos leer el enlace.'),'mal');if(btn)btn.disabled=false;return;}
+    if(!nom)nom=d.nombre||('Lugar '+d.lat+', '+d.lng);
+    var rad=Math.max(50,Math.min(50000,parseFloat(_zLink.radio)||300));
+    var cerca=_geoZonasEdit.filter(function(z){return distKm(d.lat,d.lng,+z.lat,+z.lng)*1000<=Math.max(60,+z.radio||0)&&z.tipo===_zLink.tipo;})[0];
+    _geoZonasEdit.push({nombre:nom,tipo:_zLink.tipo,lat:d.lat,lng:d.lng,radio:rad,activa:true,notas:'Agregado desde Google Maps por '+((currentUser&&currentUser.nombre)||'')+' el '+new Date().toLocaleDateString('es-CO')+': '+url,aplica:_zLink.aplica||'Todos'});
+    m('Ubicacion encontrada: <b>'+d.lat+', '+d.lng+'</b> (<a href="https://www.google.com/maps?q='+d.lat+','+d.lng+'" target="_blank" rel="noopener">verla en Google Maps</a>). Guardando...'+(cerca?'<br>Nota: queda dentro de la zona "'+xEsc(cerca.nombre)+'".':''),'bien');
+    _zLink.link='';_zLink.nombre='';
+    await geoGuardarZonas();
+  }catch(e){m('No pudimos leer el enlace. Intenta de nuevo.','mal');}
+  if(btn)btn.disabled=false;
+}
+function distKm(a,b,c,e){var R=6371,r=Math.PI/180,x=Math.sin((c-a)*r/2)*Math.sin((c-a)*r/2)+Math.cos(a*r)*Math.cos(c*r)*Math.sin((e-b)*r/2)*Math.sin((e-b)*r/2);return 2*R*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
 
 </script>
 </body>
